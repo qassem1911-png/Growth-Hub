@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Shell from '@/components/layout/Shell'
+import EnergyCell from '@/components/ui/EnergyCell'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createClient } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
@@ -97,64 +98,53 @@ export default function LegacyVaultPage() {
             </p>
           </div>
         ) : (
-          /* Archived Mission Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {archived.map((mission, i) => (
-              <motion.div
-                key={mission.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.08 }}
-                onClick={() => setSelectedMission(mission)}
-                className="group relative overflow-hidden cursor-pointer"
-              >
-                {/* Ambient glow */}
-                <div className="absolute inset-0 blur-[40px] bg-neon-green/5 opacity-60 group-hover:opacity-100 transition-all" />
+          /* ── TROPHY ROOM — Shelf of Glowing Cups ── */
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 items-end justify-items-center">
+            {archived.map((mission, i) => {
+              const TROPHY_COLORS = ['green', 'blue', 'purple', 'green', 'blue']
+              const color = TROPHY_COLORS[i % TROPHY_COLORS.length] as 'green' | 'blue' | 'purple'
 
-                <div className="relative border border-neon-green/15 bg-neon-green/[0.03] backdrop-blur-xl p-8 space-y-6 hover:border-neon-green/30 transition-all">
-                  {/* Top accent */}
-                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-green to-transparent opacity-40 group-hover:opacity-80 transition-opacity" />
-
-                  {/* Badge */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-neon-green/10 border border-neon-green/30 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-neon-green text-base">military_tech</span>
-                    </div>
-                    <span className="text-[8px] font-space text-neon-green tracking-[0.4em] uppercase font-black">
-                      MISSION_COMPLETE
-                    </span>
+              return (
+                <motion.a
+                  key={mission.id}
+                  href={`/tasks/${mission.id}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.07 }}
+                  className="group flex flex-col items-center gap-3 cursor-pointer"
+                >
+                  {/* Trophy badge */}
+                  <div className="text-[8px] font-space tracking-[0.4em] text-neon-green/40 uppercase font-black">
+                    ★ COMPLETE
                   </div>
 
-                  {/* Title */}
-                  <h3 className="text-xl font-space font-black text-white italic uppercase leading-tight truncate">
+                  {/* Full glowing cup — forced 100%, no Red Zone */}
+                  <EnergyCell
+                    percentage={100}
+                    label=""
+                    color={color}
+                    size="md"
+                    isInRedZone={false}
+                  />
+
+                  {/* Mission title below cup */}
+                  <p className="text-[9px] font-space font-black text-white/50 group-hover:text-white/90 tracking-widest uppercase text-center transition-all max-w-[100px] leading-tight truncate">
                     {mission.title}
-                  </h3>
+                  </p>
 
-                  {/* Stats */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-space text-white/30 tracking-widest uppercase">
-                      {mission.totalTasks} NODES COMPLETED
-                    </span>
-                    <span className="text-2xl font-space font-black text-neon-green italic">100%</span>
-                  </div>
-
-                  {/* Full green progress bar */}
-                  <div className="w-full h-[2px] bg-neon-green/20 overflow-hidden">
-                    <div className="h-full w-full bg-neon-green shadow-[0_0_8px_#39FF14]" />
-                  </div>
-
-                  {/* Unarchive option */}
+                  {/* Unarchive */}
                   <button
-                    onClick={(e) => unarchive(mission.id, e)}
-                    className="w-full pt-4 text-[8px] font-space text-white/10 hover:text-white/40 transition-all tracking-widest uppercase text-center"
+                    onClick={(e) => { e.preventDefault(); unarchive(mission.id, e as any) }}
+                    className="text-[7px] font-space text-white/10 hover:text-white/40 transition-all tracking-widest uppercase"
                   >
-                    RESTORE_TO_ACTIVE →
+                    RESTORE →
                   </button>
-                </div>
-              </motion.div>
-            ))}
+                </motion.a>
+              )
+            })}
           </div>
         )}
+
 
         {/* Mission Detail Modal */}
         <AnimatePresence>

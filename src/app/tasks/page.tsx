@@ -156,11 +156,12 @@ export default function TasksPage() {
           )}
         </AnimatePresence>
 
-        {/* Mission List */}
-        <div className="space-y-3">
+        {/* Mission Card Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence>
             {missions.map((mission, idx) => {
-              const { progress: percentage, isInRedZone } = calculateAccountability(mission)
+              const { progress, isInRedZone } = calculateAccountability(mission)
+              const percentage = Math.round(progress)
               const total = mission.tasks?.length || 0
               const completed = mission.tasks?.filter((t: any) => t.is_completed).length || 0
               const COLORS = ['#39FF14', '#00F0FF', '#b600f8', '#FFBD33', '#FF3131']
@@ -169,63 +170,71 @@ export default function TasksPage() {
               return (
                 <motion.div
                   key={mission.id}
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ delay: idx * 0.04 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: idx * 0.05 }}
                   onClick={() => router.push(`/tasks/${mission.id}`)}
                   className={cn(
-                    "group flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 p-6 border cursor-pointer transition-all relative overflow-hidden",
+                    'group relative flex flex-col gap-5 p-6 rounded-sm border cursor-pointer transition-all duration-300 bg-black/30 backdrop-blur-sm overflow-hidden',
                     isInRedZone
-                      ? "border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] bg-red-500/[0.03]"
+                      ? 'border-red-500/30 hover:border-red-500/60 shadow-[0_0_20px_rgba(255,0,0,0.06)]'
                       : mission.sync_to_dashboard
-                        ? "bg-[#39FF14]/[0.03] border-[#39FF14]/15 hover:border-[#39FF14]/40"
-                        : "bg-white/[0.02] border-white/5 hover:border-white/15"
+                        ? 'border-neon-green/20 hover:border-neon-green/50 shadow-[0_0_20px_rgba(57,255,20,0.04)]'
+                        : 'border-white/8 hover:border-white/20'
                   )}
                 >
-                  {/* Left color stripe */}
-                  <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}` }} />
+                  {/* Top accent line */}
+                  <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(to right, ${color}, transparent)` }} />
 
-                  {/* HUD Badge */}
-                  {mission.sync_to_dashboard && (
-                    <div className="hidden md:block ms-2 w-2 h-2 rounded-full bg-[#39FF14] shadow-[0_0_8px_#39FF14] flex-shrink-0" />
-                  )}
-                  {!mission.sync_to_dashboard && <div className="hidden md:block ms-2 w-2 h-2 flex-shrink-0" />}
-
-                  {/* Title + meta */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-space font-black uppercase italic text-lg truncate group-hover:text-neon-green transition-colors">
-                      {mission.title}
-                    </p>
-                    <p className="text-[9px] font-space text-white/30 tracking-widest uppercase mt-1">
-                      {completed}/{total} NODES COMPLETE
-                      {mission.sync_to_dashboard ? ' · HUD_ACTIVE' : ''}
-                    </p>
+                  {/* Header row */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[8px] font-space tracking-[0.5em] uppercase mb-1.5" style={{ color, opacity: 0.6 }}>
+                        {isInRedZone ? '⚠ RED_ZONE' : mission.sync_to_dashboard ? '◉ HUD_ACTIVE' : '○ STANDBY'}
+                      </p>
+                      <h3 className="text-base font-space font-black uppercase italic text-white truncate group-hover:text-white/90 transition-colors leading-tight">
+                        {mission.title}
+                      </h3>
+                    </div>
+                    <span
+                      className="text-2xl font-space font-black italic flex-shrink-0"
+                      style={{ color }}
+                    >
+                      {percentage}%
+                    </span>
                   </div>
 
-                  {/* Progress */}
-                  <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 flex-shrink-0 w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-white/5">
-                    <div className="text-right flex items-center gap-3 md:block">
-                      <span className="text-2xl font-space font-black italic" style={{ color }}>{percentage}%</span>
-                      <span className="text-[9px] md:hidden text-white/30 tracking-widest font-black">COMPLETION</span>
-                    </div>
-                    <div className="w-full md:w-32 h-[2px] bg-white/5">
-                      <div
-                        className="h-full transition-all duration-700"
-                        style={{ width: `${percentage}%`, backgroundColor: color, boxShadow: `0 0 6px ${color}` }}
-                      />
-                    </div>
+                  {/* Progress bar */}
+                  <div className="w-full h-[2px] bg-white/5 overflow-hidden rounded-full">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${percentage}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut', delay: idx * 0.05 }}
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}` }}
+                    />
                   </div>
 
-                  {/* Chevron */}
-                  <span className="material-symbols-outlined text-white/10 group-hover:text-white/60 transition-all">chevron_right</span>
+                  {/* Footer row */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-[8px] font-space text-white/20 tracking-widest uppercase">
+                      {completed}/{total} NODES
+                    </p>
+                    {mission.end_date && (
+                      <p className="text-[8px] font-space text-white/20 tracking-widest uppercase">
+                        ⏱ {new Date(mission.end_date).toLocaleDateString()}
+                      </p>
+                    )}
+                    <span className="material-symbols-outlined text-sm text-white/10 group-hover:text-white/40 transition-all">arrow_forward</span>
+                  </div>
                 </motion.div>
               )
             })}
           </AnimatePresence>
 
           {missions.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-32 space-y-6 opacity-30">
+            <div className="col-span-full flex flex-col items-center justify-center py-32 space-y-6 opacity-30">
               <span className="material-symbols-outlined text-6xl text-white/20">layers</span>
               <p className="text-[10px] font-space text-white/20 tracking-widest uppercase font-black">NO_ACTIVE_MISSIONS_DETECTED</p>
             </div>
