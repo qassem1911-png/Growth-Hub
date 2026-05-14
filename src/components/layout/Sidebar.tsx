@@ -30,37 +30,35 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
 
   return (
     <>
-      {/* Mobile Hamburger Toggle */}
-      <button 
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className={cn(
-          "fixed top-4 z-[200] p-3 glass-panel border-white/10 text-white md:hidden transition-all",
-          "inset-inline-end-4"
-        )}
-      >
-        <span className="material-symbols-outlined text-black dark:text-white">
-          {mobileOpen ? 'close' : 'menu'}
-        </span>
-      </button>
-
-      {/* Backdrop for mobile */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[105] md:hidden"
-          />
-        )}
-      </AnimatePresence>
+      {/* Mobile Tactical Bottom Navigation */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-[#050505] border-t border-black/10 dark:border-white/10 z-[200] flex justify-around items-center px-2">
+        {MENU_ITEMS.map((item) => {
+          const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href)
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors min-h-[44px] min-w-[44px]",
+                isActive ? "" : "text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white/80"
+              )}
+              style={{ color: isActive ? currentTheme.color : undefined }}
+            >
+              <span className="material-symbols-outlined text-2xl">
+                {item.icon}
+              </span>
+              <span className="text-[8px] font-space tracking-widest font-black uppercase">
+                {item.label}
+              </span>
+            </Link>
+          )
+        })}
+      </nav>
 
       <aside className={cn(
-        "w-72 bg-white dark:bg-[#0D0D0D] h-screen fixed top-0 flex flex-col z-[110] border-y-0 shadow-[20px_0_50px_rgba(0,0,0,0.5)] sidebar-target transition-all duration-300 md:translate-x-0",
+        "hidden lg:flex w-72 bg-white dark:bg-[#0D0D0D] h-screen fixed top-0 flex-col z-[110] border-y-0 shadow-[20px_0_50px_rgba(0,0,0,0.05)] dark:shadow-[20px_0_50px_rgba(0,0,0,0.5)] sidebar-target transition-all duration-300",
         "inset-inline-start-0",
-        isRTL ? "border-l border-black/5 dark:border-white/5" : "border-r border-black/5 dark:border-white/5",
-        mobileOpen ? "translate-x-0" : (isRTL ? "translate-x-full" : "-translate-x-full")
+        isRTL ? "border-l border-black/5 dark:border-white/5" : "border-r border-black/5 dark:border-white/5"
       )}>
       {/* Sidebar Header - Profile Sync */}
       <div className="pt-16 px-10 flex flex-col items-start gap-6 relative overflow-hidden group text-start">
@@ -139,9 +137,8 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
             <Link
               key={item.href}
               href={item.href}
-              onClick={() => setMobileOpen(false)}
               className={cn(
-                "flex items-center gap-5 p-4 px-10 rounded-sm transition-all duration-300 relative group overflow-hidden",
+                "flex items-center gap-5 p-4 px-10 rounded-sm transition-all duration-300 relative group overflow-hidden min-h-[44px]",
                 isActive 
                   ? "bg-black/5 dark:bg-white/5 text-black dark:text-white border border-black/10 dark:border-white/10" 
                   : "text-black/40 hover:text-black dark:text-white/30 dark:hover:text-white/80 border border-transparent hover:border-black/5 dark:hover:border-white/5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02]"
@@ -185,18 +182,17 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
       </nav>
 
       {/* Sidebar Footer */}
-      <div className="p-10 mt-auto">
+      <div className="p-10 mt-auto space-y-4">
         <Link 
           href="/settings" 
-          onClick={() => setMobileOpen(false)}
-          className="w-full flex items-center justify-start gap-4 p-5 glass-panel border-black/5 dark:border-white/5 text-black/30 dark:text-white/30 hover:text-neon-green hover:border-neon-green/20 hover:bg-neon-green/5 rounded-sm transition-all font-space text-[11px] tracking-[0.4em] font-black mb-4"
+          className="w-full flex items-center justify-start gap-4 p-4 glass-panel border-black/5 dark:border-white/5 text-black/30 dark:text-white/30 hover:text-neon-green hover:border-neon-green/20 hover:bg-neon-green/5 rounded-sm transition-all font-space text-[11px] tracking-[0.4em] font-black min-h-[44px]"
         >
           <span className="material-symbols-outlined text-xl">settings</span>
           {isRTL ? 'الإعدادات' : 'Settings'}
         </Link>
         <button 
-          onClick={() => { handleLogout(); setMobileOpen(false); }}
-          className="w-full flex items-center justify-start gap-4 p-5 border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/20 hover:text-red-500 hover:border-red-500/20 hover:bg-red-500/5 rounded-sm transition-all font-space text-[11px] tracking-[0.4em] font-black"
+          onClick={() => { handleLogout() }}
+          className="w-full flex items-center justify-start gap-4 p-4 border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/20 hover:text-red-500 hover:border-red-500/20 hover:bg-red-500/5 rounded-sm transition-all font-space text-[11px] tracking-[0.4em] font-black min-h-[44px]"
         >
           <span className="material-symbols-outlined text-xl">logout</span>
           {t ? t('exit') : (isRTL ? 'تسجيل الخروج' : 'Logout')}

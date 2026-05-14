@@ -23,6 +23,7 @@ export default function MissionsPage() {
   const [missions, setMissions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newSize, setNewSize] = useState('md')
   const [syncOnCreate, setSyncOnCreate] = useState(true)
@@ -83,9 +84,12 @@ export default function MissionsPage() {
           <div className="space-y-4 text-center md:text-start">
             <div className="flex items-center gap-4 justify-center md:justify-start">
               <span className="material-symbols-outlined text-neon-green text-3xl md:text-4xl">layers</span>
-              <h1 className="text-4xl md:text-6xl font-black font-space tracking-tighter uppercase italic text-black dark:text-white leading-none">
+              <h1 className="text-4xl md:text-6xl font-black font-space tracking-tighter uppercase italic text-black dark:text-white leading-none break-words break-all sm:break-normal">
                 {isRTL ? 'لوحة' : 'MISSION'}<span className="text-neon-green">{isRTL ? ' الأهداف' : '_CANVAS'}</span>
               </h1>
+              <button onClick={() => setShowGuide(true)} className="material-symbols-outlined text-neon-green/60 hover:text-neon-green transition-colors text-2xl md:text-3xl" title="Tactical Guide">
+                info
+              </button>
             </div>
             <p className="text-[9px] md:text-[11px] font-space text-neon-green tracking-[0.4em] uppercase font-bold opacity-40">
                {isRTL ? 'الأهداف الأساسية النشطة' : 'ACTIVE_CORE_OBJECTIVES'} // {missions.length} {isRTL ? 'قيد التنفيذ' : 'MISSIONS RUNNING'}
@@ -99,6 +103,59 @@ export default function MissionsPage() {
             {isRTL ? 'إنشاء مهمة' : 'INITIALIZE_MISSION'}
           </button>
         </header>
+
+        {/* Tactical Guide Modal */}
+        <AnimatePresence>
+          {showGuide && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[200] flex items-center justify-center bg-white/90 dark:bg-black/90 backdrop-blur-md p-4 overflow-y-auto"
+              onClick={() => setShowGuide(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9 }}
+                onClick={e => e.stopPropagation()}
+                className="w-full max-w-2xl bg-white dark:bg-[#0A0A0A] border border-black/10 dark:border-white/10 p-8 md:p-12 space-y-8 rounded-sm shadow-2xl my-8 relative"
+              >
+                <button 
+                  onClick={() => setShowGuide(false)} 
+                  className="absolute top-6 right-6 rtl:left-6 rtl:right-auto material-symbols-outlined text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white"
+                >
+                  close
+                </button>
+                <div className="space-y-6">
+                  <div className="space-y-2 border-l-4 border-neon-green pl-4 rtl:pl-0 rtl:pr-4 rtl:border-l-0 rtl:border-r-4">
+                    <p className="text-2xl md:text-3xl font-black text-black dark:text-white mb-4">
+                      أهلاً بيك في ساحة المعركة يا وحش! ده مش مجرد جدول مهام، ده سيستم (Battle Royale) لحياتك.
+                    </p>
+                    <ol className="list-decimal list-inside space-y-3 text-lg text-black/80 dark:text-white/80 font-bold">
+                      <li><span className="text-neon-green">ميزان القوة (الـ HUD):</span> عقلك والداشبورد بيشيلوا ٩ وحدات بس. الصغير (Small) بـ ١، المتوسط (Medium) بـ ١.٥، والكبير (Large) بـ ٣ أماكن.</li>
+                      <li><span className="text-neon-green">عقود الاشتباك (XP):</span> كل شرطة مجهود بـ ١٠ XP. والمهمات الكبيرة ليها "بونص" ٥٠ نقطة لما تقفلها.</li>
+                      <li><span className="text-neon-green">نزيف الطاقة (XP Bleed):</span> لو اتأخرت عن ميعادك، السيستم هيسحب منك ٥ XP كل يوم. ولو كسلت أسبوع، فيه غرامة ١٠ XP.</li>
+                    </ol>
+                  </div>
+                  
+                  <div className="h-px w-full bg-black/10 dark:bg-white/10 my-8"></div>
+
+                  <div className="space-y-2 border-l-4 border-neon-green pl-4 rtl:pl-0 rtl:pr-4 rtl:border-l-0 rtl:border-r-4">
+                    <p className="text-xl md:text-2xl font-black font-space text-black dark:text-white uppercase italic tracking-tighter mb-4">
+                      "Welcome, Soldier. This is your Tactical Life OS."
+                    </p>
+                    <ol className="list-decimal list-inside space-y-3 text-base md:text-lg text-black/80 dark:text-white/80 font-bold font-space">
+                      <li><span className="text-neon-green uppercase tracking-widest">Grid Slots:</span> Your HUD has 9 slots total. Small = 1, Medium = 1.5, Large = 3.</li>
+                      <li><span className="text-neon-green uppercase tracking-widest">XP Logic:</span> 1 Task Bar = 10 XP. Large missions give +50 XP bonus.</li>
+                      <li><span className="text-neon-green uppercase tracking-widest">The Penalties:</span> Delay costs -5 XP/day. Inactivity for 7 days costs -10 XP.</li>
+                    </ol>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Create Mission Modal */}
         <AnimatePresence>
@@ -205,7 +262,10 @@ export default function MissionsPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: idx * 0.05 }}
                   onClick={() => router.push(`/missions/${mission.id}`)}
-                  className="group relative flex flex-col p-6 md:p-8 bg-white dark:bg-[#0A0A0A] border border-black/5 dark:border-white/5 hover:border-black/20 dark:hover:border-white/10 cursor-pointer transition-all rounded-sm shadow-xl min-h-[220px] justify-between overflow-hidden"
+                  className={cn(
+                    "group relative flex flex-col p-6 md:p-8 bg-white dark:bg-[#0A0A0A] border border-black/5 dark:border-white/5 hover:border-black/20 dark:hover:border-white/10 cursor-pointer transition-all rounded-sm shadow-xl min-h-[220px] justify-between overflow-hidden",
+                    mission.size === 'lg' ? "col-span-1 md:col-span-2 lg:col-span-3" : ""
+                  )}
                 >
                   {/* Top accent line */}
                   <div className="absolute top-0 inset-x-0 h-[2.5px]" style={{ backgroundColor: color }} />

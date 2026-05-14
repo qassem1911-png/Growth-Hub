@@ -52,7 +52,7 @@ export default function Dashboard() {
     <Shell syncedMissions={missions} onMissionsRefresh={fetchDashboardMissions}>
       <Tutorial />
 
-      <div className="w-full min-h-[calc(100vh-64px)] flex flex-col py-16 px-6 md:px-12 space-y-16 md:space-y-24">
+      <div className="w-full min-h-[calc(100vh-64px)] flex flex-col py-6 md:py-16 px-4 md:px-12 space-y-8 md:space-y-24">
 
         {/* ── CENTERED TITLE ── */}
         <div className="flex flex-col items-center text-center space-y-4 md:space-y-6">
@@ -66,7 +66,7 @@ export default function Dashboard() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-6xl md:text-9xl font-black font-space italic tracking-tighter uppercase leading-none text-black dark:text-white"
+            className="text-4xl md:text-8xl lg:text-9xl font-black font-space italic tracking-tighter uppercase leading-none text-black dark:text-white break-words"
           >
             {isRTL ? 'لوحة' : 'MISSION'}<span style={{ color: currentTheme.color }}>{isRTL ? ' المهام' : '_HUB'}</span>
           </motion.h1>
@@ -77,7 +77,7 @@ export default function Dashboard() {
         </div>
 
         {/* ── MISSION CARDS GRID (PRECISION ARCHITECTURE) ── */}
-        <section className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 cells-target">
+        <section className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8 cells-target">
           {missions.map((mission, idx) => {
             const { progress, isInRedZone } = calculateAccountability(mission)
             const roundedProgress = Math.round(progress)
@@ -93,9 +93,9 @@ export default function Dashboard() {
                   transition={{ delay: idx * 0.05 }}
                   onClick={() => router.push(`/missions/${mission.id}`)}
                   className={cn(
-                    'group relative cursor-pointer rounded-sm border p-8 flex flex-col items-center gap-8 transition-all duration-300 overflow-hidden',
-                    'bg-white dark:bg-black/40 backdrop-blur-md min-h-[320px] justify-center',
-                    'aspect-video lg:aspect-auto', // Force aspect consistency
+                    'group relative cursor-pointer rounded-sm border p-4 md:p-8 flex flex-col items-center gap-4 md:gap-8 transition-all duration-300 overflow-hidden',
+                    'bg-white dark:bg-black/40 backdrop-blur-md min-h-[200px] md:min-h-[320px] justify-center w-full',
+                    mission.size === 'lg' ? 'col-span-1 md:col-span-2 lg:col-span-3' : '',
                     isInRedZone
                       ? 'border-red-500/30 hover:border-red-500/60 shadow-[0_0_30px_rgba(255,0,0,0.06)]'
                       : 'border-black/5 dark:border-white/5 hover:border-black/20 dark:hover:border-white/20'
@@ -121,12 +121,11 @@ export default function Dashboard() {
                   </div>
 
                   {/* Energy Cup Trophy */}
-                  <div className="relative py-2 group-hover:scale-110 transition-transform duration-500">
+                  <div className="relative py-1 md:py-2 group-hover:scale-110 transition-transform duration-500 flex justify-center">
                     <EnergyCell
                       percentage={roundedProgress}
-                      subLabel={mission.title}
                       color={isInRedZone ? 'red' : (customColor || fallbackColor)}
-                      size={(mission.size || 'md') as 'sm' | 'md' | 'lg'}
+                      size={(mission.size === 'lg' ? 'md' : 'sm') as 'sm' | 'md' | 'lg'}
                       isInRedZone={isInRedZone}
                       cupStyle={currentTheme.cupStyle as any}
                     />
@@ -134,7 +133,7 @@ export default function Dashboard() {
                   </div>
 
                   {/* Progress Tracking Bar */}
-                  <div className="w-full space-y-3">
+                  <div className="w-full space-y-2">
                     <div className="flex justify-between text-[9px] md:text-[11px] font-space font-black tracking-widest uppercase text-black/40 dark:text-white/20">
                       <span>{isRTL ? 'التقدم' : 'PROGRESS'}</span>
                       <span 
@@ -176,14 +175,21 @@ export default function Dashboard() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="col-span-full flex flex-col items-center justify-center gap-6 p-24 border border-dashed border-black/10 dark:border-white/10 rounded-sm cursor-pointer transition-all group"
+              className="col-span-full flex flex-col items-center justify-center gap-6 p-8 md:p-24 border border-dashed border-black/10 dark:border-white/10 rounded-sm cursor-pointer transition-all group text-center"
               style={{ borderColor: `${currentTheme.color}33` }}
               onClick={() => router.push('/missions')}
             >
-              <span className="material-symbols-outlined text-6xl text-black/10 dark:text-white/10 transition-colors" style={{ color: currentTheme.color }}>add_circle</span>
-              <p className="text-xs md:text-sm font-space text-black/30 dark:text-white/20 tracking-[0.4em] uppercase font-black">
-                {isRTL ? 'لا توجد مهام مفعلة - أنشئ مهمتك الأولى' : 'NO_SYNCED_MISSIONS - CREATE_FIRST'}
+              <span className="material-symbols-outlined text-4xl md:text-6xl text-black/10 dark:text-white/10 transition-colors" style={{ color: currentTheme.color }}>add_circle</span>
+              <p className="text-xs md:text-sm font-space text-black/30 dark:text-white/20 tracking-[0.4em] uppercase font-black max-w-xs">
+                {isRTL ? 'لا توجد مهام مفعلة - أنشئ مهمتك الأولى' : 'NO_SYNCED_MISSIONS'}
               </p>
+              <button
+                onClick={(e) => { e.stopPropagation(); router.push('/missions') }}
+                className="mt-2 px-6 py-3 text-[11px] font-space font-black tracking-widest uppercase border rounded-sm transition-all hover:scale-105 active:scale-95"
+                style={{ borderColor: currentTheme.color, color: currentTheme.color }}
+              >
+                {isRTL ? 'إنشاء مهمة' : 'CREATE_MISSION'}
+              </button>
             </motion.div>
           )}
         </section>

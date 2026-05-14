@@ -45,9 +45,9 @@ const COLORS = {
 }
 
 const SIZES = {
-  sm: { w: 80, h: 120 },
-  md: { w: 100, h: 152 },
-  lg: { w: 128, h: 192 },
+  sm: { w: 80, h: 60 },
+  md: { w: 100, h: 130 },
+  lg: { w: 180, h: 220 },
 }
 
 export default function EnergyCell({ percentage, label, subLabel, color, size = 'md', isInRedZone, cupStyle = 'cylinder' }: EnergyCellProps) {
@@ -107,7 +107,9 @@ export default function EnergyCell({ percentage, label, subLabel, color, size = 
                           cupStyle === 'crystal' ? '4px' :
                           cupStyle === 'shard' ? '24px 4px 24px 4px' :
                           cupStyle === 'sphere' ? '50%' : '16px',
-            background: cupStyle === 'cylinder' 
+            background: size === 'lg'
+                          ? `linear-gradient(135deg, ${config.primary}22 0%, rgba(0,0,0,0.8) 50%, ${config.primary}44 100%)`
+                          : cupStyle === 'cylinder' 
                           ? 'linear-gradient(135deg, rgba(176,196,222,0.1) 0%, rgba(112,128,144,0.4) 50%, rgba(47,79,79,0.8) 100%)'
                           : cupStyle === 'sphere' 
                           ? 'linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(218,165,32,0.5) 50%, rgba(184,134,11,0.8) 100%)'
@@ -119,6 +121,13 @@ export default function EnergyCell({ percentage, label, subLabel, color, size = 
               `0 0 40px ${config.glow}, inset 0 0 50px ${config.glowSoft}`,
               `0 0 20px ${config.glow}, inset 0 0 30px ${config.glowSoft}`,
             ]
+          } : size === 'lg' ? {
+            boxShadow: [
+              `0 0 30px ${config.primary}80, inset 0 0 40px ${config.primary}40`,
+              `0 0 60px ${config.primary}, inset 0 0 60px ${config.primary}80`,
+              `0 0 30px ${config.primary}80, inset 0 0 40px ${config.primary}40`,
+            ],
+            transition: { duration: 2, repeat: Infinity }
           } : {
             boxShadow: `0 0 15px ${config.glowSoft}, inset 0 8px 16px rgba(255,255,255,0.2), inset 0 -8px 16px rgba(0,0,0,0.6)`,
           }}

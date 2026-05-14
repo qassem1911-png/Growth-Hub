@@ -59,7 +59,7 @@ export default function SettingsPage() {
         window.location.reload()
       }
     } else {
-      showToast('UPDATE_ERROR', 'error')
+      showToast('UPDATE_ERROR', 'warning')
     }
     setSaving(false)
   }

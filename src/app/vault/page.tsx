@@ -73,21 +73,21 @@ export default function VaultPage() {
 
   return (
     <Shell>
-      <main className="p-6 md:p-12 min-h-screen">
+      <main className="p-4 md:p-12 min-h-screen">
         <div className="max-w-[1600px] mx-auto space-y-16">
           
           {/* Header */}
-          <header className="border-b border-black/10 dark:border-white/10 pb-6">
-            <h1 className="text-4xl md:text-6xl font-black font-space tracking-tight text-black dark:text-white uppercase italic">
+          <header className="border-b border-black/10 dark:border-white/10 pb-4 md:pb-6 w-full max-w-full">
+            <h1 className="text-2xl md:text-6xl font-black font-space tracking-tight text-black dark:text-white uppercase italic break-words">
               GLOBAL<span className="text-neon-green">_RANKING_LADDER</span>
             </h1>
-            <p className="text-[10px] md:text-xs font-space text-black/40 dark:text-white/30 tracking-[0.6em] uppercase font-black mt-2">
-              {isRTL ? 'نظام تصنيف العمليات العالمي' : 'ELITE OPERATOR PROGRESSION & TACTICAL ARTIFACTS'}
+            <p className="text-[10px] md:text-xs font-space text-black/40 dark:text-white/30 tracking-[0.4em] md:tracking-[0.6em] uppercase font-black mt-2">
+              {isRTL ? 'نظام تصنيف العمليات العالمي' : 'ELITE OPERATOR PROGRESSION'}
             </p>
           </header>
 
           {/* Ranking Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 md:gap-12">
             {RANKS_DATA.map((rank) => {
               const status = getRankStatus(rank.threshold, rank.themeId)
               const isLocked = status === 'LOCKED'
@@ -100,7 +100,7 @@ export default function VaultPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   className={cn(
-                    "glass-card rounded-lg p-8 relative flex flex-col items-center transition-all duration-500 h-full min-h-[600px]",
+                    "glass-card rounded-lg p-5 md:p-8 relative flex flex-col items-center transition-all duration-500 h-full min-h-[420px] md:min-h-[600px]",
                     rank.neonClass,
                     status === 'EQUIPPED' ? "scale-105 z-10" : "hover:scale-[1.02]"
                   )}
@@ -118,11 +118,11 @@ export default function VaultPage() {
                   </div>
 
                   {/* EnergyCell Visualization */}
-                  <div className="w-56 h-56 mb-10 relative flex items-center justify-center">
+                  <div className="w-40 h-40 md:w-56 md:h-56 mb-6 md:mb-10 relative flex items-center justify-center">
                     <EnergyCell 
                       percentage={75}
                       color={rank.color}
-                      size="lg"
+                      size="md"
                       cupStyle={theme?.cupStyle as any}
                     />
                   </div>
@@ -144,7 +144,7 @@ export default function VaultPage() {
                     {status === 'AVAILABLE' && (
                       <button 
                         onClick={() => changeTheme(rank.themeId)}
-                        className="w-full bg-white text-black py-4 font-space font-black text-sm uppercase tracking-widest hover:bg-neon-green transition-colors rounded-sm mt-4"
+                        className="w-full bg-transparent border-2 border-current text-current py-3 font-space font-black text-sm uppercase tracking-widest hover:bg-current hover:text-black transition-all rounded-sm mt-6"
                       >
                         EQUIP PROTOCOL
                       </button>
@@ -153,10 +153,10 @@ export default function VaultPage() {
 
                   {/* Locked Overlay */}
                   {isLocked && (
-                    <div className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md rounded-lg flex flex-col items-center justify-center p-8 text-center border border-white/5">
-                       <span className="material-symbols-outlined text-white text-7xl mb-6 drop-shadow-[0_0_20px_rgba(255,255,255,0.6)]">lock</span>
-                       <p className="text-white font-black font-space text-4xl tracking-tighter uppercase italic drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">LOCKED</p>
-                       <p className="text-neon-green font-space text-sm tracking-[0.2em] font-black mt-4 uppercase drop-shadow-[0_0_10px_var(--color-neon-green)]">
+                    <div className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md rounded-lg flex flex-col items-center justify-center p-8 text-center border border-white/5 transition-all">
+                       <span className="material-symbols-outlined text-white/50 text-5xl mb-4">lock</span>
+                       <p className="text-white/50 font-black font-space text-3xl tracking-tighter uppercase italic">LOCKED</p>
+                       <p className="text-white/40 font-space text-xs tracking-[0.2em] font-black mt-4 uppercase">
                          {rank.threshold - xp} XP REQUIRED
                        </p>
                     </div>

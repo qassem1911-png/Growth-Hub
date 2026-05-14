@@ -87,7 +87,7 @@ export default function NotesPage() {
         {/* Header */}
         <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
           <div className="space-y-2">
-            <h1 className="text-4xl md:text-6xl font-black font-space tracking-tighter uppercase italic text-black dark:text-white leading-none">
+            <h1 className="text-4xl md:text-6xl font-black font-space tracking-tighter uppercase italic text-black dark:text-white leading-none break-words break-all sm:break-normal">
               BRAIN
             </h1>
             <p className="text-[10px] font-space text-neon-green tracking-[0.8em] uppercase font-bold opacity-40">

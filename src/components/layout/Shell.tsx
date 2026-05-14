@@ -96,7 +96,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
   return (
     <div
       className={cn(
-        'min-h-screen bg-[#F0F2F5] dark:bg-[#050505] text-black dark:text-white flex relative transition-colors duration-500'
+        'min-h-screen bg-background text-foreground flex relative transition-colors duration-500'
       )}
       style={{ 
         ['--selection-bg' as any]: `${currentTheme.color}33`, 
@@ -111,72 +111,115 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
       <Sidebar isRTL={isRTL} />
 
       <main className={cn(
-        'flex-grow min-h-screen transition-all duration-500 relative z-10',
-        'md:ps-72'
+        'flex-1 min-h-screen pb-20 lg:pb-0 transition-all duration-500 relative z-10 w-full max-w-full overflow-x-hidden',
+        'lg:ps-72 lg:max-w-none'
       )}>
         {/* Top Navigation */}
-        <header className="w-full px-6 md:px-12 h-16 flex justify-between items-center border-b border-black/5 dark:border-white/5 bg-[#F0F2F5]/80 dark:bg-[#050505]/95 backdrop-blur-2xl z-[150] sticky top-0 transition-colors duration-500">
+        <header className="w-full px-4 md:px-8 h-16 flex justify-between items-center border-b border-black/5 dark:border-white/5 bg-white/95 dark:bg-[#050505]/95 backdrop-blur-2xl z-[150] sticky top-0 transition-colors duration-500">
           <div className="absolute -bottom-[1px] inset-inline-start-12 w-48 h-[1px] shadow-[0_0_15px_currentcolor]" style={{ backgroundColor: currentTheme.color, color: currentTheme.color }} />
 
-          <div className="flex items-center gap-8">
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: currentTheme.color }} />
-              <span className="text-[9px] font-space text-black/60 dark:text-white/40 tracking-[0.4em] uppercase font-bold">
-                {t('dashboard')}
+          {/* LEFT: Dashboard Title & Flame */}
+          <div className="flex items-center gap-3 max-w-[30%] truncate">
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0 hidden md:block" style={{ backgroundColor: currentTheme.color }} />
+            <span className="hidden sm:block text-[10px] md:text-[11px] font-space text-black/60 dark:text-white/40 tracking-[0.4em] uppercase font-bold truncate">
+              {t('dashboard')}
+            </span>
+            
+            {/* Streak Indicator (Restored) */}
+            <div className="flex items-center gap-1.5 border-l-0 sm:border-l border-black/10 dark:border-white/10 pl-0 sm:pl-3" title={isRTL ? 'سلسلة الأيام' : 'Streak'}>
+              <span 
+                className={cn("material-symbols-outlined text-base md:text-lg transition-all duration-500", streak > 0 ? "scale-110 animate-pulse" : "opacity-20")} 
+                style={{ 
+                  color: streak > 0 ? (profile?.ai_personality === 'SAVAGE' ? '#FF0055' : '#FF5F00') : undefined, 
+                  filter: streak > 0 ? `drop-shadow(0 0 8px ${profile?.ai_personality === 'SAVAGE' ? '#FF0055' : '#FF5F00'})` : 'none' 
+                }}
+              >
+                local_fire_department
               </span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-1.5 bg-cyan-600/10 dark:bg-cyan-400/5 border border-cyan-600/30 dark:border-cyan-400/20 rounded-full">
-              <span className="material-symbols-outlined text-[12px] text-cyan-700 dark:text-cyan-400 animate-spin-slow">cognition</span>
-              <span className="text-[8px] font-space text-cyan-700 dark:text-cyan-400 tracking-widest uppercase font-black">
-                {profile?.ai_name || (isRTL ? 'المدرب' : 'COACH')}: {profile?.ai_personality === 'SAVAGE' ? (isRTL ? '🔥 شرس' : '🔥 SAVAGE') : (isRTL ? '💚 هادئ' : '💚 GENTLE')}
+              <span className={cn("text-[9px] md:text-[11px] font-space tracking-tighter font-black uppercase transition-colors")} style={{ color: streak > 0 ? (profile?.ai_personality === 'SAVAGE' ? '#FF0055' : '#FF5F00') : undefined, opacity: streak > 0 ? 1 : 0.2 }}>
+                {streak} <span className="hidden sm:inline">{isRTL ? (streak === 1 ? 'يوم' : 'أيام') : (streak === 1 ? 'DAY' : 'DAYS')}</span>
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-10">
+          {/* CENTER: AI Coach */}
+          <div className="flex items-center justify-center flex-1 relative">
+            <button
+              onClick={() => setAiOpen(o => !o)}
+              className={cn(
+                "flex items-center gap-2 px-3 md:px-5 py-1.5 md:py-2 rounded-full transition-all duration-300 border shadow-lg group relative",
+                aiOpen
+                  ? profile?.ai_personality === 'SAVAGE'
+                    ? 'bg-[#FF0055] border-[#FF0055] text-white shadow-[0_0_20px_rgba(255,0,85,0.4)]'
+                    : 'bg-[#00E5FF] border-[#00E5FF] text-black shadow-[0_0_20px_rgba(0,229,255,0.4)]'
+                  : 'bg-black/5 dark:bg-black/40 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-cyan-400/50 hover:text-cyan-400'
+              )}
+            >
+              <div className="absolute inset-0 rounded-full animate-pulse opacity-20" style={{ backgroundColor: profile?.ai_personality === 'SAVAGE' ? '#FF0055' : '#00E5FF' }}></div>
+              <span className="material-symbols-outlined text-[16px] md:text-[18px] relative z-10 group-hover:animate-spin-slow">
+                {profile?.ai_personality === 'SAVAGE' ? 'whatshot' : 'cognition'}
+              </span>
+              <span className="text-[9px] md:text-[11px] font-space tracking-widest uppercase font-black relative z-10 hidden sm:block">
+                {profile?.ai_name || (isRTL ? 'المدرب' : 'COACH')}: {profile?.ai_personality === 'SAVAGE' ? (isRTL ? 'شرس' : 'SAVAGE') : (isRTL ? 'هادئ' : 'GENTLE')}
+              </span>
+            </button>
+
+            {/* AI Coach Dropdown */}
+            <AnimatePresence>
+              {aiOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                  className={cn(
+                    "absolute top-full mt-4 left-1/2 -translate-x-1/2 w-[90vw] max-w-[320px] md:max-w-[400px] glass-panel p-5 md:p-6 backdrop-blur-xl shadow-[0_0_50px_rgba(0,0,0,0.8)] space-y-4 z-[200]",
+                    profile?.ai_personality === 'SAVAGE'
+                      ? "border-[#FF0055]/40 bg-white/95 dark:bg-[#050505]/95"
+                      : "border-cyan-400/40 bg-white/95 dark:bg-[#050505]/95"
+                  )}
+                >
+                  <div className="flex justify-between items-center border-b border-black/10 dark:border-white/10 pb-3">
+                    <span className={cn(
+                      "text-[10px] md:text-[11px] font-space tracking-[0.3em] font-black uppercase",
+                      profile?.ai_personality === 'SAVAGE' ? "text-[#FF0055]" : "text-cyan-600 dark:text-cyan-400"
+                    )}>
+                      {profile?.ai_name || (isRTL ? 'المدرب' : 'COACH')} // {profile?.ai_personality === 'SAVAGE' ? (isRTL ? 'نمط شرس' : 'SAVAGE_MODE') : (isRTL ? 'متصل' : 'ONLINE')}
+                    </span>
+                    <button onClick={() => setAiOpen(false)} className="text-black/30 dark:text-white/30 hover:text-black dark:hover:text-white transition-all">
+                      <span className="material-symbols-outlined text-lg md:text-xl">close</span>
+                    </button>
+                  </div>
+                  <p className="text-[13px] md:text-[15px] font-space font-bold text-black/90 dark:text-white/90 leading-relaxed" dir="auto">
+                    "{aiMessage}"
+                  </p>
+                  <p className="text-[9px] font-space text-black/30 dark:text-white/30 tracking-widest uppercase">AUTO_CLOSE // 8S</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* RIGHT: Old Theme Toggle & Settings */}
+          <div className="flex items-center gap-1 md:gap-3 justify-end max-w-[25%]">
             <button
               onClick={() => {
                 const isDark = document.documentElement.classList.toggle('dark')
                 localStorage.setItem('theme', isDark ? 'dark' : 'light')
               }}
-              className="p-2 text-black/40 hover:text-black dark:text-white/20 dark:hover:text-white/40 transition-all rounded-full"
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-sm bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:border-black/50 dark:hover:border-white/50 transition-all group relative"
+              title={isRTL ? 'الوضع الليلي/النهاري' : 'Toggle Theme'}
             >
-              <span className="material-symbols-outlined text-xl">contrast</span>
+              <div className="absolute inset-0 bg-black/5 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <span className="material-symbols-outlined text-[16px] md:text-[20px]">contrast</span>
             </button>
-
-            <div className="flex flex-col items-end gap-1.5">
-              <div className="flex justify-between w-56 text-[11px] font-space text-black dark:text-white tracking-widest uppercase font-black">
-                <span>{isRTL ? 'الحمل اليومي' : "TODAY'S LOAD"}</span>
-                <span style={{ color: currentTheme.color }}>{systemProgress}%</span>
-              </div>
-              <div className="w-56 h-[4px] bg-black/10 dark:bg-white/10 overflow-hidden rounded-full">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${systemProgress}%` }}
-                  transition={{ duration: 1, ease: 'easeOut' }}
-                  style={{ backgroundColor: currentTheme.color, boxShadow: `0 0 8px ${currentTheme.color}` }}
-                />
-              </div>
-            </div>
-
-            <div className="h-6 w-[1px] bg-black/5 dark:bg-white/5" />
-
-            <div className="flex flex-col items-end">
-              <span className="text-[9px] font-space text-black/50 dark:text-white/30 uppercase tracking-[0.3em] font-black leading-none mb-1">
-                {t('streak')}
-              </span>
-              <div className="flex items-center gap-2">
-                <span 
-                  className={cn("material-symbols-outlined text-base transition-all duration-500", streak > 0 ? "scale-110" : "opacity-20")} 
-                  style={{ color: streak > 0 ? '#FF5F00' : undefined, filter: streak > 0 ? 'drop-shadow(0 0 8px #FF5F00)' : 'none' }}
-                >
-                  local_fire_department
-                </span>
-                <span className={cn("text-[11px] font-space tracking-tighter font-black uppercase transition-colors")} style={{ color: streak > 0 ? (isRTL ? '#FF5F00' : '#FF5F00') : undefined, opacity: streak > 0 ? 1 : 0.2 }}>
-                  {streak} {isRTL ? (streak === 1 ? 'يوم' : 'أيام') : (streak === 1 ? 'DAY' : 'DAYS')}
-                </span>
-              </div>
-            </div>
+            
+            <button
+              onClick={() => router.push('/settings')}
+              className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-sm bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:border-black/50 dark:hover:border-white/50 transition-all group relative"
+              title={isRTL ? 'الإعدادات' : 'Settings'}
+            >
+              <div className="absolute inset-0 bg-black/5 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <span className="material-symbols-outlined text-[16px] md:text-[20px]">settings</span>
+            </button>
           </div>
         </header>
 
@@ -190,58 +233,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
         "inset-inline-start-72"
       )} />
 
-      <div className={cn(
-        "fixed bottom-8 z-50 flex flex-col gap-3",
-        "inset-inline-end-8 items-end"
-      )}>
-        <AnimatePresence>
-          {aiOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className={cn(
-                "w-full max-w-[300px] glass-panel p-5 backdrop-blur-md shadow-[0_0_40px_rgba(57,255,20,0.12)] space-y-3",
-                profile?.ai_personality === 'SAVAGE'
-                  ? "border-[#FF0055]/30 bg-white/95 dark:bg-[#FF0055]/5"
-                  : "border-cyan-400/30 bg-white/95 dark:bg-[#050505]/90"
-              )}
-            >
-              <div className="flex justify-between items-center">
-                <span className={cn(
-                  "text-[9px] font-space tracking-[0.3em] font-black uppercase",
-                  profile?.ai_personality === 'SAVAGE' ? "text-[#FF0055]" : "text-cyan-700 dark:text-cyan-400"
-                )}>
-                  {profile?.ai_name || (isRTL ? 'المدرب' : 'COACH')} // {profile?.ai_personality === 'SAVAGE' ? (isRTL ? 'نمط شرس' : 'SAVAGE_MODE') : (isRTL ? 'متصل' : 'ONLINE')}
-                </span>
-                <button onClick={() => setAiOpen(false)} className="text-black/20 dark:text-white/20 hover:text-black dark:hover:text-white transition-all">
-                  <span className="material-symbols-outlined text-base">close</span>
-                </button>
-              </div>
-              <p className="text-[12px] font-space font-bold text-black/80 dark:text-white/80 leading-relaxed" dir="auto">
-                "{aiMessage}"
-              </p>
-              <p className="text-[8px] font-space text-black/20 dark:text-white/20 tracking-widest uppercase">AUTO_CLOSE // 8S</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
-        <button
-          onClick={() => setAiOpen(o => !o)}
-          className={cn(
-            'w-12 h-12 rounded-full border flex items-center justify-center transition-all shadow-lg',
-            aiOpen
-              ? profile?.ai_personality === 'SAVAGE'
-                ? 'bg-[#FF0055] border-[#FF0055] text-white shadow-[0_0_20px_rgba(255,0,85,0.4)]'
-                : 'bg-[#00E5FF] border-[#00E5FF] text-black shadow-[0_0_20px_rgba(0,229,255,0.4)]'
-              : 'bg-[#050505] border-white/10 text-white/40 hover:border-cyan-400 hover:text-cyan-400'
-          )}
-        >
-          <span className="material-symbols-outlined text-xl">
-            {profile?.ai_personality === 'SAVAGE' ? 'whatshot' : 'cognition'}
-          </span>
-        </button>
-      </div>
     </div>
   )
 }

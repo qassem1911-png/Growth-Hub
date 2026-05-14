@@ -27,7 +27,7 @@ export default function LegacyVaultPage() {
     const { data, error } = await supabase
       .from('cups')
       .select('*, tasks(*)')
-      .eq('user_id', profile.id)
+      .eq('user_id', profile?.id || '')
       .order('created_at', { ascending: false })
 
     if (data) {
@@ -76,7 +76,7 @@ export default function LegacyVaultPage() {
             <span className="material-symbols-outlined text-neon-green text-3xl md:text-4xl">military_tech</span>
             <div className="w-20 h-[1px] bg-gradient-to-l from-transparent to-neon-green opacity-30" />
           </div>
-          <h1 className="text-4xl md:text-7xl font-black font-space tracking-tighter uppercase italic text-black dark:text-white leading-none">
+          <h1 className="text-4xl md:text-7xl font-black font-space tracking-tighter uppercase italic text-black dark:text-white leading-none break-words break-all sm:break-normal">
             {isRTL ? 'خزنة' : 'LEGACY'}<span className="text-neon-green">{isRTL ? ' الإنجازات' : '_VAULT'}</span>
           </h1>
           <p className="text-[10px] md:text-xs font-space text-neon-green tracking-[0.8em] uppercase font-bold opacity-40">
@@ -101,7 +101,7 @@ export default function LegacyVaultPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 items-end justify-items-center">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-8 items-end justify-items-center">
             {archived.map((mission, i) => {
               const color = mission.color || '#39FF14'
 
