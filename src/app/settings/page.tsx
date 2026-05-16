@@ -8,12 +8,14 @@ import { createClient } from '@/lib/supabase'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
+import { useSound } from '@/context/SoundContext'
 
 export default function SettingsPage() {
   const { profile, setProfile, mounted, t, isRTL } = useGrowth()
   const { showToast } = useToast()
   const router = useRouter()
   const supabase = createClient()
+  const { volume, setVolume, isMuted, setIsMuted, playBlip } = useSound()
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -98,13 +100,13 @@ export default function SettingsPage() {
             
             {/* Left Column: Identity */}
             <section className="space-y-8">
-              <h3 className="text-xs md:text-sm font-space font-black text-neon-green tracking-[0.3em] uppercase border-b border-black/5 dark:border-white/5 pb-2">
-                {isRTL ? 'الهوية' : 'IDENTITY_REF'}
+              <h3 className="font-space font-black text-neon-green tracking-[0.3em] uppercase border-b border-black/5 dark:border-white/5 pb-2" style={{ fontSize: isRTL ? '18px' : '14px' }}>
+                {isRTL ? 'بياناتك' : 'IDENTITY_REF'}
               </h3>
               
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[9px] md:text-xs font-space text-black/40 dark:text-white/20 tracking-widest uppercase font-black">{t('fullName')}</label>
+                  <label className={cn("font-space tracking-widest uppercase font-black", isRTL ? "text-[14px] text-white" : "text-[9px] md:text-xs text-black/40 dark:text-white/20")}>{t('fullName')}</label>
                   <input
                     value={formData.full_name}
                     onChange={e => setFormData({ ...formData, full_name: e.target.value })}
@@ -114,25 +116,29 @@ export default function SettingsPage() {
 
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-[9px] md:text-xs font-space text-black/40 dark:text-white/20 tracking-widest uppercase font-black">{t('age')}</label>
-                    <input
-                      type="number"
-                      value={formData.age}
-                      onChange={e => setFormData({ ...formData, age: e.target.value })}
-                      className="w-full bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/10 p-4 font-space text-base md:text-lg font-black text-black dark:text-white outline-none focus:border-neon-green/50 transition-all"
-                    />
+                    <div className="space-y-2">
+                      <label className={cn("font-space tracking-widest uppercase font-black", isRTL ? "text-[14px] text-white" : "text-[9px] md:text-xs text-black/40 dark:text-white/20")}>{t('age')}</label>
+                      <input
+                        type="number"
+                        value={formData.age}
+                        onChange={e => setFormData({ ...formData, age: e.target.value })}
+                        className="w-full bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/10 p-4 font-space text-base md:text-lg font-black text-black dark:text-white outline-none focus:border-neon-green/50 transition-all"
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[9px] md:text-xs font-space text-black/40 dark:text-white/20 tracking-widest uppercase font-black">{t('gender')}</label>
-                    <select
-                      value={formData.gender || ''}
-                      onChange={e => setFormData({ ...formData, gender: e.target.value })}
-                      className="w-full bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/10 p-4 font-space text-base md:text-lg font-black text-black dark:text-white outline-none focus:border-neon-green/50 transition-all appearance-none"
-                    >
-                      <option value="" disabled>{isRTL ? 'اختر' : 'SELECT'}</option>
-                      <option value="Male">{t('male')}</option>
-                      <option value="Female">{t('female')}</option>
-                    </select>
+                    <div className="space-y-2">
+                      <label className={cn("font-space tracking-widest uppercase font-black", isRTL ? "text-[14px] text-white" : "text-[9px] md:text-xs text-black/40 dark:text-white/20")}>{t('gender')}</label>
+                      <select
+                        value={formData.gender || ''}
+                        onChange={e => setFormData({ ...formData, gender: e.target.value })}
+                        className="w-full bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/10 p-4 font-space text-base md:text-lg font-black text-black dark:text-white outline-none focus:border-neon-green/50 transition-all appearance-none"
+                      >
+                        <option value="" disabled>{isRTL ? 'اختر' : 'SELECT'}</option>
+                        <option value="Male">{t('male')}</option>
+                        <option value="Female">{t('female')}</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
 
@@ -161,9 +167,79 @@ export default function SettingsPage() {
               </div>
             </section>
 
+            {/* Middle Column: System Audio */}
+            <section className="space-y-8 md:col-span-2 lg:col-span-1">
+               <h3 className="font-space font-black text-neon-green tracking-[0.3em] uppercase border-b border-black/5 dark:border-white/5 pb-2" style={{ fontSize: isRTL ? '18px' : '14px' }}>
+                 {isRTL ? 'الصوت' : 'SYSTEM AUDIO'}
+               </h3>
+               
+               <div className="space-y-8 p-6 bg-black/5 dark:bg-white/[0.02] border border-black/10 dark:border-white/10 rounded-sm">
+                  {/* Master Volume */}
+                  <div className="space-y-4">
+                     <div className="flex justify-between items-end">
+                       <label className="text-[10px] font-space text-black/60 dark:text-white/40 tracking-widest uppercase font-black">
+                         {isRTL ? 'مستوى الصوت' : 'MASTER_VOLUME'}
+                       </label>
+                       <span className="text-sm font-space font-black text-neon-green italic">
+                         {Math.round(volume * 100)}%
+                       </span>
+                     </div>
+                     <input 
+                       type="range"
+                       min="0"
+                       max="1"
+                       step="0.05"
+                       value={volume}
+                       onChange={(e) => {
+                          setVolume(parseFloat(e.target.value))
+                       }}
+                       onMouseUp={playBlip}
+                       onTouchEnd={playBlip}
+                       disabled={isMuted}
+                       className={cn(
+                          "w-full h-1 bg-black/20 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-neon-green",
+                          isMuted && "opacity-50 grayscale"
+                       )}
+                     />
+                  </div>
+
+                  {/* Mute Toggle */}
+                  <div className="flex items-center justify-between border-t border-black/10 dark:border-white/10 pt-6">
+                     <div className="space-y-1">
+                        <p className="text-[10px] font-space text-black/60 dark:text-white/40 tracking-widest uppercase font-black">
+                          {isRTL ? 'كتم الصوت' : 'MUTE_ALL'}
+                        </p>
+                        <p className="text-[8px] font-space text-black/40 dark:text-white/20 tracking-[0.2em] uppercase font-bold">
+                          {isRTL ? 'إلغاء التنبيهات الصوتية' : 'DISABLE TACTICAL SFX'}
+                        </p>
+                     </div>
+                     <button
+                       onClick={() => {
+                          setIsMuted(!isMuted)
+                          if (isMuted) playBlip() // play when unmuting
+                       }}
+                       className={cn(
+                          "w-12 h-6 rounded-full transition-all relative border flex items-center px-1",
+                          isMuted 
+                            ? "bg-red-500/20 border-red-500/50 justify-end" 
+                            : "bg-neon-green/20 border-neon-green/50 justify-start"
+                       )}
+                     >
+                        <motion.div 
+                          layout
+                          className={cn(
+                             "w-4 h-4 rounded-full shadow-lg",
+                             isMuted ? "bg-red-500" : "bg-neon-green"
+                          )}
+                        />
+                     </button>
+                  </div>
+               </div>
+            </section>
+
             {/* Right Column: AI Coach */}
-            <section className="space-y-8">
-              <h3 className="text-xs md:text-sm font-space font-black text-neon-green tracking-[0.3em] uppercase border-b border-black/5 dark:border-white/5 pb-2">
+            <section className="space-y-8 md:col-span-2 lg:col-span-1">
+              <h3 className="font-space font-black text-neon-green tracking-[0.3em] uppercase border-b border-black/5 dark:border-white/5 pb-2" style={{ fontSize: isRTL ? '18px' : '14px' }}>
                 {isRTL ? 'المدرب الذكي' : 'AI COACH'}
               </h3>
 

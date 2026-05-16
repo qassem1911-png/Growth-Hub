@@ -95,13 +95,16 @@ export default function Dashboard() {
               {/* FOCUS CAPACITY — HERO LABEL */}
               <div className="flex justify-between items-end">
                 <span
-                  className="text-3xl md:text-4xl font-space font-black tracking-tight uppercase"
+                  className={cn(
+                    "font-space font-black tracking-tight uppercase",
+                    isRTL ? "text-[20px] text-[#FF0055]" : "text-3xl md:text-4xl"
+                  )}
                   style={{
-                    color: isFull ? '#FF0055' : currentTheme.color,
-                    textShadow: `0 0 20px ${isFull ? '#FF005588' : currentTheme.color + '88'}, 0 0 40px ${isFull ? '#FF005544' : currentTheme.color + '44'}`,
+                    color: isRTL ? '#FF0055' : (isFull ? '#FF0055' : currentTheme.color),
+                    textShadow: `0 0 20px ${isFull || isRTL ? '#FF005588' : currentTheme.color + '88'}, 0 0 40px ${isFull || isRTL ? '#FF005544' : currentTheme.color + '44'}`,
                   }}
                 >
-                  {isRTL ? 'سعة المحطة' : 'FOCUS_CAPACITY'}
+                  {isRTL ? 'سعة التركيز' : 'FOCUS_CAPACITY'}
                 </span>
                 <span
                   className="text-2xl md:text-3xl font-space font-black tracking-tight"
@@ -113,21 +116,24 @@ export default function Dashboard() {
                   {usedSlots.toFixed(1).replace('.0', '')}/9
                 </span>
               </div>
-              {/* Segmented 9-slot bar */}
-              <div className="flex gap-[3px] h-[6px]">
+              {/* Segmented 9-slot bar - Fuchsia Energy Tank */}
+              <div 
+                className="flex gap-[4px] h-[16px] p-[2px] rounded-sm border border-[#FF00FF]/40 bg-[#050505] overflow-hidden"
+                style={{
+                  boxShadow: '0 0 15px rgba(255, 0, 255, 0.3), inset 0 0 10px rgba(255, 0, 255, 0.1)',
+                }}
+              >
                 {Array.from({ length: 9 }).map((_, i) => (
                   <div
                     key={i}
-                    className="flex-1 rounded-full transition-all duration-700"
+                    className="flex-1 rounded-[1px] transition-all duration-700"
                     style={{
                       backgroundColor: i < usedSlots
-                        ? (isFull ? '#FF0055' : currentTheme.color)
-                        : `${currentTheme.color}18`,
-                      boxShadow: i < usedSlots && !isFull
-                        ? `0 0 8px ${currentTheme.color}`
-                        : i < usedSlots && isFull
-                          ? '0 0 8px #FF0055'
-                          : 'none',
+                        ? '#FF00FF'
+                        : 'rgba(255, 0, 255, 0.05)',
+                      boxShadow: i < usedSlots 
+                        ? '0 0 10px #FF00FF, inset 0 0 5px rgba(255,255,255,0.5)'
+                        : 'none',
                     }}
                   />
                 ))}
@@ -171,7 +177,7 @@ export default function Dashboard() {
                       onClick={() => router.push(`/missions/${mission.id}`)}
                       className={cn(
                         'group relative cursor-pointer rounded-sm border transition-all duration-300 overflow-hidden',
-                        'bg-white dark:bg-[#090909] w-full',
+                        'bg-white/5 dark:bg-black/20 backdrop-blur-md w-full',
                         'min-h-[240px] max-h-[360px]',
                         'p-5 md:p-6 flex flex-col',
                         isInRedZone
@@ -189,12 +195,13 @@ export default function Dashboard() {
                       <div className="w-full text-center space-y-1 mb-auto">
                         <p
                           className={cn(
-                            'text-[8px] font-space font-black tracking-[0.4em] uppercase',
-                            isInRedZone ? 'text-red-500' : 'text-black/30 dark:text-white/20'
+                            'font-space font-black tracking-[0.4em] uppercase',
+                            isRTL ? 'text-[14px] text-white' : 'text-[8px] text-black/30 dark:text-white/20',
+                            isInRedZone ? 'text-red-500' : ''
                           )}
-                          style={(!isInRedZone && customColor) ? { color: `${customColor}99` } : {}}
+                          style={(!isInRedZone && !isRTL && customColor) ? { color: `${customColor}99` } : {}}
                         >
-                          {isInRedZone ? '⚠ RED_ZONE' : 'ACTIVE_GOAL'}
+                          {isInRedZone ? (isRTL ? 'تنبيه خطير' : '⚠ RED_ZONE') : (isRTL ? 'هدف نشط' : 'ACTIVE_GOAL')}
                         </p>
                         <h2 className="text-sm md:text-base font-space font-black text-black dark:text-white uppercase tracking-wide truncate leading-tight italic">
                           {mission.title}

@@ -145,32 +145,24 @@ export const TRANSLATIONS = {
     deploy: 'DEPLOY',
     missionColor: 'MISSION COLOR',
     missionScale: 'MISSION SCALE',
-    // AI Templates - GENTLE
-    ai_ahead_gentle: "Great job! You're ahead on {task}. Keep it up.",
-    ai_red_gentle: "Reminder: {task} needs attention. You're falling behind.",
-    ai_default_gentle: "System stable. How are we doing today, {name}?",
-    // AI Templates - SAVAGE
-    ai_ahead_savage: "Efficiency detected, {name}. {task} is under control. Next target.",
-    ai_red_savage: "CRITICAL: {task} is overdue. Stop wasting time and finish it.",
-    ai_default_savage: "Monitoring... Stay focused, {name}. The clock is ticking.",
   },
   ar: {
     dashboard: 'الرئيسية',
-    mission: 'التاسكات',
+    mission: 'المهام الشغالة',
     brain: 'الذاكرة',
     achievements: 'الإنجازات',
     vault: 'الخزنة',
-    streak: 'سلسلة الإنجاز',
-    exit: 'تسجيل الخروج',
+    streak: 'سجل الأيام',
+    exit: 'خروج',
     sync: 'جاري المزامنة',
-    operator: 'المستخدم',
+    operator: 'أوبريتور',
     status: 'متصل',
-    createMission: 'إنشاء مهمة',
+    createMission: 'ابدأ مهمة جديدة',
     task: 'مهمة فرعية',
-    showOnDashboard: 'عرض على الرئيسية',
+    showOnDashboard: 'عرض في الرئيسية',
     save: 'حفظ',
     cancel: 'إلغاء',
-    delete: 'حذف',
+    delete: 'احذف',
     edit: 'تعديل',
     deadline: 'الموعد النهائي',
     start_date: 'تاريخ البدء',
@@ -180,32 +172,24 @@ export const TRANSLATIONS = {
     on_track: 'على المسار',
     late: 'متأخر',
     ahead: 'متقدم',
-    addTask: 'إضافة مهمة فرعية',
+    addTask: 'ضيف مهمة فرعية',
     settings: 'الإعدادات',
     gender: 'الجنس',
     male: 'ذكر',
     female: 'أنثى',
-    age: 'العمر',
+    age: 'السن',
     fullName: 'الاسم بالكامل',
     aiName: 'اسم المدرب',
-    aiPersonality: 'شخصية الذكاء الاصطناعي',
+    aiPersonality: 'شخصية المدرب',
     gentle: 'هادئ',
     savage: 'شرس',
-    logout: 'تسجيل الخروج',
-    noTasks: 'لم يتم العثور على مهام. أضف مهمة أدناه.',
-    tapToEnter: 'انقر لدخول المهمة',
+    logout: 'خروج',
+    noTasks: 'مفيش مهام مضافة.. ضيف واحدة دلوقتي.',
+    tapToEnter: 'انقر للدخول',
     purge: 'مسح',
-    deploy: 'إطلاق',
+    deploy: 'ابدأ التنفيذ',
     missionColor: 'لون المهمة',
     missionScale: 'حجم المهمة',
-    // AI Templates - GENTLE
-    ai_ahead_gentle: "عمل رائع! أنت متقدم في {task}. استمر على هذا المنوال.",
-    ai_red_gentle: "تذكير: {task} تحتاج إلى اهتمام. أنت متأخر قليلاً.",
-    ai_default_gentle: "النظام مستقر. كيف حالك اليوم يا {name}؟",
-    // AI Templates - SAVAGE
-    ai_ahead_savage: "تم الكشف عن الكفاءة يا {name}. {task} تحت السيطرة. الهدف التالي.",
-    ai_red_savage: "حرج: {task} متأخرة. توقف عن إضاعة الوقت وأنهِها.",
-    ai_default_savage: "جاري المراقبة... ابقَ مركزاً يا {name}. الوقت يمر.",
   }
 }
 
@@ -221,7 +205,8 @@ interface GrowthContextType {
   mounted: boolean
   currentTheme: typeof THEME_PACKAGES['SILVER']
   addXp: (amount: number) => Promise<void>
-  getAiMessage: (type: 'AHEAD' | 'RED' | 'DEFAULT', taskName?: string) => string
+  lastAiMessage: string
+  setLastAiMessage: (msg: string) => void
   changeTheme: (themeId: string) => Promise<void>
   calculateAccountability: (mission: Mission) => {
     progress: number
@@ -238,6 +223,7 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
   const [tutorialActive, setTutorialActive] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [lastAiMessage, setLastAiMessage] = useState('SYSTEM_ONLINE // STANDING_BY')
   const supabase = createClient()
   const router = useRouter()
 
@@ -384,20 +370,8 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
       currentTheme,
       addXp,
       changeTheme,
-      getAiMessage: (type: 'AHEAD' | 'RED' | 'DEFAULT', taskName?: string) => {
-        const lang = profile?.language || 'en'
-        const personality = (profile?.ai_personality || 'GENTLE').toLowerCase()
-        const name = profile?.full_name?.split(' ')[0] || t('operator')
-        
-        let typeKey = 'default'
-        if (type === 'AHEAD') typeKey = 'ahead'
-        if (type === 'RED') typeKey = 'red'
-
-        const key = `ai_${typeKey}_${personality}`
-        // @ts-ignore
-        const template = (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || (TRANSLATIONS['en'] && TRANSLATIONS['en'][key]) || ""
-        return template.replace('{task}', taskName || 'MISSION').replace('{name}', name)
-      },
+      lastAiMessage,
+      setLastAiMessage,
       calculateAccountability: (mission: Mission) => {
         const tasks = mission.tasks || []
         const totalWeight = tasks.reduce((acc, t) => acc + (Number(t.weight) || 1), 0)

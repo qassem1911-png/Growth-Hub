@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk, Tajawal } from "next/font/google";
 import "./globals.css";
 import { GrowthProvider } from "@/context/GrowthContext";
+import { SoundProvider } from "@/context/SoundContext";
 import { ToastProvider } from "@/components/ui/Toast";
+import { PomodoroProvider } from "@/context/PomodoroContext";
+import NeuralMesh from "@/components/ui/NeuralMesh";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space" });
@@ -31,9 +34,14 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${spaceGrotesk.variable} ${tajawal.variable} antialiased text-lg md:text-xl`}>
         <ToastProvider>
-          <GrowthProvider>
-            {children}
-          </GrowthProvider>
+          <SoundProvider>
+            <GrowthProvider>
+              <PomodoroProvider>
+                <NeuralMesh />
+                {children}
+              </PomodoroProvider>
+            </GrowthProvider>
+          </SoundProvider>
         </ToastProvider>
       </body>
     </html>

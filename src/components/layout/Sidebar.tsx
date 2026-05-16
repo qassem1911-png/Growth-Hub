@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { useGrowth, RANK_THRESHOLDS } from '@/context/GrowthContext'
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
+import { useSound } from '@/context/SoundContext'
 
 export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
   const pathname = usePathname()
@@ -14,6 +15,7 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
   const { profile, t, currentTheme } = useGrowth()
   const [mobileOpen, setMobileOpen] = useState(false)
   const supabase = createClient()
+  const { playBlip } = useSound()
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -22,8 +24,8 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
 
   const MENU_ITEMS = [
     { icon: 'dashboard', label: isRTL ? 'الرئيسية' : "Dashboard", href: '/', shortcut: '01', exact: true },
-    { icon: 'deployed_code', label: isRTL ? 'التاسكات' : 'Missions', href: '/missions', shortcut: '02', exact: false },
-    { icon: 'psychology', label: isRTL ? 'الذاكرة' : 'Notes', href: '/notes', shortcut: '03', exact: false },
+    { icon: 'deployed_code', label: isRTL ? 'المهام الشغالة' : 'Missions', href: '/missions', shortcut: '02', exact: false },
+    { icon: 'psychology', label: isRTL ? 'الملاحظات' : 'Notes', href: '/notes', shortcut: '03', exact: false },
     { icon: 'inventory_2', label: isRTL ? 'الإنجازات' : 'Achievements', href: '/achievements', shortcut: '04', exact: false },
     { icon: 'military_tech', label: isRTL ? 'الخزنة' : 'Vault', href: '/vault', shortcut: '05', exact: false },
   ]
@@ -38,6 +40,7 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={playBlip}
               className={cn(
                 "flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors min-h-[44px] min-w-[44px]",
                 isActive ? "" : "text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white/80"
@@ -137,8 +140,9 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
             <Link
               key={item.href}
               href={item.href}
+              onClick={playBlip}
               className={cn(
-                "flex items-center gap-5 p-4 px-10 rounded-sm transition-all duration-300 relative group overflow-hidden min-h-[44px]",
+                "flex items-center p-3 px-8 rounded-sm transition-all duration-300 relative group overflow-hidden min-h-[44px]",
                 isActive 
                   ? "bg-black/5 dark:bg-white/5 text-black dark:text-white border border-black/10 dark:border-white/10" 
                   : "text-black/40 hover:text-black dark:text-white/30 dark:hover:text-white/80 border border-transparent hover:border-black/5 dark:hover:border-white/5 hover:bg-black/[0.02] dark:hover:bg-white/[0.02]"
@@ -148,24 +152,29 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
                 <motion.div 
                   layoutId="active-nav"
                   className={cn(
-                    "absolute w-1.5 h-1/2 shadow-[0_0_20px_currentcolor]",
+                    "absolute w-1 h-6 shadow-[0_0_20px_currentcolor]",
                     "inset-inline-start-0 rounded-full"
                   )}
                   style={{ backgroundColor: currentTheme.color, color: currentTheme.color }}
                 />
               )}
               
-              <span className={cn(
-                "material-symbols-outlined transition-all duration-300 text-xl",
-                isActive ? "" : "group-hover:text-neon-green/60"
-              )}
-              style={{ color: isActive ? currentTheme.color : undefined }}
+              <motion.span 
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: Math.random() * 2 }}
+                className={cn(
+                  "material-symbols-outlined transition-all duration-300 text-lg",
+                  isRTL ? "ml-4" : "mr-4",
+                  isActive ? "" : "group-hover:text-neon-green/60"
+                )}
+                style={{ color: isActive ? currentTheme.color : undefined }}
               >
                 {item.icon}
-              </span>
+              </motion.span>
               
               <span className={cn(
-                "font-space text-sm tracking-[0.2em] font-black flex-grow",
+                "font-space tracking-[0.2em] font-black flex-grow",
+                isRTL ? "text-[15px]" : "text-[11px]",
                 isActive ? "" : ""
               )}
               style={{ color: isActive ? currentTheme.color : undefined }}
@@ -173,7 +182,7 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
                 {item.label}
               </span>
 
-              <span className="text-[10px] font-space text-black/10 dark:text-white/10 group-hover:text-neon-green/40 font-black">
+              <span className="text-[9px] font-space text-black/10 dark:text-white/10 group-hover:text-neon-green/40 font-black">
                 {item.shortcut}
               </span>
             </Link>
@@ -185,13 +194,14 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
       <div className="p-10 mt-auto space-y-4">
         <Link 
           href="/settings" 
+          onClick={playBlip}
           className="w-full flex items-center justify-start gap-4 p-4 glass-panel border-black/5 dark:border-white/5 text-black/30 dark:text-white/30 hover:text-neon-green hover:border-neon-green/20 hover:bg-neon-green/5 rounded-sm transition-all font-space text-[11px] tracking-[0.4em] font-black min-h-[44px]"
         >
           <span className="material-symbols-outlined text-xl">settings</span>
           {isRTL ? 'الإعدادات' : 'Settings'}
         </Link>
         <button 
-          onClick={() => { handleLogout() }}
+          onClick={() => { playBlip(); handleLogout() }}
           className="w-full flex items-center justify-start gap-4 p-4 border border-black/5 dark:border-white/5 bg-black/5 dark:bg-white/5 text-black/40 dark:text-white/20 hover:text-red-500 hover:border-red-500/20 hover:bg-red-500/5 rounded-sm transition-all font-space text-[11px] tracking-[0.4em] font-black min-h-[44px]"
         >
           <span className="material-symbols-outlined text-xl">logout</span>

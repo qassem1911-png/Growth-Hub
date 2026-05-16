@@ -48,7 +48,7 @@ export default function NotesPage() {
   }
 
   const deleteNote = async (id: string) => {
-    if (confirm('PURGE CORE LOG?')) {
+    if (confirm(isRTL ? 'امسح السجل ده؟' : 'PURGE CORE LOG?')) {
       setNotes(prev => prev.filter(n => n.id !== id))
       await supabase.from('notes').delete().eq('id', id)
     }
@@ -100,18 +100,18 @@ export default function NotesPage() {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
           <div className="space-y-2">
             <h1 className="text-4xl md:text-6xl font-black font-space tracking-tighter uppercase italic text-black dark:text-white leading-none">
-              BRAIN
+              {isRTL ? 'العقل' : 'BRAIN'}
             </h1>
-            <p className="text-[10px] font-space text-neon-green tracking-[0.8em] uppercase font-bold opacity-40">
-              CORE_MEMORY // {notes.length}_RECORDS_STABLE
+            <p className="text-[14px] font-space text-white tracking-[0.4em] uppercase font-bold">
+              {isRTL ? 'السجلات الأساسية' : 'CORE_MEMORY'} // {notes.length} {isRTL ? 'سجل محفوظ' : 'RECORDS_STABLE'}
             </p>
           </div>
-          <button
-            onClick={() => setIsCreating(true)}
-            className="w-full md:w-auto px-10 py-4 bg-neon-green/10 border border-neon-green text-neon-green font-space font-black uppercase tracking-widest hover:bg-neon-green hover:text-black transition-all shadow-[0_0_20px_rgba(57,255,20,0.15)]"
-          >
-            NEW_LOG +
-          </button>
+            <button
+              onClick={() => setIsCreating(true)}
+              className="w-full md:w-auto px-10 py-4 bg-neon-green/10 border border-neon-green text-neon-green font-space font-black uppercase tracking-widest hover:bg-neon-green hover:text-black transition-all shadow-[0_0_20px_rgba(57,255,20,0.15)]"
+            >
+              {isRTL ? 'سجل جديد +' : 'NEW_LOG +'}
+            </button>
         </header>
 
         {/* Create Panel */}
@@ -128,7 +128,7 @@ export default function NotesPage() {
                 value={newContent}
                 onChange={(e) => setNewContent(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter' && e.metaKey) createNote() }}
-                placeholder="INPUT_CORE_DATA..."
+                placeholder={isRTL ? 'اكتب اللي في دماغك هنا...' : 'INPUT_CORE_DATA...'}
                 className="w-full bg-transparent border-none text-xl md:text-2xl font-space font-black text-black dark:text-white italic outline-none min-h-[100px] placeholder:text-black/30 dark:placeholder:text-white/10 resize-none"
                 dir="auto"
               />
@@ -159,8 +159,8 @@ export default function NotesPage() {
                   ⌘+ENTER TO UPLOAD
                 </div>
                 <div className="flex gap-6">
-                  <button onClick={() => { setIsCreating(false); setNewContent(''); setNewMissionId('') }} className="text-black/40 dark:text-white/20 font-space uppercase text-[10px] tracking-widest hover:text-black dark:hover:text-white transition-all">ABORT</button>
-                  <button onClick={createNote} className="px-8 py-2 bg-neon-green text-black font-space font-black uppercase text-xs tracking-widest">UPLOAD</button>
+                  <button onClick={() => { setIsCreating(false); setNewContent(''); setNewMissionId('') }} className="text-black/40 dark:text-white/20 font-space uppercase text-[10px] tracking-widest hover:text-black dark:hover:text-white transition-all">{isRTL ? 'إلغاء' : 'ABORT'}</button>
+                  <button onClick={createNote} className="px-8 py-2 bg-neon-green text-black font-space font-black uppercase text-xs tracking-widest">{isRTL ? 'حفظ' : 'UPLOAD'}</button>
                 </div>
               </div>
             </motion.div>

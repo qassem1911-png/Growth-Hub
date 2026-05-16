@@ -79,7 +79,7 @@ export default function VaultPage() {
           {/* Header */}
           <header className="border-b border-black/10 dark:border-white/10 pb-4 md:pb-6 w-full max-w-full">
             <h1 className="text-2xl md:text-6xl font-black font-space tracking-tight text-black dark:text-white uppercase italic break-words">
-              GLOBAL<span className="text-neon-green">_RANKING_LADDER</span>
+              {isRTL ? 'قائمة الرتب' : 'GLOBAL'}<span className="text-neon-green">{isRTL ? ' العالمية' : '_RANKING_LADDER'}</span>
             </h1>
             <p className="text-[10px] md:text-xs font-space text-black/40 dark:text-white/30 tracking-[0.4em] md:tracking-[0.6em] uppercase font-black mt-2">
               {isRTL ? 'نظام تصنيف العمليات العالمي' : 'ELITE OPERATOR PROGRESSION'}
@@ -91,7 +91,7 @@ export default function VaultPage() {
             {RANKS_DATA.map((rank) => {
               const status = getRankStatus(rank.threshold, rank.themeId)
               const isLocked = status === 'LOCKED'
-              const theme = THEME_PACKAGES[rank.themeId]
+              const theme = THEME_PACKAGES[rank.themeId as keyof typeof THEME_PACKAGES]
 
               return (
                 <motion.div
@@ -106,7 +106,12 @@ export default function VaultPage() {
                   )}
                 >
                   <h2 className="text-4xl md:text-5xl font-black font-space mb-2 uppercase italic tracking-tighter">
-                    {rank.name}
+                    {isRTL ? (
+                      rank.id === 'SILVER' ? 'سيلفر' :
+                      rank.id === 'PLATINUM' ? 'بلاتينوم' :
+                      rank.id === 'CROWN' ? 'كراون' :
+                      rank.id === 'ACE' ? 'ايس' : 'كونكر'
+                    ) : rank.name}
                   </h2>
                   
                   {/* Status Badge */}
@@ -114,7 +119,10 @@ export default function VaultPage() {
                     "px-6 py-1.5 rounded-sm font-space text-xs font-black tracking-widest mb-10 border",
                     status === 'EQUIPPED' ? "bg-white text-black border-white" : "border-current opacity-60"
                   )}>
-                    {status}
+                    {isRTL ? (
+                      status === 'EQUIPPED' ? 'متفعّل' :
+                      status === 'AVAILABLE' ? 'متاح' : 'مقفول'
+                    ) : status}
                   </div>
 
                   {/* EnergyCell Visualization */}
@@ -130,23 +138,23 @@ export default function VaultPage() {
                   {/* XP & Perks */}
                   <div className="w-full space-y-6 text-center border-t border-current/10 pt-8 mt-auto">
                     <div className="space-y-1">
-                      <p className="text-xs font-space opacity-50 uppercase tracking-[0.3em] font-black">XP REQUIRED</p>
+                      <p className={cn("font-space uppercase tracking-[0.3em] font-black", isRTL ? "text-[14px] text-white" : "text-xs opacity-50")}>{isRTL ? 'الخبرة المطلوبة' : 'XP REQUIRED'}</p>
                       <p className="text-3xl font-black font-space tracking-tight">
                         {rank.threshold.toLocaleString()} <span className="text-lg opacity-50">XP</span>
                       </p>
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-xs font-space opacity-50 uppercase tracking-[0.3em] font-black text-neon-green">ACTIVE PERK</p>
+                      <p className={cn("font-space uppercase tracking-[0.3em] font-black text-neon-green", isRTL ? "text-[14px]" : "text-xs opacity-50")}>{isRTL ? 'الميزة النشطة' : 'ACTIVE_PERK'}</p>
                       <p className="text-base font-bold font-space uppercase tracking-widest">{rank.perk}</p>
                     </div>
 
                     {status === 'AVAILABLE' && (
                       <button 
                         onClick={() => changeTheme(rank.themeId)}
-                        className="w-full bg-transparent border-2 border-current text-current py-3 font-space font-black text-sm uppercase tracking-widest hover:bg-current hover:text-black transition-all rounded-sm mt-6"
+                        className="w-full bg-transparent border-2 border-current text-current py-3 font-space font-black text-[12px] uppercase tracking-widest hover:bg-current hover:text-black transition-all rounded-sm mt-6"
                       >
-                        EQUIP PROTOCOL
+                        {isRTL ? 'استخدم البروتوكول' : 'EQUIP PROTOCOL'}
                       </button>
                     )}
                   </div>
@@ -155,9 +163,9 @@ export default function VaultPage() {
                   {isLocked && (
                     <div className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md rounded-lg flex flex-col items-center justify-center p-8 text-center border border-white/5 transition-all">
                        <span className="material-symbols-outlined text-white/50 text-5xl mb-4">lock</span>
-                       <p className="text-white/50 font-black font-space text-3xl tracking-tighter uppercase italic">LOCKED</p>
-                       <p className="text-white/40 font-space text-xs tracking-[0.2em] font-black mt-4 uppercase">
-                         {rank.threshold - xp} XP REQUIRED
+                       <p className="text-white/50 font-black font-space text-3xl tracking-tighter uppercase italic">{isRTL ? 'مقفول' : 'LOCKED'}</p>
+                       <p className="text-white font-space text-[14px] tracking-[0.2em] font-black mt-4 uppercase">
+                         {rank.threshold - xp} {isRTL ? 'خبرة مطلوبة' : 'XP REQUIRED'}
                        </p>
                     </div>
                   )}

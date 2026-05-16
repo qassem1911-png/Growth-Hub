@@ -7,8 +7,14 @@ import { cn } from '@/lib/utils'
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase'
 import { usePathname, useRouter } from 'next/navigation'
+import { useSound } from '@/context/SoundContext'
 
 import OnboardingTour from '@/components/ui/OnboardingTour'
+import { useInbox } from '@/hooks/useInbox'
+import InboxDropdown from '@/components/ui/InboxDropdown'
+import ReportModal from '@/components/ui/ReportModal'
+import PomodoroHUD from '@/components/ui/PomodoroHUD'
+import CoachPanel from '@/components/ui/CoachPanel'
 
 interface ShellProps {
   children: React.ReactNode
@@ -18,11 +24,18 @@ interface ShellProps {
 
 export default function Shell({ children, syncedMissions = [], onMissionsRefresh }: ShellProps) {
   // 1. ALL HOOKS AT THE TOP
-  const { isRTL, profile, calculateAccountability, getAiMessage, t, currentTheme } = useGrowth()
+  const { isRTL, profile, calculateAccountability, lastAiMessage, t, currentTheme } = useGrowth()
   const pathname = usePathname()
   const router = useRouter()
+  const { playNeuralLink, playBlip } = useSound()
   const [aiOpen, setAiOpen] = useState(false)
+  const [coachPanelOpen, setCoachPanelOpen] = useState(false)
+  const [inboxOpen, setInboxOpen] = useState(false)
+  const [selectedReport, setSelectedReport] = useState<any>(null)
   const [streak, setStreak] = useState(0)
+
+  const { reports, markAsRead } = useInbox()
+  const unreadCount = useMemo(() => reports.filter(r => !r.is_read).length, [reports])
 
   useEffect(() => {
     async function calculateStreak() {
@@ -73,6 +86,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
   useEffect(() => {
     if (hasRedZoneMission && !aiOpen) {
       setAiOpen(true)
+      playNeuralLink()
     }
   }, [hasRedZoneMission])
 
@@ -85,20 +99,17 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
     return Math.round(totalPct / syncedMissions.length)
   }, [syncedMissions, calculateAccountability])
 
-  const aiMessage = useMemo(() => {
-    const redMission = (syncedMissions || []).find(m => calculateAccountability(m).isInRedZone)
-    if (redMission) return getAiMessage('RED', redMission.title)
-
-    const aheadMission = (syncedMissions || []).find(m => calculateAccountability(m).isAheadOfSchedule)
-    if (aheadMission) return getAiMessage('AHEAD', aheadMission.title)
-
-    return getAiMessage('DEFAULT')
-  }, [syncedMissions, calculateAccountability, getAiMessage])
+  // Show bubble when lastAiMessage changes
+  useEffect(() => {
+    if (lastAiMessage && lastAiMessage !== 'SYSTEM_ONLINE // STANDING_BY') {
+      setAiOpen(true)
+    }
+  }, [lastAiMessage])
 
   return (
     <div
       className={cn(
-        'min-h-screen bg-background text-foreground flex relative transition-colors duration-500'
+        'min-h-screen bg-transparent text-foreground flex relative transition-colors duration-500'
       )}
       style={{ 
         ['--selection-bg' as any]: `${currentTheme.color}33`, 
@@ -133,8 +144,11 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
               bolt
             </motion.span>
             <span
-              className="text-[11px] md:text-sm font-space font-black tracking-[0.2em] uppercase truncate"
-              style={{ color: currentTheme.color }}
+              className={cn(
+                "font-space font-black tracking-[0.2em] uppercase truncate",
+                isRTL ? "text-[16px] text-white" : "text-[11px] md:text-sm"
+              )}
+              style={{ color: isRTL ? undefined : currentTheme.color }}
             >
               {isRTL ? 'مركز النمو' : 'GROWTH_HUB'}
             </span>
@@ -162,10 +176,13 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
           {/* CENTER: AI Coach */}
           <div className="flex items-center justify-center flex-1 relative">
             <button
-              onClick={() => setAiOpen(o => !o)}
+              onClick={() => {
+                setCoachPanelOpen(true);
+                playNeuralLink();
+              }}
               className={cn(
                 "flex items-center gap-2 px-3 md:px-5 py-1.5 md:py-2 rounded-full transition-all duration-300 border shadow-lg group relative",
-                aiOpen
+                coachPanelOpen
                   ? profile?.ai_personality === 'SAVAGE'
                     ? 'bg-[#FF0055] border-[#FF0055] text-white shadow-[0_0_20px_rgba(255,0,85,0.4)]'
                     : 'bg-[#00E5FF] border-[#00E5FF] text-black shadow-[0_0_20px_rgba(0,229,255,0.4)]'
@@ -173,13 +190,55 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
               )}
             >
               <div className="absolute inset-0 rounded-full animate-pulse opacity-20" style={{ backgroundColor: profile?.ai_personality === 'SAVAGE' ? '#FF0055' : '#00E5FF' }}></div>
-              <span className="material-symbols-outlined text-[16px] md:text-[18px] relative z-10 group-hover:animate-spin-slow">
+              <motion.span 
+                animate={{ opacity: [1, 1, 0.2, 1, 1], x: [0, 0, -2, 2, 0] }}
+                transition={{ duration: 12, repeat: Infinity, ease: 'linear', times: [0, 0.9, 0.92, 0.95, 1] }}
+                className="material-symbols-outlined text-[16px] md:text-[18px] relative z-10 group-hover:animate-spin-slow"
+              >
                 {profile?.ai_personality === 'SAVAGE' ? 'whatshot' : 'cognition'}
-              </span>
+              </motion.span>
               <span className="text-[9px] md:text-[11px] font-space tracking-widest uppercase font-black relative z-10 hidden sm:block">
                 {profile?.ai_name || (isRTL ? 'المدرب' : 'COACH')}: {profile?.ai_personality === 'SAVAGE' ? (isRTL ? 'شرس' : 'SAVAGE') : (isRTL ? 'هادئ' : 'GENTLE')}
               </span>
             </button>
+
+            {/* INBOX BUTTON */}
+            <div className="relative ml-2">
+              <button
+                onClick={() => {
+                  setInboxOpen(!inboxOpen)
+                  setAiOpen(false)
+                  playBlip()
+                }}
+                className={cn(
+                  "flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-full transition-all border relative",
+                  inboxOpen 
+                    ? "bg-white/10 border-white/40 text-white shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
+                    : "bg-black/5 dark:bg-black/40 border-black/10 dark:border-white/10 text-black/60 dark:text-white/60 hover:border-white/30 hover:text-white"
+                )}
+              >
+                <span className="material-symbols-outlined text-[18px] md:text-[20px]">notifications</span>
+                {unreadCount > 0 && (
+                  <span 
+                    className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF0055] text-white text-[8px] font-black flex items-center justify-center rounded-full shadow-[0_0_10px_#FF0055]"
+                  >
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              <InboxDropdown 
+                isOpen={inboxOpen}
+                reports={reports}
+                onClose={() => setInboxOpen(false)}
+                onRead={(report) => {
+                  markAsRead(report.id)
+                  setSelectedReport(report)
+                  setInboxOpen(false)
+                }}
+                themeColor={currentTheme.color}
+              />
+            </div>
 
             {/* AI Coach Dropdown */}
             <AnimatePresence>
@@ -207,7 +266,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
                     </button>
                   </div>
                   <p className="text-[13px] md:text-[15px] font-space font-bold text-black/90 dark:text-white/90 leading-relaxed" dir="auto">
-                    "{aiMessage}"
+                    "{lastAiMessage}"
                   </p>
                   <p className="text-[9px] font-space text-black/30 dark:text-white/30 tracking-widest uppercase">AUTO_CLOSE // 8S</p>
                 </motion.div>
@@ -219,6 +278,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
           <div className="flex items-center gap-1 md:gap-3 justify-end max-w-[25%]">
             <button
               onClick={() => {
+                playBlip()
                 const isDark = document.documentElement.classList.toggle('dark')
                 localStorage.setItem('theme', isDark ? 'dark' : 'light')
               }}
@@ -230,12 +290,18 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
             </button>
             
             <button
-              onClick={() => router.push('/settings')}
+              onClick={() => { playBlip(); router.push('/settings') }}
               className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-sm bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white hover:border-black/50 dark:hover:border-white/50 transition-all group relative"
               title={isRTL ? 'الإعدادات' : 'Settings'}
             >
               <div className="absolute inset-0 bg-black/5 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <span className="material-symbols-outlined text-[16px] md:text-[20px]">settings</span>
+              <motion.span 
+                animate={pathname === '/settings' ? { rotate: 360 } : {}}
+                transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+                className="material-symbols-outlined text-[16px] md:text-[20px] group-hover:animate-spin-slow"
+              >
+                settings
+              </motion.span>
             </button>
           </div>
         </header>
@@ -244,6 +310,21 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
           {children}
         </div>
       </main>
+
+      <ReportModal 
+        report={selectedReport}
+        onClose={() => setSelectedReport(null)}
+        themeColor={currentTheme.color}
+        isRTL={isRTL}
+      />
+
+      <PomodoroHUD />
+
+      <CoachPanel 
+        isOpen={coachPanelOpen}
+        onClose={() => setCoachPanelOpen(false)}
+        missions={syncedMissions}
+      />
 
       <div className={cn(
         "fixed top-0 bottom-0 w-[1px] bg-black/5 dark:bg-white/5 z-20 hidden md:block",

@@ -4,12 +4,14 @@ import Shell from '@/components/layout/Shell'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGrowth } from '@/context/GrowthContext'
 import { cn } from '@/lib/utils'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useToast } from '@/components/ui/Toast'
 import { useRouter } from 'next/navigation'
 import EnergyCell from '@/components/ui/EnergyCell'
 import React from 'react'
+import { useSound } from '@/context/SoundContext'
+import MissionAttachmentsModal from '@/components/ui/MissionAttachmentsModal'
 
 const SIZES = [
   { key: 'lg', label: 'BIG MISSION',  desc: 'Macro Objective', icon: 'trophy' },
@@ -21,6 +23,7 @@ export default function MissionsPage() {
   const { profile, t, calculateAccountability, isRTL, mounted, currentTheme } = useGrowth()
   const { showToast } = useToast()
   const router = useRouter()
+  const { playDeploy, playBlip, playError } = useSound()
   const [missions, setMissions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
@@ -31,6 +34,12 @@ export default function MissionsPage() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const supabase = createClient()
+
+  // ── Attachments state ─────────────────────────────────────────────────
+  const [attachmentMissionId, setAttachmentMissionId] = useState<string | null>(null)
+  const [attachmentCounts, setAttachmentCounts] = useState<Record<string, number>>({})
+  const [activeAttachments, setActiveAttachments] = useState<any[]>([])
+  const [modalLoading, setModalLoading] = useState(false)
 
   useEffect(() => { 
     if (mounted) fetchMissions() 
@@ -45,8 +54,52 @@ export default function MissionsPage() {
       .eq('user_id', user.id)
       .eq('is_archived', false)
       .order('created_at', { ascending: false })
-    if (data) setMissions(data)
+    if (data) {
+      setMissions(data)
+      // Pre-fetch attachment counts for all missions
+      fetchAllAttachmentCounts(user.id, data.map((m: any) => m.id))
+    }
     setLoading(false)
+  }
+
+  const fetchAllAttachmentCounts = useCallback(async (userId: string, missionIds: string[]) => {
+    if (!missionIds.length) return
+    const { data } = await supabase
+      .from('mission_attachments')
+      .select('mission_id')
+      .eq('user_id', userId)
+      .in('mission_id', missionIds)
+    if (data) {
+      const counts: Record<string, number> = {}
+      data.forEach((row: any) => {
+        counts[row.mission_id] = (counts[row.mission_id] || 0) + 1
+      })
+      setAttachmentCounts(counts)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleAttachmentCountChange = useCallback((missionId: string, count: number) => {
+    setAttachmentCounts(prev => ({ ...prev, [missionId]: count }))
+  }, [])
+
+  const openAttachments = async (missionId: string) => {
+    playBlip()
+    setModalLoading(true)
+    
+    const { data } = await supabase
+      .from('mission_attachments')
+      .select('*')
+      .eq('mission_id', missionId)
+      .order('created_at', { ascending: false })
+    
+    if (data) {
+      setActiveAttachments(data)
+      setAttachmentCounts(prev => ({ ...prev, [missionId]: data.length }))
+    }
+    
+    setAttachmentMissionId(missionId)
+    setModalLoading(false)
   }
 
   const SIZE_SLOTS: Record<string, number> = { sm: 1, md: 1.5, lg: 3, s: 1, m: 1.5, l: 3 }
@@ -69,12 +122,13 @@ export default function MissionsPage() {
       }, 0)
       const newSlots = SIZE_SLOTS[newSize] ?? 1
       if (usedSlots + newSlots > 9) {
-        showToast(
-          isRTL
-            ? `سعة المحطة ممتلئة (${usedSlots}/9 فتحات) - أتمم أو أزل مهمات موجودة.`
-            : `FOCUS CAPACITY FULL (${usedSlots}/9 SLOTS) — Complete or un-equip existing missions first.`,
-          'error'
-        )
+          showToast(
+            isRTL
+              ? `سعة المحطة ممتلئة (${usedSlots.toFixed(1).replace('.0','')}/9 فتحات) - أتمم أو أزل مهمات موجودة.`
+              : `FOCUS CAPACITY FULL (${usedSlots.toFixed(1).replace('.0','')}/9 SLOTS) — Complete or un-equip existing missions.`,
+            'warning'
+          )
+        playError()
         return
       }
     }
@@ -100,6 +154,7 @@ export default function MissionsPage() {
       setStartDate('')
       setEndDate('')
       showToast(isRTL ? 'تم إنشاء المهمة' : 'MISSION_INITIALIZED', 'success')
+      playDeploy()
       router.push(`/missions/${data.id}`)
     }
   }
@@ -121,22 +176,22 @@ export default function MissionsPage() {
             <div className="flex items-center gap-4 justify-center md:justify-start">
               <span className="material-symbols-outlined text-neon-green text-3xl md:text-4xl">layers</span>
               <h1 className="text-4xl md:text-6xl font-black font-space tracking-tighter uppercase italic text-black dark:text-white leading-none break-words break-all sm:break-normal">
-                {isRTL ? 'لوحة' : 'MISSION'}<span className="text-neon-green">{isRTL ? ' الأهداف' : '_CANVAS'}</span>
+                {isRTL ? 'لوحة' : 'MISSION'}<span className="text-neon-green">{isRTL ? ' المهام' : '_CANVAS'}</span>
               </h1>
               <button onClick={() => setShowGuide(true)} className="material-symbols-outlined text-neon-green/60 hover:text-neon-green transition-colors text-2xl md:text-3xl" title="Tactical Guide">
                 info
               </button>
             </div>
-            <p className="text-[9px] md:text-[11px] font-space text-neon-green tracking-[0.4em] uppercase font-bold opacity-40">
-               {isRTL ? 'الأهداف الأساسية النشطة' : 'ACTIVE_CORE_OBJECTIVES'} // {missions.length} {isRTL ? 'قيد التنفيذ' : 'MISSIONS RUNNING'}
+            <p className="text-[14px] font-space text-white tracking-[0.4em] uppercase font-bold">
+               {isRTL ? 'الأهداف الأساسية النشطة' : 'ACTIVE_CORE_OBJECTIVES'} // {missions.length} {isRTL ? 'مهمة شغالة' : 'MISSIONS RUNNING'}
             </p>
           </div>
           <button
-            onClick={() => setShowCreate(true)}
+            onClick={() => { playBlip(); setShowCreate(true); }}
             className="w-full md:w-auto bg-neon-green text-black px-12 py-5 font-space text-xs md:text-sm tracking-[0.2em] font-black uppercase hover:scale-105 active:scale-95 transition-all shadow-lg shadow-neon-green/20 flex items-center justify-center gap-4 rounded-sm"
           >
             <span className="material-symbols-outlined font-black">add_circle</span>
-            {isRTL ? 'إنشاء مهمة' : 'INITIALIZE_MISSION'}
+            {isRTL ? 'ابدأ مهمة جديدة' : 'INITIALIZE_MISSION'}
           </button>
         </header>
 
@@ -340,7 +395,7 @@ export default function MissionsPage() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: idx * 0.05 }}
-                  onClick={() => router.push(`/missions/${mission.id}`)}
+                  onClick={() => { playBlip(); router.push(`/missions/${mission.id}`); }}
                   className={cn(
                     "group relative flex flex-col bg-white dark:bg-[#0A0A0A] border border-black/5 dark:border-white/5 hover:border-black/20 dark:hover:border-white/10 cursor-pointer transition-all rounded-sm shadow-xl overflow-hidden",
                     "min-h-[240px] max-h-[340px] p-5 md:p-6"
@@ -399,13 +454,91 @@ export default function MissionsPage() {
                            </p>
                          )}
                        </div>
-                       <span className="material-symbols-outlined text-black/20 dark:text-white/10 group-hover:translate-x-2 rtl:group-hover:-translate-x-2 transition-transform text-lg">arrow_forward</span>
+                       <div className="flex items-center gap-2">
+                         <button
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             const { progress } = calculateAccountability(mission);
+                             const percentage = Math.round(progress);
+                             const completed = mission.tasks?.filter((t: any) => t.is_completed).length || 0;
+                             const total = mission.tasks?.length || 0;
+                             
+                             const formatDate = (dateStr: string | null, fallbackDate?: Date) => {
+                               const d = dateStr ? new Date(dateStr) : (fallbackDate || new Date());
+                               return d.toISOString().split('T')[0].replace(/-/g, '');
+                             };
+
+                             const dtStart = formatDate(mission.start_date);
+                             let dtEnd;
+                             if (mission.end_date) {
+                               dtEnd = formatDate(mission.end_date);
+                             } else {
+                               const d = mission.start_date ? new Date(mission.start_date) : new Date();
+                               d.setDate(d.getDate() + 30);
+                               dtEnd = d.toISOString().split('T')[0].replace(/-/g, '');
+                             }
+
+                             const details = encodeURIComponent(`Growth Hub Mission | Progress: ${percentage}% | Tasks: ${completed}/${total}`);
+                             const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(mission.title)}&dates=${dtStart}/${dtEnd}&details=${details}&location=Growth_Hub`;
+                             
+                             window.open(googleUrl, '_blank');
+                             playBlip();
+                           }}
+                           className="relative flex items-center justify-center w-8 h-8 border border-white/10 dark:border-white/5 hover:border-neon-green/40 transition-all rounded-sm"
+                           title="ADD_TO_GOOGLE_CALENDAR"
+                         >
+                           <span className="material-symbols-outlined text-sm text-neon-green" style={{ textShadow: `0 0 8px #39FF14` }}>calendar_month</span>
+                         </button>
+
+                         <button
+                           onClick={(e) => {
+                             e.stopPropagation();
+                             openAttachments(mission.id);
+                           }}
+                           className="relative flex items-center justify-center w-8 h-8 border border-white/10 dark:border-white/5 hover:border-neon-green/40 transition-all rounded-sm group/attach"
+                           style={{ 
+                             borderColor: (attachmentCounts[mission.id] || 0) > 0 ? `${color}44` : undefined,
+                             boxShadow: (attachmentCounts[mission.id] || 0) > 0 ? `0 0 10px ${color}22` : undefined
+                           }}
+                         >
+                           <span className="material-symbols-outlined text-sm" style={{ 
+                             color: (attachmentCounts[mission.id] || 0) > 0 ? color : 'inherit',
+                             textShadow: (attachmentCounts[mission.id] || 0) > 0 ? `0 0 8px ${color}` : 'none'
+                           }}>attach_file</span>
+                           {(attachmentCounts[mission.id] || 0) > 0 && (
+                             <span className="absolute -top-1.5 -right-1.5 w-4 h-4 text-black text-[8px] font-black flex items-center justify-center rounded-full shadow-lg"
+                               style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}` }}
+                             >
+                               {attachmentCounts[mission.id]}
+                             </span>
+                           )}
+                         </button>
+                         <span className="material-symbols-outlined text-black/20 dark:text-white/10 group-hover:translate-x-2 rtl:group-hover:-translate-x-2 transition-transform text-lg">arrow_forward</span>
+                       </div>
                     </div>
                   </div>
                 </motion.div>
               )
             })}
           </AnimatePresence>
+
+          {/* ── ATTACHMENTS MODAL (rendered once, outside cards) ── */}
+          {attachmentMissionId && (
+            <MissionAttachmentsModal
+              missionId={attachmentMissionId}
+              missionTitle={missions.find(m => m.id === attachmentMissionId)?.title ?? ''}
+              themeColor={currentTheme.color}
+              isOpen={!!attachmentMissionId}
+              attachments={activeAttachments}
+              setAttachments={setActiveAttachments}
+              loading={modalLoading}
+              onClose={() => {
+                setAttachmentMissionId(null)
+                setActiveAttachments([])
+              }}
+              onCountChange={count => handleAttachmentCountChange(attachmentMissionId, count)}
+            />
+          )}
 
           {/* Create Mission Card Shortcut */}
           {missions.length > 0 && (

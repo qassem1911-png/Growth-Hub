@@ -9,6 +9,9 @@ import { createClient } from '@/lib/supabase'
 import { useGrowth } from '@/context/GrowthContext'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
+import { useSound } from '@/context/SoundContext'
+import PlaylistImportModal from '@/components/ui/PlaylistImportModal'
+import { usePomodoro } from '@/context/PomodoroContext'
 
 // --- HELPER COMPONENT: CYBERPUNK WEIGHT BARS ---
 const WeightVisualizer = ({ weight, color, isCompleted = false, onSelect }: { weight: number, color: string, isCompleted?: boolean, onSelect?: (w: number) => void }) => {
@@ -41,13 +44,16 @@ export default function MissionDetailPage() {
   const router = useRouter()
   const { calculateAccountability, t, isRTL, mounted, addXp, currentTheme } = useGrowth()
   const { showToast } = useToast()
+  const { playSuccess, playError, playBlip } = useSound()
   const [mission, setMission] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskWeight, setNewTaskWeight] = useState(3)
   const [linkedNotes, setLinkedNotes] = useState<any[]>([])
   const [showIntelModal, setShowIntelModal] = useState(false)
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false)
   const supabase = createClient()
+  const { startFocus } = usePomodoro()
 
   useEffect(() => {
     if (mounted) fetchMission()
@@ -102,6 +108,7 @@ export default function MissionDetailPage() {
         if (!error) {
           setMission((prev: any) => ({ ...prev, is_archived: true, status: 'completed' }))
           showToast(isRTL ? 'تم اكتمال المهمة! نقلت إلى الخزنة' : 'MISSION COMPLETE! ARCHIVED TO VAULT', 'success')
+          playSuccess()
         }
       } else if (roundedProgress < 100 && mission.is_archived) {
         const { error } = await supabase
@@ -141,8 +148,13 @@ export default function MissionDetailPage() {
             completed_at: new Date().toISOString()
           })
           const task = mission.tasks.find((t: any) => t.id === taskId)
-          if (task) await addXp(task.weight * 10)
+          if (task) {
+            await addXp(task.weight * 10)
+            playSuccess()
+          }
         }
+      } else {
+        playBlip()
       }
     }
   }
@@ -207,8 +219,9 @@ export default function MissionDetailPage() {
             isRTL
               ? `سعة المحطة ممتلئة (${usedSlots.toFixed(1).replace('.0','')}/9 فتحات) - أتمم أو أزل مهمات موجودة.`
               : `FOCUS CAPACITY FULL (${usedSlots.toFixed(1).replace('.0','')}/9 SLOTS) — Complete or un-equip existing missions.`,
-            'error'
+            'warning'
           )
+          playError()
           return // ← BLOCK the update
         }
       }
@@ -312,19 +325,64 @@ export default function MissionDetailPage() {
                </span>
                {mission.sync_to_dashboard ? (isRTL ? 'متصل بالشبكة' : 'GRID_CONNECTED') : (isRTL ? 'خارج الشبكة' : 'OFF_GRID')}
             </button>
+            
+            {/* PLAYLIST_IMPORT button */}
+            <button
+               onClick={() => { playBlip(); setShowPlaylistModal(true); }}
+               className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-sm uppercase flex items-center gap-3 border-black/10 dark:border-white/5 text-black/50 dark:text-white/30 hover:border-black/30 dark:hover:border-white/20"
+            >
+               <span className="material-symbols-outlined text-base">playlist_add</span>
+               {isRTL ? 'استورد قائمة تشغيل' : 'IMPORT_PLAYLIST'}
+            </button>
 
             {/* INTEL button */}
             <button
-              onClick={() => setShowIntelModal(true)}
+              onClick={() => { playBlip(); setShowIntelModal(true); }}
               className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-sm uppercase flex items-center gap-3 relative border-black/10 dark:border-white/5 text-black/50 dark:text-white/30 hover:border-black/30 dark:hover:border-white/20"
             >
               <span className="material-symbols-outlined text-base">notes</span>
-              INTEL_NOTES
+              {isRTL ? 'الملاحظات' : 'INTEL_NOTES'}
               {linkedNotes.length > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center text-black" style={{ backgroundColor: missionColor }}>
                   {linkedNotes.length}
                 </span>
               )}
+            </button>
+
+            {/* ADD_TO_GOOGLE_CALENDAR button */}
+            <button
+               onClick={() => {
+                 const { progress } = calculateAccountability(mission);
+                 const percentage = Math.round(progress);
+                 const completed = mission.tasks?.filter((t: any) => t.is_completed).length || 0;
+                 const total = mission.tasks?.length || 0;
+                 
+                 const formatDate = (dateStr: string | null, fallbackDate?: Date) => {
+                   const d = dateStr ? new Date(dateStr) : (fallbackDate || new Date());
+                   return d.toISOString().split('T')[0].replace(/-/g, '');
+                 };
+
+                 const dtStart = formatDate(mission.start_date);
+                 let dtEnd;
+                 if (mission.end_date) {
+                   dtEnd = formatDate(mission.end_date);
+                 } else {
+                   const d = mission.start_date ? new Date(mission.start_date) : new Date();
+                   d.setDate(d.getDate() + 30);
+                   dtEnd = d.toISOString().split('T')[0].replace(/-/g, '');
+                 }
+
+                 const details = encodeURIComponent(`Growth Hub Mission | Progress: ${percentage}% | Tasks: ${completed}/${total}`);
+                 const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(mission.title)}&dates=${dtStart}/${dtEnd}&details=${details}&location=Growth_Hub`;
+                 
+                 window.open(googleUrl, '_blank');
+                 playBlip();
+               }}
+               className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-sm uppercase flex items-center gap-3 border-black/10 dark:border-white/5 text-neon-green/60 hover:text-neon-green hover:border-neon-green/40"
+               title="ADD_TO_GOOGLE_CALENDAR"
+            >
+               <span className="material-symbols-outlined text-base">calendar_month</span>
+               {isRTL ? 'إضافة إلى تقويم جوجل' : 'ADD_TO_GOOGLE_CALENDAR'}
             </button>
          </section>
 
@@ -333,7 +391,7 @@ export default function MissionDetailPage() {
            <div className="flex justify-between items-end border-b border-black/5 dark:border-white/5 pb-4">
               <h2 className="text-[10px] font-black font-space text-black/40 dark:text-white/30 tracking-[0.5em] uppercase">{isRTL ? 'قائمة المهام' : 'CHECKLIST_TASKS'}</h2>
               <span className="text-[10px] font-space text-black/40 dark:text-white/30 tracking-widest uppercase font-black">
-                 {completedCount}/{totalCount} {isRTL ? 'مهمة مكتملة' : 'TASK_COMPLETE'}
+                 {completedCount}/{totalCount} {isRTL ? 'مهمة اتخلصت' : 'TASK_COMPLETE'}
               </span>
            </div>
 
@@ -377,8 +435,18 @@ export default function MissionDetailPage() {
                           </span>
                        </div>
 
-                       <div className="flex items-center gap-4 md:gap-8 shrink-0">
+                       <div className="flex items-center gap-2 md:gap-4 shrink-0">
                           <WeightVisualizer weight={task.weight} color={missionColor} isCompleted={task.is_completed} />
+                          
+                          {/* POMODORO BUTTON */}
+                          <button
+                            onClick={() => startFocus(task.title)}
+                            className="opacity-0 group-hover:opacity-100 text-black/20 dark:text-white/20 hover:text-neon-green transition-all p-2"
+                            title="START_FOCUS_SESSION"
+                          >
+                             <span className="material-symbols-outlined text-lg md:text-xl">timer</span>
+                          </button>
+
                           <button
                             onClick={() => deleteTask(task.id)}
                             className="opacity-0 group-hover:opacity-100 text-black/20 dark:text-white/10 hover:text-red-500 transition-all p-2"
@@ -447,9 +515,9 @@ export default function MissionDetailPage() {
                 <div className="flex justify-between items-center">
                   <div>
                     <h2 className="text-xl md:text-2xl font-black font-space uppercase italic" style={{ color: missionColor }}>
-                      INTEL_NOTES
+                      {isRTL ? 'الملاحظات' : 'INTEL_NOTES'}
                     </h2>
-                    <p className="text-[9px] font-space text-white/20 tracking-widest uppercase font-black mt-1">
+                    <p className="text-[12px] font-space text-white tracking-widest uppercase font-black mt-1">
                       {linkedNotes.length} {isRTL ? 'سجل مرتبط' : 'RECORDS LINKED TO THIS MISSION'}
                     </p>
                   </div>
@@ -464,11 +532,11 @@ export default function MissionDetailPage() {
                 {linkedNotes.length === 0 ? (
                   <div className="py-16 text-center space-y-4">
                     <span className="material-symbols-outlined text-4xl text-white/10">notes</span>
-                    <p className="text-[11px] font-space text-white/20 tracking-[0.4em] uppercase font-black">
+                    <p className="text-[11px] font-space text-white/60 tracking-[0.4em] uppercase font-black">
                       {isRTL ? 'لا توجد سجلات مرتبطة' : 'NO_INTEL_LINKED'}
                     </p>
-                    <p className="text-[10px] font-space text-white/10 tracking-wider">
-                      {isRTL ? 'اذهب إلى BRAIN وأنشئ ملاحظة مرتبطة بهذه المهمة' : 'Go to BRAIN → NEW_LOG and link it to this mission'}
+                    <p className="text-[14px] font-space text-white tracking-wider">
+                      {isRTL ? 'اذهب إلى العقل وأنشئ ملاحظة مرتبطة بهذه المهمة' : 'Go to BRAIN → NEW_LOG and link it to this mission'}
                     </p>
                   </div>
                 ) : (
@@ -507,6 +575,22 @@ export default function MissionDetailPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Playlist Import Modal */}
+      <PlaylistImportModal 
+        isOpen={showPlaylistModal}
+        onClose={() => setShowPlaylistModal(false)}
+        missionId={id as string}
+        themeColor={missionColor}
+        onTasksAdded={(newTasks) => {
+          setMission((prev: any) => ({
+            ...prev,
+            tasks: [...(prev.tasks || []), ...newTasks]
+          }))
+          showToast(isRTL ? 'تم استيراد قائمة التشغيل بنجاح' : 'PLAYLIST_IMPORTED // TASKS_DEPLOYED', 'success')
+          playSuccess()
+        }}
+      />
     </Shell>
   )
 }

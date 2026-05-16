@@ -79,7 +79,7 @@ export default function LegacyVaultPage() {
           <h1 className="text-4xl md:text-7xl font-black font-space tracking-tighter uppercase italic text-black dark:text-white leading-none break-words break-all sm:break-normal">
             {isRTL ? 'خزنة' : 'LEGACY'}<span className="text-neon-green">{isRTL ? ' الإنجازات' : '_VAULT'}</span>
           </h1>
-          <p className="text-[10px] md:text-xs font-space text-neon-green tracking-[0.8em] uppercase font-bold opacity-40">
+          <p className="text-[14px] font-space text-white tracking-[0.4em] uppercase font-bold">
             {isRTL ? 'المهام المكتملة' : 'COMPLETED_CYCLES'} // {archived.length} {isRTL ? 'سجل' : 'RECORDS'}
           </p>
         </div>
@@ -114,17 +114,35 @@ export default function LegacyVaultPage() {
                   transition={{ delay: i * 0.07 }}
                   className="group flex flex-col items-center gap-3 cursor-pointer"
                 >
-                  <div className="text-[8px] md:text-[10px] font-space tracking-[0.4em] text-neon-green/40 uppercase font-black">
+                  <div className="text-[8px] md:text-[10px] font-space tracking-[0.4em] text-neon-green/40 uppercase font-black mb-4">
                     ★ {isRTL ? 'مكتمل' : 'COMPLETE'}
                   </div>
 
-                  <EnergyCell
-                    percentage={100}
-                    label=""
-                    color={color}
-                    size="md"
-                    isInRedZone={false}
-                  />
+                  <div className="relative flex flex-col items-center pb-8 pt-4">
+                    {/* Holographic Projector Base */}
+                    <div 
+                      className="absolute bottom-0 w-24 h-6 bg-black/40 dark:bg-white/5 rounded-[100%] blur-[1px] border border-black/20 dark:border-white/10 flex items-center justify-center z-0" 
+                      style={{ boxShadow: `0 10px 20px ${color}40, inset 0 2px 10px ${color}20` }}
+                    >
+                      {/* Projector Lens Core */}
+                      <div className="w-12 h-2 rounded-[100%] blur-[1px] opacity-80" style={{ backgroundColor: color, boxShadow: `0 0 15px ${color}` }} />
+                      
+                      {/* Rising neon light beams */}
+                      <div 
+                        className="absolute bottom-2 w-20 h-32 blur-[8px] opacity-30 mix-blend-screen animate-pulse pointer-events-none" 
+                        style={{ background: `linear-gradient(to top, ${color}, transparent)`, clipPath: 'polygon(20% 100%, 80% 100%, 100% 0, 0 0)' }} 
+                      />
+                    </div>
+
+                    <div className="relative z-10" style={{ filter: `drop-shadow(0 15px 25px ${color}40)` }}>
+                      <EnergyCell
+                        percentage={100}
+                        color={color}
+                        size="md"
+                        isInRedZone={false}
+                      />
+                    </div>
+                  </div>
 
                   <p className="text-xs md:text-sm font-space font-black text-black/50 dark:text-white/50 group-hover:text-black/90 dark:group-hover:text-white/90 tracking-widest uppercase text-center transition-all max-w-[120px] leading-tight truncate mt-2">
                     {mission.title}

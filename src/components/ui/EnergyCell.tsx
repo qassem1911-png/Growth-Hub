@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect, useId } from 'react'
 
 interface EnergyCellProps {
   percentage: number
@@ -27,8 +27,8 @@ const DIMS = {
   lg: { w: 120, h: 170 },
 } as const
 
-// Unique ID counter for SVG defs
-let _cellIdCounter = 0
+// Unique ID counter for SVG defs - REMOVED for useId
+
 
 export default function EnergyCell({
   percentage,
@@ -39,9 +39,9 @@ export default function EnergyCell({
   const primary = isInRedZone ? '#FF0055' : (color?.startsWith('#') ? color : '#39FF14')
   const { w, h } = DIMS[size ?? 'sm']
   const pct = Math.round(Math.max(0, Math.min(100, isNaN(percentage) ? 0 : percentage)))
-
-  // Unique IDs for SVG clip paths
-  const uid = useMemo(() => `ec${++_cellIdCounter}`, [])
+ 
+  // Unique IDs for SVG clip paths using React's useId for SSR safety
+  const uid = useId().replace(/:/g, '')
 
   // === Crystal Trophy SVG Path (chalice silhouette) ===
   // Normalized to 100x100 viewBox, then scaled
@@ -88,13 +88,16 @@ export default function EnergyCell({
 
   // Bubble config
   const bubbleCount = size === 'sm' ? 3 : size === 'md' ? 5 : 8
-  const bubbles = useMemo(() => {
-    return Array.from({ length: bubbleCount }, (_, i) => ({
+  const [bubbles, setBubbles] = useState<{x: number, delay: number, duration: number, r: number}[]>([])
+ 
+  useEffect(() => {
+    const generated = Array.from({ length: bubbleCount }, (_, i) => ({
       x: 35 + Math.random() * 30,
       delay: Math.random() * 3,
       duration: 2 + Math.random() * 2,
       r: size === 'sm' ? 1 : size === 'md' ? 1.5 : 2 + Math.random(),
     }))
+    setBubbles(generated)
   }, [bubbleCount, size])
 
   // Fill level: map pct to Y within the chalice body (14 to 100 in SVG coords)
