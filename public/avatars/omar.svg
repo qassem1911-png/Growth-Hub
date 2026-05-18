@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg-omar" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF5F00" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#111111" stop-opacity="0.1" />
+    </radialGradient>
+    <linearGradient id="shirt-omar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2A2A2A" />
+      <stop offset="100%" stop-color="#141414" />
+    </linearGradient>
+    <linearGradient id="skin-omar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFCC80" />
+      <stop offset="50%" stop-color="#FFB74D" />
+      <stop offset="100%" stop-color="#FFA726" />
+    </linearGradient>
+    <linearGradient id="hair-omar" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#212121" />
+      <stop offset="50%" stop-color="#111111" />
+      <stop offset="100%" stop-color="#000000" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Glow -->
+  <circle cx="200" cy="200" r="190" fill="url(#bg-omar)" />
+  <circle cx="200" cy="200" r="185" fill="none" stroke="#FF5F00" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="15 5" />
+
+  <!-- Body / Black Shirt -->
+  <path d="M110 380 C110 310, 290 310, 290 380 Z" fill="url(#shirt-omar)" />
+  <path d="M165 380 L165 330 L235 330 L235 380 Z" fill="#1E1E1E" opacity="0.8" />
+  <line x1="165" y1="330" x2="235" y2="330" stroke="#FF5F00" stroke-width="2" opacity="0.5" />
+
+  <!-- Neck -->
+  <path d="M175 250 L225 250 L220 335 L180 335 Z" fill="url(#skin-omar)" />
+  <ellipse cx="200" cy="275" rx="20" ry="6" fill="#E65100" opacity="0.3" />
+
+  <!-- Head/Face -->
+  <ellipse cx="200" cy="200" rx="62" ry="78" fill="url(#skin-omar)" />
+  <!-- Jawline accent -->
+  <path d="M140 210 Q200 285 260 210" fill="none" stroke="#E65100" stroke-width="3" opacity="0.3" />
+
+  <!-- Ears -->
+  <ellipse cx="135" cy="195" rx="10" ry="16" fill="url(#skin-omar)" />
+  <ellipse cx="265" cy="195" rx="10" ry="16" fill="url(#skin-omar)" />
+
+  <!-- Eyes -->
+  <ellipse cx="172" cy="185" rx="13" ry="9" fill="#FFFFFF" />
+  <ellipse cx="228" cy="185" rx="13" ry="9" fill="#FFFFFF" />
+  <circle cx="172" cy="185" r="6.5" fill="#212121" />
+  <circle cx="228" cy="185" r="6.5" fill="#212121" />
+  <circle cx="174" cy="183" r="2" fill="#FFFFFF" />
+  <circle cx="230" cy="183" r="2" fill="#FFFFFF" />
+
+  <!-- Eyebrows (Thick Male) -->
+  <path d="M155 168 L185 165" stroke="#111111" stroke-width="6" stroke-linecap="round" />
+  <path d="M215 165 L245 168" stroke="#111111" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Nose -->
+  <path d="M200 190 L205 212 L195 212" fill="none" stroke="#D84315" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Mouth / Slight Smirk -->
+  <path d="M185 240 Q200 248 218 238" fill="none" stroke="#BF360C" stroke-width="3.5" stroke-linecap="round" />
+
+  <!-- Hair (Black stylish messy/wavy top) -->
+  <path d="M138 160 Q130 110 180 100 Q200 90 220 100 Q270 110 262 160 Q250 120 220 125 Q200 115 180 125 Q150 120 138 160 Z" fill="url(#hair-omar)" />
+  <!-- Extra hair tufts -->
+  <path d="M170 110 Q190 85 210 105" fill="none" stroke="#333333" stroke-width="4" stroke-linecap="round" />
+  <path d="M190 100 Q210 80 225 100" fill="none" stroke="#333333" stroke-width="4" stroke-linecap="round" />
+</svg>

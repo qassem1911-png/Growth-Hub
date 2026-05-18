@@ -93,7 +93,7 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
                }}
              />
            ) : (
-               <div className="w-12 h-12 rounded-full bg-[var(--input-bg)] border border-[var(--card-border)] flex items-center justify-center group-hover/avatar:border-white/20 transition-all">
+               <div className="w-12 h-12 rounded-full bg-[var(--input-bg)] border border-[var(--card-border)] flex items-center justify-center group-hover/avatar:border-zinc-300 dark:group-hover/avatar:border-white/20 transition-all">
                  <span className="material-symbols-outlined text-[var(--text-secondary)]">person</span>
                </div>
              )}
@@ -102,11 +102,11 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
                 {mounted ? (isRTL ? 'حالة المستخدم' : 'USER_STATUS') : 'USER_STATUS'}
               </span>
               <span className="text-sm font-space font-black text-[var(--text-primary)] truncate max-w-[120px] transition-colors" style={{ color: currentTheme.color }}>
-                {profile?.full_name?.toUpperCase() || cachedName?.toUpperCase() || (t ? t('operator') : 'USER')}
+                {mounted ? (profile?.full_name?.toUpperCase() || cachedName?.toUpperCase() || (t ? t('operator') : 'USER')) : 'USER'}
               </span>
               <div className="mt-1 flex items-center gap-2">
                  <span className="px-1.5 py-0.5 rounded-[2px] bg-[var(--input-bg)] border border-[var(--card-border)] text-[7px] font-space font-black text-[var(--text-secondary)] tracking-widest uppercase">
-                   {profile?.rank || 'RECRUIT'}
+                   {mounted ? (profile?.rank || 'RECRUIT') : 'RECRUIT'}
                  </span>
                </div>
            </div>
@@ -116,7 +116,7 @@ export default function Sidebar({ isRTL = false }: { isRTL?: boolean }) {
         <div id="hud-xp-bar" className="w-full space-y-1.5">
           <div className="flex justify-between items-end text-sm font-space text-[var(--text-secondary)] tracking-widest uppercase font-black">
             <span>{mounted ? (isRTL ? 'نقاط الخبرة' : 'SYSTEM_XP') : 'SYSTEM_XP'}</span>
-            <span className="text-3xl" style={{ color: currentTheme.color }}>{profile?.xp || 0}</span>
+            <span className="text-3xl" style={{ color: currentTheme.color }}>{mounted ? (profile?.xp || 0) : 0}</span>
           </div>
           <div className="w-full h-[6px] bg-[var(--input-bg)] rounded-full overflow-hidden mt-2">
             <motion.div 

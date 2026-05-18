@@ -34,8 +34,8 @@ export default function PWARegistration() {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
       
-      // Only show if the user hasn't dismissed it this session
-      const dismissed = sessionStorage.getItem('pwa_prompt_dismissed')
+      // Only show if the user hasn't dismissed it permanently
+      const dismissed = localStorage.getItem('pwa_prompt_dismissed')
       if (!dismissed) {
         // Trigger small delayed entrance for visual breathing room
         setTimeout(() => {
@@ -50,6 +50,7 @@ export default function PWARegistration() {
     // Listen for successful install to hide prompt
     const handleAppInstalled = () => {
       console.log('App successfully installed')
+      localStorage.setItem('pwa_prompt_dismissed', 'true')
       setShowPrompt(false)
       setDeferredPrompt(null)
     }
@@ -73,6 +74,7 @@ export default function PWARegistration() {
     const choiceResult = await deferredPrompt.userChoice
     if (choiceResult.outcome === 'accepted') {
       console.log('Operator accepted the PWA install')
+      localStorage.setItem('pwa_prompt_dismissed', 'true')
     } else {
       console.log('Operator dismissed the PWA install')
     }
@@ -83,7 +85,7 @@ export default function PWARegistration() {
 
   const handleDismissClick = () => {
     playBlip()
-    sessionStorage.setItem('pwa_prompt_dismissed', 'true')
+    localStorage.setItem('pwa_prompt_dismissed', 'true')
     setShowPrompt(false)
   }
 
@@ -99,7 +101,7 @@ export default function PWARegistration() {
         >
           {/* Glassmorphic Cyberpunk Card Container */}
           <div
-            className="w-full bg-[#050505]/95 backdrop-blur-2xl border p-5 md:p-6 rounded-sm shadow-[0_15px_50px_rgba(0,0,0,0.8)] relative overflow-hidden"
+            className="w-full bg-white/95 dark:bg-[#050505]/95 backdrop-blur-2xl border p-5 md:p-6 rounded-sm shadow-2xl relative overflow-hidden"
             style={{ 
               borderColor: currentTheme.color,
               boxShadow: `0 0 30px ${currentTheme.color}15, inset 0 0 15px ${currentTheme.color}05`
@@ -145,28 +147,28 @@ export default function PWARegistration() {
                   className="text-sm font-black font-space uppercase italic tracking-wider leading-none"
                   style={{ color: currentTheme.color }}
                 >
-                  {isRTL ? 'مزامنة الواجهة المحلية' : 'UPLINK_SYNC_REQUEST'}
+                  {isRTL ? 'تثبيت التطبيق على جهازك' : 'INSTALL THE APP'}
                 </h3>
-                <p className="text-[8px] font-space text-white/20 tracking-[0.4em] uppercase font-black mt-1">
-                  {isRTL ? 'إعدادات PWA النشطة' : 'PWA_LAUNCHER // LOCAL_HUD'}
+                <p className="text-[8px] font-space text-zinc-400 dark:text-white/20 tracking-[0.4em] uppercase font-black mt-1">
+                  {isRTL ? 'منصة التطوير والنمو' : 'GROWTH HUB // WEB APP'}
                 </p>
               </div>
             </div>
 
             {/* Prompt Body Description */}
-            <p className="text-[11px] md:text-[12px] font-space text-white/60 leading-relaxed mt-4">
+            <p className="text-[11px] md:text-[12px] font-space text-zinc-600 dark:text-white/60 leading-relaxed mt-4">
               {isRTL 
-                ? 'قم بتثبيت التطبيق على شاشتك الرئيسية للحصول على تجربة سريعة وتصفح خالي من التأخير.' 
-                : 'Install the tactical Growth Hub wrapper on your home screen for zero-latency operations and complete offline status updates.'}
+                ? 'قم بتثبيت التطبيق على شاشتك الرئيسية للحصول على وصول سريع وتصفح فائق السرعة في أي وقت.' 
+                : 'Install the Growth Hub app on your home screen for a seamless, lightning-fast experience and instant access.'}
             </p>
 
             {/* Strategic Action Row */}
-            <div className="flex items-center justify-end gap-3 mt-5 pt-4 border-t border-white/5">
+            <div className="flex items-center justify-end gap-3 mt-5 pt-4 border-t border-zinc-200 dark:border-white/5">
               <button
                 onClick={handleDismissClick}
-                className="text-[10px] font-space font-black tracking-widest uppercase text-white/40 hover:text-white/80 transition-colors py-2 px-3"
+                className="text-[10px] font-space font-black tracking-widest uppercase text-zinc-400 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white/80 transition-colors py-2 px-3"
               >
-                {isRTL ? 'تجاهل' : 'DISMISS'}
+                {isRTL ? 'إلغاء' : 'CANCEL'}
               </button>
               
               <button
@@ -179,7 +181,7 @@ export default function PWARegistration() {
                   boxShadow: `0 0 15px ${currentTheme.color}33`
                 }}
               >
-                {isRTL ? 'تثبيت' : 'INSTALL APP'}
+                {isRTL ? 'تثبيت التطبيق' : 'INSTALL APP'}
               </button>
             </div>
           </div>

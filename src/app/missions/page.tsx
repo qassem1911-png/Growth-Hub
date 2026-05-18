@@ -656,7 +656,7 @@ export default function MissionsPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+                className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-white/90 dark:bg-black/85 backdrop-blur-md"
               >
                 <motion.div
                   initial={{ scale: 0.9, y: 20 }}
@@ -719,7 +719,7 @@ export default function MissionsPage() {
                           playBlip();
                           setShowWarningModal(false);
                         }}
-                        className="flex-1 py-2.5 text-white dark:text-black font-space font-black text-xs uppercase tracking-widest transition-all"
+                        className="flex-1 py-2.5 text-black font-space font-black text-xs uppercase tracking-widest transition-all shadow-lg"
                         style={{ backgroundColor: currentTheme.color }}
                       >
                         {isRTL ? 'الاستمرار بالتركيز' : 'KEEP FOCUSING'}
@@ -733,7 +733,7 @@ export default function MissionsPage() {
 
           {missions.length === 0 && !loading && (
             <div className="col-span-full py-24">
-              <p className="text-white/30 text-sm text-center">No active goals synced. Use the action panel above to initiate.</p>
+              <p className="text-[var(--text-secondary)]/50 text-sm text-center font-space">No active goals synced. Use the action panel above to initiate.</p>
             </div>
           )}
         </div>

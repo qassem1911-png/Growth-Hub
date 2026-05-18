@@ -104,14 +104,14 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[250]"
+            className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-sm z-[250]"
           />
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-screen w-full max-w-[420px] bg-[var(--card-bg)] border-l border-[var(--card-border)] z-[300] shadow-[-20px_0_50px_rgba(0,0,0,0.5)] flex flex-col font-space"
+            className="fixed top-0 right-0 h-screen w-full max-w-[420px] bg-[var(--card-bg)] border-l border-[var(--card-border)] z-[300] shadow-[-20px_0_50px_rgba(0,0,0,0.1)] dark:shadow-[-20px_0_50px_rgba(0,0,0,0.5)] flex flex-col font-space"
             style={{ borderColor: `${coachColor}44` }}
           >
             {/* Header */}
@@ -132,7 +132,7 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
               <div className="relative group">
                 <div className="absolute -inset-0.5 rounded opacity-0 group-hover:opacity-100 transition duration-1000" style={{ backgroundColor: `${coachColor}22` }}></div>
                 <div 
-                  className="relative p-6 bg-[rgba(0,0,0,0.2)] border overflow-y-auto scrollbar-thin rounded-sm" 
+                  className="relative p-6 bg-white/40 dark:bg-[rgba(0,0,0,0.2)] border overflow-y-auto scrollbar-thin rounded-sm shadow-inner" 
                   style={{ 
                     borderColor: `${coachColor}44`,
                     backgroundColor: `${coachColor}0A`,

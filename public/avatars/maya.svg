@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg-maya" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#D32F2F" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#B71C1C" stop-opacity="0.1" />
+    </radialGradient>
+    <linearGradient id="shirt-maya" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E53935" />
+      <stop offset="100%" stop-color="#B71C1C" />
+    </linearGradient>
+    <linearGradient id="skin-maya" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#BCAAA4" />
+      <stop offset="50%" stop-color="#A1887F" />
+      <stop offset="100%" stop-color="#8D6E63" />
+    </linearGradient>
+    <linearGradient id="hair-maya" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#263238" />
+      <stop offset="50%" stop-color="#37474F" />
+      <stop offset="100%" stop-color="#212121" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Glow -->
+  <circle cx="200" cy="200" r="190" fill="url(#bg-maya)" />
+  <circle cx="200" cy="200" r="185" fill="none" stroke="#E53935" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="8 4" />
+
+  <!-- Body / Red Shirt -->
+  <path d="M110 380 C110 310, 290 310, 290 380 Z" fill="url(#shirt-maya)" />
+  <path d="M150 380 C150 330, 250 330, 250 380 Z" fill="#C62828" opacity="0.8" />
+  <path d="M170 330 Q200 355 230 330" fill="none" stroke="#FFCDD2" stroke-width="3" opacity="0.4" />
+
+  <!-- Neck -->
+  <path d="M175 250 L225 250 L220 335 L180 335 Z" fill="url(#skin-maya)" />
+  <ellipse cx="200" cy="275" rx="20" ry="7" fill="#5D4037" opacity="0.4" />
+
+  <!-- Braided Pigtails (Left & Right) -->
+  <!-- Left Pigtail Balls -->
+  <circle cx="120" cy="240" r="22" fill="url(#hair-maya)" />
+  <circle cx="120" cy="280" r="22" fill="url(#hair-maya)" />
+  <circle cx="120" cy="320" r="22" fill="url(#hair-maya)" />
+  <!-- Hair ties -->
+  <ellipse cx="120" cy="260" rx="18" ry="4" fill="#795548" />
+  <ellipse cx="120" cy="300" rx="18" ry="4" fill="#795548" />
+
+  <!-- Right Pigtail Balls -->
+  <circle cx="280" cy="240" r="22" fill="url(#hair-maya)" />
+  <circle cx="280" cy="280" r="22" fill="url(#hair-maya)" />
+  <circle cx="280" cy="320" r="22" fill="url(#hair-maya)" />
+  <!-- Hair ties -->
+  <ellipse cx="280" cy="260" rx="18" ry="4" fill="#795548" />
+  <ellipse cx="280" cy="300" rx="18" ry="4" fill="#795548" />
+
+  <!-- Head/Face -->
+  <ellipse cx="200" cy="200" rx="63" ry="79" fill="url(#skin-maya)" />
+  <!-- Cheeks blush -->
+  <ellipse cx="160" cy="210" rx="15" ry="10" fill="#EF9A9A" opacity="0.35" />
+  <ellipse cx="240" cy="210" rx="15" ry="10" fill="#EF9A9A" opacity="0.35" />
+
+  <!-- Ears -->
+  <ellipse cx="134" cy="195" rx="11" ry="17" fill="url(#skin-maya)" />
+  <ellipse cx="266" cy="195" rx="11" ry="17" fill="url(#skin-maya)" />
+
+  <!-- Eyes (Expressive large) -->
+  <ellipse cx="172" cy="185" rx="14" ry="10" fill="#FFFFFF" />
+  <ellipse cx="228" cy="185" rx="14" ry="10" fill="#FFFFFF" />
+  <circle cx="172" cy="185" r="7" fill="#263238" />
+  <circle cx="228" cy="185" r="7" fill="#263238" />
+  <circle cx="174" cy="183" r="2.5" fill="#FFFFFF" />
+  <circle cx="230" cy="183" r="2.5" fill="#FFFFFF" />
+  <!-- Eyelashes -->
+  <path d="M156 182 Q172 172 188 182" fill="none" stroke="#212121" stroke-width="3.5" stroke-linecap="round" />
+  <path d="M212 182 Q228 172 244 182" fill="none" stroke="#212121" stroke-width="3.5" stroke-linecap="round" />
+
+  <!-- Eyebrows -->
+  <path d="M156 166 Q172 158 186 166" fill="none" stroke="#212121" stroke-width="4" stroke-linecap="round" />
+  <path d="M214 166 Q228 158 244 166" fill="none" stroke="#212121" stroke-width="4" stroke-linecap="round" />
+
+  <!-- Nose -->
+  <path d="M200 192 L204 212 L196 212" fill="none" stroke="#5D4037" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Mouth / Full red lips -->
+  <path d="M185 238 Q200 248 215 238 Q200 242 185 238 Z" fill="#D32F2F" />
+
+  <!-- Front Hair / Middle Part Bangs -->
+  <path d="M136 170 Q130 110 200 115 Q170 140 136 170 Z" fill="url(#hair-maya)" />
+  <path d="M264 170 Q270 110 200 115 Q230 140 264 170 Z" fill="url(#hair-maya)" />
+  <!-- Top Head Hair Curve -->
+  <path d="M130 140 C120 90, 160 80, 200 85 C240 80, 280 90, 270 140 C250 100, 200 115, 200 115 C200 115, 150 100, 130 140 Z" fill="url(#hair-maya)" />
+</svg>

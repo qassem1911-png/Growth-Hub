@@ -13,6 +13,8 @@ export interface Profile {
   id: string
   full_name: string | null
   avatar_url: string | null
+  custom_avatar?: string | null
+  google_avatar_url?: string | null
   age: number | null
   mission_goal: string | null
   weekly_project: string | null
@@ -425,6 +427,27 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [profile?.id])
 
+  // Handle Authentication Changes (Logout / Ghost State Fix)
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setProfile(null)
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('cached_profile')
+          localStorage.removeItem('cached_name')
+        }
+        router.push('/auth/login')
+      } else if (event === 'SIGNED_IN') {
+        setIsLoading(true)
+        refreshProfile()
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [router, supabase])
+
   const addXp = async (amount: number) => {
     if (!profile) return
     const newXp = (profile.xp || 0) + Math.round(amount)
@@ -476,11 +499,31 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
         const storedLang = typeof window !== 'undefined' ? localStorage.getItem('language') as Language : null
         
         if (data) {
+          const gender = data.gender || user.user_metadata?.gender || null;
+          const age = data.age || user.user_metadata?.age || user.user_metadata?.age_range?.min || null;
+          const full_name = data.full_name || user.user_metadata?.full_name || null;
+
+          if ((!data.gender && gender) || (!data.age && age) || (!data.full_name && full_name)) {
+            supabase.from('profiles').update({ gender, age, full_name }).eq('id', user.id).then(() => {})
+          }
+
+          // 1. Custom avatar from user_metadata or data.custom_avatar or data.avatar_url if it's an SVG
+          const customAvatar = user.user_metadata?.custom_avatar || data.custom_avatar || (data.avatar_url?.startsWith('/avatars/') ? data.avatar_url : null);
+          // 2. Google Auth Profile Picture
+          const googleAvatar = user.user_metadata?.avatar_url || (data.avatar_url?.startsWith('http') ? data.avatar_url : null);
+          // 3. Fallback based on gender
+          const defaultAvatar = (gender === 'female' || gender === 'أنثى' || gender === 'Female') ? '/avatars/menna.svg' : '/avatars/omar.svg';
+          const resolvedAvatarUrl = customAvatar || googleAvatar || defaultAvatar;
+
           const profileData = {
             ...data,
             language: data.language || storedLang || 'en',
-            full_name: data.full_name || user.user_metadata.full_name,
-            avatar_url: data.avatar_url || user.user_metadata.avatar_url,
+            full_name,
+            gender,
+            age,
+            avatar_url: resolvedAvatarUrl,
+            custom_avatar: customAvatar,
+            google_avatar_url: googleAvatar,
             ai_name: data.ai_name,
             ai_personality: data.ai_personality || 'GENTLE',
             xp: data.xp || 0,
@@ -495,7 +538,7 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
           if (typeof window !== 'undefined') {
             localStorage.setItem('cached_profile', JSON.stringify(profileData))
             if (profileData.language) {
-              localStorage.setItem('language', profileData.language)
+               localStorage.setItem('language', profileData.language)
             }
           }
 
@@ -520,12 +563,24 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
           }
         } else {
           console.log('PROFILE_MISSING: Auto-creating profile for', user.id)
+          const gender = user.user_metadata?.gender || null;
+          const age = user.user_metadata?.age || user.user_metadata?.age_range?.min || null;
+          const full_name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+
+          const customAvatar = user.user_metadata?.custom_avatar || null;
+          const googleAvatar = user.user_metadata?.avatar_url || null;
+          const defaultAvatar = (gender === 'female' || gender === 'أنثى' || gender === 'Female') ? '/avatars/menna.svg' : '/avatars/omar.svg';
+          const resolvedAvatarUrl = customAvatar || googleAvatar || defaultAvatar;
+
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert({
               id: user.id,
-              full_name: user.user_metadata.full_name || user.email?.split('@')[0] || 'User',
-              onboarded: true,
+              full_name,
+              avatar_url: resolvedAvatarUrl,
+              gender,
+              age,
+              onboarded: false,
               xp: 0,
               rank: 'RECRUIT',
               active_theme: 'INIT_GREEN',
@@ -537,6 +592,9 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
           if (!createError && newProfile) {
             const newProfileData = {
               ...newProfile,
+              avatar_url: resolvedAvatarUrl,
+              custom_avatar: customAvatar,
+              google_avatar_url: googleAvatar,
               email: user.email || null
             } as Profile
             setProfile(newProfileData)

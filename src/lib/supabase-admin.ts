@@ -15,12 +15,11 @@ export const createAdminClient = () => {
     },
     global: {
       fetch: (url, init) => {
+        const headers = new Headers(init?.headers)
+        headers.set('Connection', 'keep-alive')
         return fetch(url, {
           ...init,
-          headers: {
-            ...init?.headers,
-            'Connection': 'keep-alive',
-          },
+          headers,
           next: { revalidate: 0 },
         })
       }

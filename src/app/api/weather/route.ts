@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
 
 function getWeatherCondition(code: number): { desc: string; emoji: string } {
   if (code === 0) return { desc: 'Clear sky', emoji: '☀️' }
@@ -48,11 +47,9 @@ export async function GET(req: NextRequest) {
     console.error('Error parsing lat/lon:', e)
   }
 
-  // Create geo cache key rounded to 1 decimal place (e.g. 31.2_29.9)
   const latRounded = Math.round(rawLat * 10) / 10
   const lonRounded = Math.round(rawLon * 10) / 10
   const cacheKey = `${latRounded}_${lonRounded}`
-
   const now = Date.now()
 
   try {
@@ -71,7 +68,7 @@ export async function GET(req: NextRequest) {
     console.log(`WEATHER_CACHE_MISS for key: ${cacheKey}`)
 
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${rawLat}&longitude=${rawLon}&current_weather=true`
-    const weatherRes = await fetch(weatherUrl, { next: { revalidate: 7200 } }) // Cache weather for 2 hours in network context
+    const weatherRes = await fetch(weatherUrl, { next: { revalidate: 7200 } })
     
     if (!weatherRes.ok) {
       throw new Error(`Weather API returned status ${weatherRes.status}`)
@@ -87,50 +84,46 @@ export async function GET(req: NextRequest) {
     const code = current.weathercode
     const condition = getWeatherCondition(code)
 
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY
-    if (!apiKey) {
-      console.warn('Weather AI Integration: GEMINI API key is missing. Using fallback messages.')
-      const noApiKeyRes = {
-        temp,
-        emoji: condition.emoji,
-        messageAr: 'الجو النهاردة مشجع على الإنجاز، ابدأ وركز!',
-        messageEn: 'Today is a great day to make progress—let\'s get started!'
+    // SMART SYSTEM: Instantly compile high-quality atmospheric greetings locally without blocking API requests!
+    let messageAr = 'الجو حلو النهاردة، فرصة ممتازة تخلص اللي وراك!'
+    let messageEn = 'Nice weather today—perfect time to get things done!'
+
+    if (code === 0) { // Clear sky
+      if (temp > 30) {
+        messageAr = 'الجو حر النهاردة، كوباية ماية متلجة وركز في مهمتك!'
+        messageEn = 'Hot out there! Grab some ice water and tackle your missions.'
+      } else {
+        messageAr = 'الجو مشمس وجميل، أنسب وقت تحقق فيه أهدافك!'
+        messageEn = 'Sunny and beautiful—prime time to make progress today!'
       }
-      // Cache even the no-apiKey response to avoid weather service flood
-      weatherCache.set(cacheKey, {
-        ...noApiKeyRes,
-        timestamp: now
-      })
-      return NextResponse.json(noApiKeyRes)
+    } else if (code >= 1 && code <= 3) { // Partly cloudy
+      messageAr = 'جو غيوم خفيف ولطيف، ركز وخلص أهداف النهاردة!'
+      messageEn = 'Pleasant overcast skies. Let\'s crush today\'s objectives!'
+    } else if (code === 45 || code === 48) { // Foggy
+      messageAr = 'الجو ضباب برة، خلي تركيزك جوه الهاب مية في المية!'
+      messageEn = 'Foggy outside. Keep your focus razor-sharp inside the Hub!'
+    } else if ((code >= 51 && code <= 55) || (code >= 80 && code <= 82)) { // Drizzle/Showers
+      messageAr = 'مطرة خفيفة بتشجع على التخطيط، كوباية شاي وركز!'
+      messageEn = 'Light rain is great for focus. Sip tea and get to work!'
+    } else if (code >= 61 && code <= 65) { // Rainy
+      messageAr = 'صوت المطر برة مريح للأعصاب، أنسب وقت للتركيز العميق!'
+      messageEn = 'The sound of rain is perfect for deep work. Let\'s build!'
+    } else if (code >= 71 && code <= 75) { // Snowy
+      messageAr = 'الجو برد وتلج، خليك دافي وركز في مشاريعك!'
+      messageEn = 'Cold out there! Stay warm and make significant progress.'
+    } else if (code >= 95) { // Thunderstorm
+      messageAr = 'عاصفة ورعد برة؟ أحسن وقت تقعد في هدوء وتخلص اللي وراك!'
+      messageEn = 'Stormy weather outside. The perfect excuse to stay in and focus.'
+    } else { // Generic Cloudy
+      messageAr = 'الجو هادي ومناسب للشغل الرايق، ابدأ فوراً!'
+      messageEn = 'Calm sky today—perfect setting for some clean progress!'
     }
-
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
-
-    const prompt = `You are a helpful, minimalist life assistant inside a focus/productivity hub. 
-The user's current weather is ${temp}°C and condition is ${condition.desc}. 
-
-Generate a single, very short, natural and friendly phrase (Max 8-10 words) encouraging them to focus or plan their day based on this weather. 
-Do NOT use military, sci-fi, or robotic jargon. Keep it completely natural, human, and friendly. 
-Provide the response in Arabic (Egyptian dialect, warm tone) and a matching clean English version.
-
-Output ONLY a valid JSON object of the format:
-{
-  "messageAr": "الجو جميل بره، فرصة حلوة تركز وتنجز وراك!",
-  "messageEn": "Beautiful weather outside—perfect time to focus and get things done!"
-}
-No markdown, no explanation, just JSON.`
-
-    const result = await model.generateContent(prompt)
-    const text = result.response.text()
-    const cleaned = text.replace(/```json|```/g, '').trim()
-    const parsed = JSON.parse(cleaned)
 
     const successResponse = {
       temp,
       emoji: condition.emoji,
-      messageAr: parsed.messageAr || fallbackResponse.messageAr,
-      messageEn: parsed.messageEn || fallbackResponse.messageEn
+      messageAr,
+      messageEn
     }
 
     // Set cache entry
@@ -142,7 +135,6 @@ No markdown, no explanation, just JSON.`
     return NextResponse.json(successResponse)
   } catch (error) {
     console.error('WEATHER_API_ROUTE_ERROR:', error)
-    // Seamless fallback so dashboard render never breaks
     return NextResponse.json(fallbackResponse)
   }
 }

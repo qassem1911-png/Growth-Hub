@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg-menna" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#7B1FA2" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#4A148C" stop-opacity="0.1" />
+    </radialGradient>
+    <linearGradient id="cardigan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8E24AA" />
+      <stop offset="100%" stop-color="#5E35B1" />
+    </linearGradient>
+    <linearGradient id="shirt-menna" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00E5FF" />
+      <stop offset="100%" stop-color="#00ACC1" />
+    </linearGradient>
+    <linearGradient id="skin-menna" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFD54F" />
+      <stop offset="50%" stop-color="#FFCA28" />
+      <stop offset="100%" stop-color="#FFB300" />
+    </linearGradient>
+    <linearGradient id="hair-menna" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6D4C41" />
+      <stop offset="50%" stop-color="#5D4037" />
+      <stop offset="100%" stop-color="#3E2723" />
+    </linearGradient>
+    <filter id="glow-menna" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Glow -->
+  <circle cx="200" cy="200" r="190" fill="url(#bg-menna)" />
+  <circle cx="200" cy="200" r="185" fill="none" stroke="#00E5FF" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="10 5" />
+
+  <!-- Body / Clothes -->
+  <path d="M110 380 C110 300, 290 300, 290 380 Z" fill="url(#cardigan)" />
+  <path d="M150 380 C150 320, 250 320, 250 380 Z" fill="url(#shirt-menna)" />
+  <!-- Shirt Collar Ribs -->
+  <line x1="170" y1="340" x2="170" y2="380" stroke="#00838F" stroke-width="3" opacity="0.5" />
+  <line x1="190" y1="340" x2="190" y2="380" stroke="#00838F" stroke-width="3" opacity="0.5" />
+  <line x1="210" y1="340" x2="210" y2="380" stroke="#00838F" stroke-width="3" opacity="0.5" />
+  <line x1="230" y1="340" x2="230" y2="380" stroke="#00838F" stroke-width="3" opacity="0.5" />
+
+  <!-- Neck -->
+  <path d="M175 250 L225 250 L220 330 L180 330 Z" fill="url(#skin-menna)" />
+  <ellipse cx="200" cy="270" rx="22" ry="8" fill="#FFA000" opacity="0.4" />
+
+  <!-- Back Hair (Bob cut) -->
+  <path d="M100 160 C90 260, 130 310, 160 300 C160 270, 240 270, 240 300 C270 310, 310 260, 300 160 Z" fill="url(#hair-menna)" />
+
+  <!-- Head/Face -->
+  <ellipse cx="200" cy="200" rx="65" ry="80" fill="url(#skin-menna)" />
+
+  <!-- Ears -->
+  <ellipse cx="132" cy="195" rx="12" ry="18" fill="url(#skin-menna)" />
+  <ellipse cx="268" cy="195" rx="12" ry="18" fill="url(#skin-menna)" />
+
+  <!-- Eyes -->
+  <ellipse cx="172" cy="185" rx="14" ry="10" fill="#FFFFFF" />
+  <ellipse cx="228" cy="185" rx="14" ry="10" fill="#FFFFFF" />
+  <circle cx="172" cy="185" r="7" fill="#00838F" />
+  <circle cx="228" cy="185" r="7" fill="#00838F" />
+  <circle cx="174" cy="183" r="2.5" fill="#FFFFFF" />
+  <circle cx="230" cy="183" r="2.5" fill="#FFFFFF" />
+
+  <!-- Eyebrows -->
+  <path d="M155 168 Q172 160 185 168" fill="none" stroke="#3E2723" stroke-width="4.5" stroke-linecap="round" />
+  <path d="M215 168 Q228 160 245 168" fill="none" stroke="#3E2723" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Nose -->
+  <path d="M200 195 L205 212 L195 212" fill="none" stroke="#C68400" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Lips/Mouth -->
+  <path d="M185 235 Q200 245 215 235 Q200 240 185 235 Z" fill="#E91E63" />
+
+  <!-- Black Round Glasses -->
+  <circle cx="172" cy="185" r="24" fill="none" stroke="#212121" stroke-width="6" />
+  <circle cx="228" cy="185" r="24" fill="none" stroke="#212121" stroke-width="6" />
+  <line x1="196" y1="182" x2="204" y2="182" stroke="#212121" stroke-width="5" />
+  <line x1="148" y1="180" x2="132" y2="175" stroke="#212121" stroke-width="5" stroke-linecap="round" />
+  <line x1="252" y1="180" x2="268" y2="175" stroke="#212121" stroke-width="5" stroke-linecap="round" />
+  <!-- Glasses Glare -->
+  <line x1="160" y1="170" x2="175" y2="165" stroke="#FFFFFF" stroke-width="2" opacity="0.6" stroke-linecap="round" />
+  <line x1="216" y1="170" x2="231" y2="165" stroke="#FFFFFF" stroke-width="2" opacity="0.6" stroke-linecap="round" />
+
+  <!-- Front Hair / Bangs -->
+  <path d="M135 150 Q160 110 210 120 Q255 125 265 155 Q240 125 210 125 Q160 120 135 150 Z" fill="url(#hair-menna)" filter="url(#glow-menna)" />
+  <path d="M140 135 Q170 125 200 128" fill="none" stroke="#8D6E63" stroke-width="2" opacity="0.5" />
+</svg>

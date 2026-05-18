@@ -137,7 +137,7 @@ export default function PomodoroHUD() {
                       </div>
                       <button 
                         onClick={handleSave}
-                        className="w-full py-2 font-space font-black text-[11px] uppercase tracking-widest text-white dark:text-black"
+                        className="w-full py-2 font-space font-black text-[11px] uppercase tracking-widest text-zinc-900"
                         style={{ backgroundColor: currentTheme.color }}
                       >
                         {isRTL ? 'حفظ الإعدادات' : 'SAVE_CONFIG'}
@@ -171,7 +171,7 @@ export default function PomodoroHUD() {
                         {!isActive ? (
                           <button 
                             onClick={startTimer}
-                            className="flex-1 py-2 text-white dark:text-black font-space font-black text-[12px] uppercase tracking-[0.2em]"
+                            className="flex-1 py-2 text-zinc-900 font-space font-black text-[12px] uppercase tracking-[0.2em]"
                             style={{ backgroundColor: currentTheme.color, boxShadow: `0 0 15px ${currentTheme.color}66` }}
                           >
                             {isRTL ? 'ابدأ الجلسة' : 'START_SESSION'}
@@ -179,7 +179,7 @@ export default function PomodoroHUD() {
                         ) : isPaused ? (
                           <button 
                             onClick={resume}
-                            className="flex-1 py-1.5 text-white dark:text-black font-space font-black text-[9px] uppercase tracking-widest hover:brightness-110"
+                            className="flex-1 py-1.5 text-zinc-900 font-space font-black text-[9px] uppercase tracking-widest hover:brightness-110"
                             style={{ backgroundColor: currentTheme.color }}
                           >
                             RESUME
@@ -215,7 +215,7 @@ export default function PomodoroHUD() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+            className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-white/80 dark:bg-black/85 backdrop-blur-md"
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
@@ -267,7 +267,7 @@ export default function PomodoroHUD() {
                   </button>
                   <button
                     onClick={cancelSwitch}
-                    className="flex-1 py-2.5 text-white dark:text-black font-space font-black text-xs uppercase tracking-widest transition-all"
+                    className="flex-1 py-2.5 text-zinc-900 font-space font-black text-xs uppercase tracking-widest transition-all"
                     style={{ backgroundColor: currentTheme.color }}
                   >
                     {isRTL ? 'الاستمرار بالتركيز' : 'KEEP FOCUSING'}

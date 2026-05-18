@@ -11,7 +11,7 @@ export default function LevelUpModal() {
     <AnimatePresence>
       {isRankUpModalOpen && (
         <motion.div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-2xl"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-white/95 dark:bg-black/95 backdrop-blur-2xl"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -20,7 +20,7 @@ export default function LevelUpModal() {
           <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(0,0,0,0)_95%,rgba(0,206,209,0.03)_95%)] bg-[size:100%_18px] pointer-events-none" />
 
           {/* Central celebratory card */}
-          <div className="relative flex flex-col items-center max-w-lg w-full p-8 mx-4 border border-cyan-500/20 bg-[#050505]/80 backdrop-blur-md text-center rounded-sm">
+          <div className="relative flex flex-col items-center max-w-lg w-full p-8 mx-4 border border-cyan-500/20 bg-white/90 dark:bg-[#050505]/80 backdrop-blur-md text-center rounded-sm shadow-2xl">
             {/* Top flashing system indicator */}
             <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-transparent via-[#00CED1] to-transparent animate-pulse" />
             
@@ -82,11 +82,11 @@ export default function LevelUpModal() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="mt-3 inline-flex items-center gap-3 px-4 py-1.5 rounded-sm bg-cyan-950/40 border border-cyan-800/30 text-[10px] md:text-xs font-space font-black tracking-widest text-[#B0C4DE]"
+              className="mt-3 inline-flex items-center gap-3 px-4 py-1.5 rounded-sm bg-cyan-500/10 dark:bg-cyan-950/40 border border-cyan-800/30 text-[10px] md:text-xs font-space font-black tracking-widest text-zinc-700 dark:text-[#B0C4DE]"
             >
               <span>{oldRank}</span>
               <span className="material-symbols-outlined text-sm text-[#00CED1]">double_arrow</span>
-              <span className="text-white font-bold">{newRank}</span>
+              <span className="text-zinc-900 dark:text-white font-bold">{newRank}</span>
             </motion.div>
 
             <motion.p 

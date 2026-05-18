@@ -19,6 +19,7 @@ import OperatorGuide from '@/components/ui/OperatorGuide'
 import GlobalActionMenu from '@/components/ui/GlobalActionMenu'
 import LevelUpModal from '@/components/ui/LevelUpModal'
 import GlitchOverlay from '@/components/ui/GlitchOverlay'
+import OnboardingOverlay from '@/components/ui/OnboardingOverlay'
 
 interface ShellProps {
   children: React.ReactNode
@@ -28,7 +29,7 @@ interface ShellProps {
 
 export default function Shell({ children, syncedMissions = [], onMissionsRefresh }: ShellProps) {
   // 1. ALL HOOKS AT THE TOP
-  const { isRTL, profile, calculateAccountability, lastAiMessage, t, currentTheme, isRankUpModalOpen } = useGrowth()
+  const { isRTL, profile, calculateAccountability, lastAiMessage, t, currentTheme, isRankUpModalOpen, isLoading } = useGrowth()
   const pathname = usePathname()
   const router = useRouter()
   const { playNeuralLink, playBlip } = useSound()
@@ -39,6 +40,13 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
   const [streak, setStreak] = useState(0)
 
   const [mounted, setMounted] = useState(false)
+  const [onboardingComplete, setOnboardingComplete] = useState(() => {
+    // Read synchronously on init to prevent flash for existing users
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('onboarding_complete') === 'true'
+    }
+    return true // default to true on SSR (no overlay shown)
+  })
   const [shellIsRTL, setShellIsRTL] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('language') === 'ar'
@@ -51,6 +59,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
     const lang = localStorage.getItem('language') || 'en'
     const rtl = lang === 'ar'
     setShellIsRTL(rtl)
+    setOnboardingComplete(localStorage.getItem('onboarding_complete') === 'true')
     if (typeof document !== 'undefined') {
       document.documentElement.dir = rtl ? 'rtl' : 'ltr'
       document.documentElement.lang = rtl ? 'ar' : 'en'
@@ -60,6 +69,16 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
   useEffect(() => {
     setShellIsRTL(isRTL)
   }, [isRTL])
+
+  const handleOnboardingComplete = async () => {
+    localStorage.setItem('onboarding_complete', 'true')
+    setOnboardingComplete(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      await supabase.from('profiles').update({ onboarded: true }).eq('id', user.id)
+    }
+  }
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -148,6 +167,24 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
     return 'SUPPORTIVE'
   }, [profile?.rank])
 
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-white dark:bg-black z-[9999]">
+        <div className="flex flex-col items-center gap-6">
+          {/* Glassmorphic Cyber Spinner */}
+          <div className="relative w-24 h-24">
+            <div className="absolute inset-0 rounded-full border-t-4 border-l-4 border-transparent border-t-[var(--theme-color)] border-l-[var(--theme-color)] animate-spin" style={{ opacity: 0.8, filter: 'drop-shadow(0 0 10px var(--theme-color))' }} />
+            <div className="absolute inset-2 rounded-full border-b-4 border-r-4 border-transparent border-b-[var(--theme-color)] border-r-[var(--theme-color)] animate-spin-reverse" style={{ opacity: 0.5 }} />
+            <div className="absolute inset-4 rounded-full bg-[var(--theme-color)]/10 backdrop-blur-md flex items-center justify-center animate-pulse">
+              <span className="material-symbols-outlined text-[var(--theme-color)] text-3xl">token</span>
+            </div>
+          </div>
+          <p className="font-monospace text-[var(--theme-color)] tracking-[0.3em] text-sm animate-pulse">UPLINK_ESTABLISHING...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className={cn(
@@ -173,8 +210,8 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
         <header className="w-full px-4 md:px-8 h-16 flex justify-between items-center border-b border-[var(--card-border)] bg-[var(--sidebar-bg)]/95 backdrop-blur-2xl z-[150] sticky top-0 transition-colors duration-500">
           <div className="absolute -bottom-[1px] inset-inline-start-12 w-48 h-[1px] shadow-[0_0_15px_currentcolor]" style={{ backgroundColor: currentTheme.color, color: currentTheme.color }} />
 
-          {/* LEFT: GROWTH_HUB Brand + Streak */}
-          <div className="flex items-center gap-2 md:gap-3 max-w-[35%] truncate">
+          {/* LEFT: GROWTH_HUB Brand + Streak + User Avatar/Name */}
+          <div className="flex items-center gap-2 md:gap-4 max-w-[45%] truncate">
             {/* Breathing bolt */}
             <motion.span
               className="material-symbols-outlined text-lg md:text-xl shrink-0"
@@ -185,8 +222,27 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
               bolt
             </motion.span>
 
+            {/* User Avatar & Name (Premium Instagram story ring) */}
+            <div className="flex items-center gap-2.5 cursor-pointer group shrink-0" onClick={() => router.push('/settings')}>
+              <div className="relative w-9 h-9 md:w-10 md:h-10 rounded-full border border-zinc-200 dark:border-white/20 p-0.5 flex items-center justify-center bg-black/5 dark:bg-black/40 overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-transform group-hover:scale-105 shrink-0" style={{ borderColor: `${currentTheme.color}80`, boxShadow: `0 0 15px ${currentTheme.color}33` }}>
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Operator" className="w-full h-full object-cover rounded-full" />
+                ) : (
+                  <span className="material-symbols-outlined text-zinc-500 dark:text-white/40 text-lg">person</span>
+                )}
+              </div>
+              <div className="hidden sm:block truncate space-y-0.5 max-w-[120px] md:max-w-[160px]">
+                <p className="text-xs font-space font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-wider truncate leading-none">
+                  {profile?.full_name || 'OPERATOR'}
+                </p>
+                <p className="text-[9px] font-space tracking-widest uppercase font-black opacity-60 leading-none truncate" style={{ color: currentTheme.color }}>
+                  {profile?.rank || 'RECRUIT'}
+                </p>
+              </div>
+            </div>
+
             {/* Streak Indicator */}
-            <div className="hidden sm:flex items-center gap-1 border-l border-[var(--card-border)] pl-3" title={isRTL ? 'سلسلة الأيام' : 'Streak'}>
+            <div className="hidden md:flex items-center gap-1 border-l border-[var(--card-border)] pl-3 shrink-0" title={isRTL ? 'سلسلة الأيام' : 'Streak'}>
               <span
                 className={cn('material-symbols-outlined text-sm transition-all duration-500', streak > 0 ? 'scale-110 animate-pulse' : 'opacity-20')}
                 style={{
@@ -200,7 +256,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
                 className="text-[10px] font-space tracking-tight font-black uppercase"
                 style={{ color: streak > 0 ? (personality === 'SAVAGE' ? '#FF0055' : '#FF5F00') : undefined, opacity: streak > 0 ? 1 : 0.2 }}
               >
-                {streak}{streak > 0 && <span className="hidden md:inline"> {isRTL ? (streak === 1 ? 'يوم' : 'أيام') : (streak === 1 ? 'DAY' : 'DAYS')}</span>}
+                {streak}{streak > 0 && <span className="hidden lg:inline"> {isRTL ? (streak === 1 ? 'يوم' : 'أيام') : (streak === 1 ? 'DAY' : 'DAYS')}</span>}
               </span>
             </div>
           </div>
@@ -370,6 +426,13 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
 
       <LevelUpModal />
       <GlitchOverlay active={isRankUpModalOpen} />
+
+      {profile !== undefined && (profile?.onboarded === false || profile?.onboarded === null) && !onboardingComplete && mounted && (
+        <OnboardingOverlay 
+          language={shellIsRTL ? 'ar' : 'en'}
+          onComplete={handleOnboardingComplete}
+        />
+      )}
     </div>
   )
 }

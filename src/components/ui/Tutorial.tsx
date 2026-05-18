@@ -94,7 +94,7 @@ export default function Tutorial() {
        <motion.div 
          initial={{ opacity: 0 }}
          animate={{ opacity: 1 }}
-         className="absolute inset-0 bg-black/80 backdrop-blur-[2px] pointer-events-auto"
+         className="absolute inset-0 bg-white/80 dark:bg-black/80 backdrop-blur-[2px] pointer-events-auto"
          style={{
            clipPath: spotlightRect 
              ? `polygon(0% 0%, 0% 100%, ${spotlightRect.left}px 100%, ${spotlightRect.left}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.top}px, ${spotlightRect.right}px ${spotlightRect.bottom}px, ${spotlightRect.left}px ${spotlightRect.bottom}px, ${spotlightRect.left}px 100%, 100% 100%, 100% 0%)`
@@ -130,7 +130,7 @@ export default function Tutorial() {
                "{STEPS[currentStep].text}"
             </p>
 
-            <div className="flex justify-between items-center pt-6 border-t border-white/5">
+            <div className="flex justify-between items-center pt-6 border-t border-black/5 dark:border-white/5">
                <button 
                  onClick={finish}
                  className="text-[10px] font-space tracking-[0.3em] uppercase font-black text-foreground/20 hover:text-red-500 transition-colors"

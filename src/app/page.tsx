@@ -23,8 +23,22 @@ const SIZE_MAP: Record<string, 'sm' | 'md' | 'lg'> = {
 }
 
 function WeatherWidget({ isRTL }: { isRTL: boolean }) {
-  const [weather, setWeather] = useState<{ temp: number; emoji: string; messageAr: string; messageEn: string } | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [weather, setWeather] = useState<{ temp: number; emoji: string; messageAr: string; messageEn: string }>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('cached_weather')
+      if (cached) {
+        try {
+          return JSON.parse(cached)
+        } catch {}
+      }
+    }
+    return {
+      temp: 24,
+      emoji: '☀️',
+      messageAr: 'الجو حلو النهاردة، فرصة ممتازة تخلص اللي وراك!',
+      messageEn: 'Nice weather today—perfect time to get things done!'
+    }
+  })
 
   useEffect(() => {
     let active = true
@@ -32,37 +46,57 @@ function WeatherWidget({ isRTL }: { isRTL: boolean }) {
       try {
         let lat = '31.2001'
         let lon = '29.9187'
-        if (navigator.geolocation) {
-          await new Promise<void>((resolve) => {
-            navigator.geolocation.getCurrentPosition(
-              (pos) => {
-                lat = pos.coords.latitude.toString()
-                lon = pos.coords.longitude.toString()
-                resolve()
-              },
-              () => resolve(),
-              { timeout: 5000 }
-            )
-          })
+        
+        // Try getting cached coordinates first
+        if (typeof window !== 'undefined') {
+          const cachedLat = localStorage.getItem('cached_lat')
+          const cachedLon = localStorage.getItem('cached_lon')
+          if (cachedLat && cachedLon) {
+            lat = cachedLat
+            lon = cachedLon
+          }
         }
-        const res = await fetch(`/api/weather?lat=${lat}&lon=${lon}`)
-        if (!res.ok) throw new Error('API request failed')
-        const data = await res.json()
-        if (active) {
-          setWeather(data)
-          setLoading(false)
+
+        const fetchAndStore = async (xLat: string, xLon: string) => {
+          try {
+            const res = await fetch(`/api/weather?lat=${xLat}&lon=${xLon}`)
+            if (!res.ok) return
+            const data = await res.json()
+            if (active && data) {
+              setWeather(data)
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('cached_weather', JSON.stringify(data))
+              }
+            }
+          } catch (e) {
+            console.error('Weather background fetch error:', e)
+          }
+        }
+
+        // 1. Instantly trigger background fetch using whatever coordinates we have (default or cached)
+        fetchAndStore(lat, lon)
+
+        // 2. Try precise geolocation asynchronously (non-blocking)
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const freshLat = pos.coords.latitude.toString()
+              const freshLon = pos.coords.longitude.toString()
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('cached_lat', freshLat)
+                localStorage.setItem('cached_lon', freshLon)
+              }
+              // If coordinates are different from what we used, fetch again in background
+              if (freshLat !== lat || freshLon !== lon) {
+                fetchAndStore(freshLat, freshLon)
+              }
+            },
+            () => {},
+            { timeout: 5000 }
+          )
         }
       } catch (err) {
-        console.error('Weather error:', err)
-        if (active) {
-          setWeather({
-            temp: 24,
-            emoji: '☀️',
-            messageAr: 'الجو حلو النهاردة، فرصة ممتازة تخلص اللي وراك!',
-            messageEn: 'Nice weather today—perfect time to get things done!'
-          })
-          setLoading(false)
-        }
+        console.error('Weather effect error:', err)
       }
     }
     fetchWeather()
@@ -71,24 +105,13 @@ function WeatherWidget({ isRTL }: { isRTL: boolean }) {
     }
   }, [])
 
-  if (loading) {
-    return (
-      <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 backdrop-blur-md mb-4 flex items-center justify-between animate-pulse w-full max-w-lg mx-auto">
-        <div className="h-5 w-16 bg-white/10 rounded-sm" />
-        <div className="h-4 w-48 bg-white/10 rounded-sm" />
-      </div>
-    )
-  }
-
-  if (!weather) return null
-
   return (
-    <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 backdrop-blur-md mb-4 flex items-center justify-between w-full max-w-lg mx-auto">
-      <div className="text-sm font-medium text-white/90 flex items-center gap-1.5 font-space">
+    <div className="bg-white/60 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/5 rounded-xl p-4 backdrop-blur-md mb-4 flex items-center justify-between w-full max-w-lg mx-auto shadow-sm dark:shadow-none">
+      <div className="text-sm font-medium text-zinc-900 dark:text-white/90 flex items-center gap-1.5 font-space">
         <span>{weather.emoji}</span>
         <span>{weather.temp}°C</span>
       </div>
-      <div className="text-xs text-white/50 font-normal text-right max-w-[60%] leading-relaxed font-space">
+      <div className="text-xs text-zinc-600 dark:text-white/50 font-normal text-right max-w-[60%] leading-relaxed font-space">
         {isRTL ? weather.messageAr : weather.messageEn}
       </div>
     </div>
@@ -190,7 +213,7 @@ export default function Dashboard() {
           </p>
 
           {/* Sleek, low-profile weekly time floating sub-badge */}
-          <div className="font-space font-black text-white/50 text-xs tracking-wider uppercase flex items-center gap-1.5 justify-center mt-2">
+          <div className="font-space font-black text-zinc-600 dark:text-white/50 text-xs tracking-wider uppercase flex items-center gap-1.5 justify-center mt-2">
             <span>⏱ THIS WEEK: {Math.floor(weeklyMinutes / 60)}h {weeklyMinutes % 60}m invested</span>
           </div>
         </div>
@@ -233,7 +256,7 @@ export default function Dashboard() {
               </div>
               {/* Segmented 9-slot bar - Dynamic Theme Energy Tank */}
               <div 
-                className="flex gap-[4px] h-[16px] p-[2px] rounded-sm border bg-[#050505] overflow-hidden"
+                className="flex gap-[4px] h-[16px] p-[2px] rounded-sm border bg-zinc-100 dark:bg-[#050505] overflow-hidden"
                 style={{
                   borderColor: `${currentTheme.color}40`,
                   boxShadow: `0 0 15px ${currentTheme.color}26, inset 0 0 10px ${currentTheme.color}0d`,
@@ -389,7 +412,7 @@ export default function Dashboard() {
 
           {missions.length === 0 && !loading && (
             <div className="col-span-full py-24">
-              <p className="text-white/30 text-sm text-center">No active goals synced. Use the action panel above to initiate.</p>
+              <p className="text-zinc-500 dark:text-white/30 text-sm text-center">No active goals synced. Use the action panel above to initiate.</p>
             </div>
           )}
         </section>

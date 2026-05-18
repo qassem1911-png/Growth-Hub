@@ -98,7 +98,7 @@ export default function OnboardingTour() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             // Exact class spec from the brief
-            className="fixed inset-0 backdrop-blur-md bg-black/60 z-[9999] flex items-center justify-center"
+            className="fixed inset-0 backdrop-blur-md bg-white/60 dark:bg-black/60 z-[9999] flex items-center justify-center"
             onClick={dismiss}
           >
             {/* Tour Card — stop click propagation */}
@@ -113,7 +113,7 @@ export default function OnboardingTour() {
             >
               {/* Neon border card */}
               <div
-                className="relative rounded-sm border bg-[#030303] overflow-hidden"
+                className="relative rounded-sm border bg-white/95 dark:bg-[#030303] overflow-hidden shadow-2xl"
                 style={{ borderColor: `${neonColor}40` }}
               >
                 {/* Top neon line */}
@@ -160,14 +160,14 @@ export default function OnboardingTour() {
                       >
                         {current.title}
                       </h2>
-                      <p className="text-[9px] font-space text-white/20 tracking-[0.4em] uppercase font-black mt-1">
+                      <p className="text-[9px] font-space text-zinc-500 dark:text-white/20 tracking-[0.4em] uppercase font-black mt-1">
                         {current.subtitle}
                       </p>
                     </div>
                   </div>
 
                   {/* Body */}
-                  <p className="text-sm md:text-base font-space text-white/70 leading-relaxed" dir="auto">
+                  <p className="text-sm md:text-base font-space text-zinc-800 dark:text-white/70 leading-relaxed" dir="auto">
                     {isRTL ? current.bodyAr : current.body}
                   </p>
 
@@ -182,10 +182,10 @@ export default function OnboardingTour() {
                   )}
 
                   {/* Actions */}
-                  <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-200 dark:border-white/5">
                     <button
                       onClick={dismiss}
-                      className="text-[10px] font-space font-black tracking-[0.3em] uppercase text-white/20 hover:text-white/60 transition-all"
+                      className="text-[10px] font-space font-black tracking-[0.3em] uppercase text-zinc-500 dark:text-white/20 hover:text-zinc-900 dark:hover:text-white/60 transition-all"
                     >
                       {isRTL ? 'تخطي' : 'SKIP_PROTOCOL'}
                     </button>
@@ -194,7 +194,7 @@ export default function OnboardingTour() {
                       {!isFirst && (
                         <button
                           onClick={() => setStep(s => s - 1)}
-                          className="px-4 py-2 border border-white/10 text-[10px] font-space font-black tracking-widest uppercase text-white/40 hover:border-white/30 hover:text-white/60 transition-all rounded-sm"
+                          className="px-4 py-2 border border-zinc-200 dark:border-white/10 text-[10px] font-space font-black tracking-widest uppercase text-zinc-600 dark:text-white/40 hover:border-zinc-400 dark:hover:border-white/30 hover:text-zinc-900 dark:hover:text-white/60 transition-all rounded-sm"
                         >
                           {isRTL ? 'السابق' : 'BACK'}
                         </button>
@@ -214,7 +214,7 @@ export default function OnboardingTour() {
               </div>
 
               {/* Step counter */}
-              <div className="text-center mt-3 text-[9px] font-space text-white/20 tracking-widest uppercase">
+              <div className="text-center mt-3 text-[9px] font-space text-zinc-500 dark:text-white/20 tracking-widest uppercase">
                 STEP_{step + 1}_OF_{TOUR_STEPS.length}
               </div>
             </motion.div>

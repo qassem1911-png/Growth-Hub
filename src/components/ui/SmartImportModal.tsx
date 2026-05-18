@@ -102,7 +102,7 @@ export default function SmartImportModal({ isOpen, onClose, missionId, themeColo
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-white/60 dark:bg-black/90 backdrop-blur-md">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}

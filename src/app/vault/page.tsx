@@ -75,13 +75,13 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
         }}
         className={cn(
           "relative flex flex-col items-center cursor-none overflow-hidden group select-none w-full h-full",
-          "bg-black/40 backdrop-blur-xl border rounded-2xl p-6 md:p-8",
+          "bg-white/80 dark:bg-black/40 backdrop-blur-xl border rounded-2xl p-6 md:p-8",
           status === 'EQUIPPED'
             ? "z-10 shadow-2xl"
-            : "border-white/10"
+            : "border-zinc-200 dark:border-white/10"
         )}
         style={{
-          borderColor: status === 'EQUIPPED' ? `${currentTheme.color}60` : 'rgba(255, 255, 255, 0.1)',
+          borderColor: status === 'EQUIPPED' ? `${currentTheme.color}60` : undefined,
           boxShadow: status === 'EQUIPPED' 
             ? `0 0 30px ${currentTheme.color}20, 0 12px 40px rgba(0,0,0,0.6)` 
             : '0 8px 32px rgba(0,0,0,0.3)'
@@ -148,7 +148,7 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
             transition={{ duration: 0.3 }}
             className="w-full text-center overflow-hidden"
           >
-            <div className="w-full space-y-4 text-center border-t border-white/10 pt-4 mt-2">
+            <div className="w-full space-y-4 text-center border-t border-zinc-200 dark:border-white/10 pt-4 mt-2">
               
               {/* XP Stagger */}
               <motion.div 
@@ -156,10 +156,10 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
                 transition={{ duration: 0.3 }}
                 className="space-y-0.5"
               >
-                <p className="font-space text-[9px] text-white/40 uppercase tracking-[0.25em] font-black">
+                <p className="font-space text-[9px] text-zinc-500 dark:text-white/40 uppercase tracking-[0.25em] font-black">
                   {isRTL ? 'الخبرة المطلوبة' : 'XP REQUIRED'}
                 </p>
-                <p className="text-xl font-black font-space tracking-tight">
+                <p className="text-xl font-black font-space tracking-tight text-zinc-900 dark:text-white">
                   {rank.threshold.toLocaleString()} <span className="text-xs opacity-50 font-bold">XP</span>
                 </p>
               </motion.div>
@@ -173,7 +173,7 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
                 <p className="font-space text-[9px] uppercase tracking-[0.25em] font-black" style={{ color: rank.color }}>
                   {isRTL ? 'الميزة النشطة' : 'ACTIVE PERK'}
                 </p>
-                <p className="text-[11px] font-bold font-space uppercase tracking-widest text-white/80">
+                <p className="text-[11px] font-bold font-space uppercase tracking-widest text-zinc-800 dark:text-white/80">
                   {isRTL ? (
                     rank.id === 'SILVER' ? 'الميزات القياسية مفتوحة' :
                     rank.id === 'PLATINUM' ? 'تخطيط لوحة التحكم المتقدمة' :
@@ -189,10 +189,10 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
                 transition={{ duration: 0.3 }}
                 className="space-y-0.5"
               >
-                <p className="font-space text-[9px] text-white/40 uppercase tracking-[0.25em] font-black">
+                <p className="font-space text-[9px] text-zinc-500 dark:text-white/40 uppercase tracking-[0.25em] font-black">
                   {isRTL ? 'ميزات الرتبة' : 'RANK UNLOCKS'}
                 </p>
-                <p className="text-[10px] font-space text-white/60 tracking-wider">
+                <p className="text-[10px] font-space text-zinc-600 dark:text-white/60 tracking-wider">
                   {isRTL ? (
                     rank.id === 'SILVER' ? 'الوصول لصفحة الملاحظات والإعدادات' :
                     rank.id === 'PLATINUM' ? 'إمكانية اختيار لون مظهر النظام' :
@@ -235,19 +235,19 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
 
         {/* Locked Overlay with Premium Hover Specs - No dynamic expansion */}
         {isLocked && (
-          <div className="absolute inset-0 z-50 bg-black/85 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center border border-white/5 transition-opacity duration-300 group-hover:opacity-95">
-            <span className="material-symbols-outlined text-white/30 text-5xl mb-3 group-hover:scale-110 group-hover:text-white/55 transition-all duration-300">lock</span>
-            <p className="text-white/40 font-black font-space text-2xl tracking-widest uppercase">{isRTL ? 'مقفول' : 'LOCKED'}</p>
+          <div className="absolute inset-0 z-50 bg-white/90 dark:bg-black/85 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center p-6 text-center border border-zinc-200 dark:border-white/5 transition-opacity duration-300 group-hover:opacity-95">
+            <span className="material-symbols-outlined text-zinc-400 dark:text-white/30 text-5xl mb-3 group-hover:scale-110 group-hover:text-zinc-600 dark:group-hover:text-white/55 transition-all duration-300">lock</span>
+            <p className="text-zinc-500 dark:text-white/40 font-black font-space text-2xl tracking-widest uppercase">{isRTL ? 'مقفول' : 'LOCKED'}</p>
             
             <motion.div
               animate={{ opacity: isHovered ? 1.0 : 0.3 }}
               transition={{ duration: 0.3 }}
               className="w-full mt-4 space-y-1"
             >
-              <p className="text-white/80 font-space text-[11px] tracking-[0.2em] font-black uppercase" style={{ color: rank.color }}>
+              <p className="font-space text-[11px] tracking-[0.2em] font-black uppercase" style={{ color: rank.color }}>
                 {rank.threshold - xp} {isRTL ? 'خبرة مطلوبة للفتح' : 'XP REQUIRED TO UNLOCK'}
               </p>
-              <p className="text-[9px] font-space text-white/40 tracking-wider uppercase">
+              <p className="text-[9px] font-space text-zinc-500 dark:text-white/40 tracking-wider uppercase">
                 {isRTL ? 'استمر في إنجاز أهدافك' : 'CONTINUE ACHIEVING GOALS'}
               </p>
             </motion.div>

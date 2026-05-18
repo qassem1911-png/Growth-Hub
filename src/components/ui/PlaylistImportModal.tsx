@@ -167,32 +167,32 @@ export default function PlaylistImportModal({ isOpen, onClose, missionId, themeC
   const totalDuration = previewTasks.reduce((acc, t) => acc + t.seconds, 0)
 
   return (
-    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+    <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-white/60 dark:bg-black/90 backdrop-blur-md">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-2xl bg-[#080808] border rounded-sm overflow-hidden flex flex-col shadow-2xl"
+        className="w-full max-w-2xl bg-white/95 dark:bg-[#080808] border rounded-sm overflow-hidden flex flex-col shadow-2xl"
         style={{ borderColor: `${themeColor}33` }}
       >
         {/* Header */}
-        <div className="px-6 py-4 border-b flex justify-between items-center" style={{ borderColor: `${themeColor}22` }}>
+        <div className="px-6 py-4 border-b flex justify-between items-center border-zinc-200 dark:border-white/10" style={{ borderColor: `${themeColor}22` }}>
           <div className="flex items-center gap-3">
             <span className="material-symbols-outlined text-neon-green" style={{ color: themeColor }}>playlist_add</span>
             <h2 className="font-space font-black uppercase italic tracking-widest text-sm" style={{ color: themeColor }}>PLAYLIST_IMPORT</h2>
           </div>
-          <button onClick={onClose} className="material-symbols-outlined text-white/30 hover:text-white">close</button>
+          <button onClick={onClose} className="material-symbols-outlined text-zinc-400 dark:text-white/30 hover:text-zinc-900 dark:hover:text-white">close</button>
         </div>
 
         {/* URL Input Area */}
         <div className="p-6 space-y-4">
           <div className="space-y-2">
-            <label className="text-[10px] font-space font-black text-white/40 uppercase tracking-widest">YOUTUBE_PLAYLIST_URL</label>
+            <label className="text-[10px] font-space font-black text-zinc-600 dark:text-white/40 uppercase tracking-widest">YOUTUBE_PLAYLIST_URL</label>
             <div className="flex gap-2">
               <input 
                 value={playlistUrl}
                 onChange={e => setPlaylistUrl(e.target.value)}
                 placeholder="HTTPS://WWW.YOUTUBE.COM/PLAYLIST?LIST=..."
-                className="flex-1 bg-white/5 border border-white/10 p-3 font-space text-xs text-white outline-none focus:border-neon-green/50"
+                className="flex-1 bg-black/5 dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-3 font-space text-xs text-zinc-900 dark:text-white outline-none focus:border-neon-green/50"
                 style={{ borderColor: error ? '#FF0055' : undefined }}
               />
               <button 
@@ -215,21 +215,21 @@ export default function PlaylistImportModal({ isOpen, onClose, missionId, themeC
                 animate={{ opacity: 1, height: 'auto' }}
                 className="space-y-4"
               >
-                <div className="flex justify-between items-end border-b border-white/5 pb-2">
-                  <p className="text-[10px] font-space font-black text-white/40 uppercase tracking-widest">
+                <div className="flex justify-between items-end border-b border-zinc-200 dark:border-white/5 pb-2">
+                  <p className="text-[10px] font-space font-black text-zinc-600 dark:text-white/40 uppercase tracking-widest">
                     FOUND: {previewTasks.length} VIDEOS // TOTAL: {formatSeconds(totalDuration)}
                   </p>
                 </div>
                 <div className="max-h-[300px] overflow-y-auto space-y-2 pr-2 scrollbar-thin">
                   {previewTasks.map((t, i) => (
-                    <div key={i} className="flex justify-between items-center p-3 border border-white/5 bg-white/5">
+                    <div key={i} className="flex justify-between items-center p-3 border border-zinc-200 dark:border-white/5 bg-black/5 dark:bg-white/5">
                       <div className="flex-1 min-w-0 pr-4">
-                        <p className="font-space text-[11px] font-bold text-white uppercase truncate">{t.title}</p>
-                        <p className="font-space text-[9px] text-white/40 uppercase tracking-tighter">DURATION: {formatSeconds(t.seconds)}</p>
+                        <p className="font-space text-[11px] font-bold text-zinc-900 dark:text-white uppercase truncate">{t.title}</p>
+                        <p className="font-space text-[9px] text-zinc-500 dark:text-white/40 uppercase tracking-tighter">DURATION: {formatSeconds(t.seconds)}</p>
                       </div>
                       <div className="flex gap-1 shrink-0">
                         {[1,2,3].map(w => (
-                          <div key={w} className={`w-1.5 h-4 rounded-[1px] ${w <= t.weight ? 'bg-neon-green shadow-[0_0_8px_rgba(57,255,20,0.5)]' : 'bg-white/5'}`} style={w <= t.weight ? { backgroundColor: themeColor } : {}} />
+                          <div key={w} className={`w-1.5 h-4 rounded-[1px] ${w <= t.weight ? 'bg-neon-green shadow-[0_0_8px_rgba(57,255,20,0.5)]' : 'bg-black/10 dark:bg-white/5'}`} style={w <= t.weight ? { backgroundColor: themeColor } : {}} />
                         ))}
                       </div>
                     </div>
@@ -237,10 +237,10 @@ export default function PlaylistImportModal({ isOpen, onClose, missionId, themeC
                 </div>
 
                 {/* Footer Actions */}
-                <div className="flex justify-end gap-4 pt-4 border-t border-white/5">
+                <div className="flex justify-end gap-4 pt-4 border-t border-zinc-200 dark:border-white/5">
                   <button 
                     onClick={onClose}
-                    className="px-6 py-3 font-space font-black text-[10px] uppercase tracking-widest text-white/40 hover:text-white"
+                    className="px-6 py-3 font-space font-black text-[10px] uppercase tracking-widest text-zinc-500 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white"
                   >
                     CANCEL
                   </button>

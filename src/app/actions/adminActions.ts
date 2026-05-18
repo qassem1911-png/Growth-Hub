@@ -126,35 +126,14 @@ export async function deleteUser(userId: string) {
 
   console.log('PURGE_SEQUENCE // INITIATED_FOR_OPERATOR:', userId)
 
-  // 1. Delete attachments (FK to cups)
-  await supabase.from('mission_attachments').delete().eq('user_id', userId)
-  
-  // 2. Delete reports
-  await supabase.from('inbox_reports').delete().eq('user_id', userId)
-  
-  // 3. Delete logs
-  await supabase.from('xp_logs').delete().eq('user_id', userId)
-  await supabase.from('task_completion_log').delete().eq('user_id', userId)
-  
-  // 4. Delete notes (FK to cups)
-  await supabase.from('notes').delete().eq('user_id', userId)
-  
-  // 5. Delete tasks (FK to cups)
-  // We need to delete tasks for all cups of this user
-  const { data: userCups } = await supabase.from('cups').select('id').eq('user_id', userId)
-  const cupIds = userCups?.map(c => c.id) || []
-  
-  if (cupIds.length > 0) {
-    await supabase.from('tasks').delete().in('cup_id', cupIds)
+  // Call PostgreSQL RPC to purge all user data in a single transactional procedure
+  const { error: rpcError } = await supabase.rpc('purge_user_data', { target_user_id: userId })
+  if (rpcError) {
+    console.error('PURGE_SEQUENCE // DB_PURGE_FAILED:', rpcError)
+    throw rpcError
   }
 
-  // 6. Delete cups
-  await supabase.from('cups').delete().eq('user_id', userId)
-
-  // 7. Delete profile
-  await supabase.from('profiles').delete().eq('id', userId)
-
-  // 8. Final Boss: Delete from auth.users
+  // Delete from auth.users
   const { error } = await supabase.auth.admin.deleteUser(userId)
   
   if (error) {
@@ -210,4 +189,36 @@ export async function getMissionAnalytics() {
     avgCompletion: 75, // Placeholder or calculated from archived/total
     totalMissions: allMissions?.length || 0
   }
+}
+
+export async function deleteOwnAccount() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error('UNAUTHORIZED_ACCESS // NOT_LOGGED_IN')
+  }
+
+  const userId = user.id
+  const supabaseAdmin = createAdminClient()
+
+  console.log('SELF_DESTRUCTION_SEQUENCE // INITIATED_BY_USER:', userId)
+
+  // Call PostgreSQL RPC to purge all user data in a single transactional procedure
+  const { error: rpcError } = await supabaseAdmin.rpc('purge_user_data', { target_user_id: userId })
+  if (rpcError) {
+    console.error('SELF_DESTRUCTION_SEQUENCE // DB_PURGE_FAILED:', rpcError)
+    throw rpcError
+  }
+
+  // Final Boss: Delete from auth.users
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(userId)
+  
+  if (error) {
+    console.error('SELF_DESTRUCTION_SEQUENCE // AUTH_DELETE_FAILED:', error)
+    throw error
+  }
+
+  console.log('SELF_DESTRUCTION_SEQUENCE // COMPLETE_FOR_USER:', userId)
+  return { success: true }
 }

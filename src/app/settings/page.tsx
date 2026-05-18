@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils'
 import { useToast } from '@/components/ui/Toast'
 import { useSound } from '@/context/SoundContext'
 import CustomSelect from '@/components/ui/CustomSelect'
+import { deleteOwnAccount } from '@/app/actions/adminActions'
+import AvatarSelector from '@/components/ui/AvatarSelector'
 
 export default function SettingsPage() {
   const { profile, setProfile, isLoading, refreshProfile, mounted, t, isRTL, currentTheme } = useGrowth()
@@ -18,7 +20,7 @@ export default function SettingsPage() {
   const supabase = createClient()
   const { volume, setVolume, isMuted, setIsMuted, playBlip } = useSound()
 
-  const [activeTab, setActiveTab] = useState<'ACCOUNT' | 'AI_COACH' | 'AUDIO'>('ACCOUNT')
+  const [activeTab, setActiveTab] = useState<'ACCOUNT' | 'AI_COACH' | 'SYSTEM'>('ACCOUNT')
   const [formData, setFormData] = useState({
     full_name: '',
     age: '18',
@@ -30,6 +32,11 @@ export default function SettingsPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
+  const [isAvatarSelectorOpen, setIsAvatarSelectorOpen] = useState(false)
+  const [surveyBothered, setSurveyBothered] = useState<string>('')
+  const [surveyRating, setSurveyRating] = useState<number>(0)
+  const [surveyAlternative, setSurveyAlternative] = useState<string>('')
 
   // Dynamic AI Name Header calculation (No hardcoded "COACH" word)
   const aiNameHeader = profile?.ai_name 
@@ -118,19 +125,20 @@ export default function SettingsPage() {
   const handlePermanentlyDeleteAccount = async () => {
     if (!profile) return
     playBlip()
-    const { error } = await supabase
-      .from('profiles')
-      .delete()
-      .eq('id', profile.id)
-
-    if (!error) {
-      await supabase.auth.signOut()
-      localStorage.clear()
-      showToast(isRTL ? 'تم حذف حسابك نهائياً بنجاح' : 'ACCOUNT_WIPED_SUCCESSFULLY', 'success')
-      router.push('/auth/login')
-    } else {
+    try {
+      const res = await deleteOwnAccount()
+      if (res?.success) {
+        await supabase.auth.signOut()
+        localStorage.clear()
+        showToast(isRTL ? 'تم حذف حسابك نهائياً بنجاح' : 'ACCOUNT_WIPED_SUCCESSFULLY', 'success')
+        router.push('/auth/login')
+      } else {
+        throw new Error('Deletion was not successful')
+      }
+    } catch (err: any) {
+      console.error('Delete own account error:', err)
       showToast('DELETE_FAILED', 'warning')
-      alert('Account deletion failed: ' + error.message)
+      alert('Account deletion failed: ' + (err.message || 'Unknown error'))
     }
     setIsDeleteModalOpen(false)
   }
@@ -146,7 +154,7 @@ export default function SettingsPage() {
   const tabOptions = [
     { id: 'ACCOUNT', label: isRTL ? 'الحساب' : 'ACCOUNT', icon: 'person' },
     { id: 'AI_COACH', label: aiNameHeader, icon: 'psychology' },
-    { id: 'AUDIO', label: isRTL ? 'الصوت' : 'AUDIO', icon: 'volume_up' }
+    { id: 'SYSTEM', label: isRTL ? 'النظام' : 'SYSTEM', icon: 'settings_system_daydream' }
   ] as const
 
   return (
@@ -260,6 +268,42 @@ export default function SettingsPage() {
                       </div>
 
                       <div className="space-y-6">
+                        {/* Avatar Display Section */}
+                        <div className="border border-white/10 bg-white/[0.02] rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+                          <div className="flex items-center gap-6">
+                            <div className="relative w-20 h-20 rounded-full border border-white/20 p-1 flex items-center justify-center bg-black/40 overflow-hidden shadow-2xl group">
+                              {profile?.avatar_url ? (
+                                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover rounded-full" />
+                              ) : (
+                                <span className="material-symbols-outlined text-white/40 text-4xl">person</span>
+                              )}
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                <span className="material-symbols-outlined text-white text-xl">edit</span>
+                              </div>
+                            </div>
+                            <div className="space-y-1 text-center sm:text-start">
+                              <h4 className="font-space font-black text-lg text-white tracking-wider uppercase">
+                                {profile?.full_name || 'OPERATOR'}
+                              </h4>
+                              <p className="text-[10px] font-space tracking-[0.3em] uppercase font-black" style={{ color: currentTheme.color }}>
+                                {profile?.rank || 'RECRUIT'} // {profile?.custom_avatar ? 'CUSTOM_SVG' : 'GOOGLE_PROFILE'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsAvatarSelectorOpen(true)
+                              playBlip()
+                            }}
+                            className="px-6 py-3.5 rounded-xl font-space font-black text-xs uppercase tracking-widest transition-all shadow-lg hover:scale-105 active:scale-95 cursor-pointer border border-white/20 hover:border-white/40 text-black font-bold"
+                            style={{ backgroundColor: currentTheme.color, boxShadow: `0 0 20px ${currentTheme.color}33` }}
+                          >
+                            {isRTL ? 'تغيير الشخصية' : 'CHANGE AVATAR'}
+                          </button>
+                        </div>
+
                         {/* Full Name */}
                         <div className="space-y-2">
                           <label className="font-space tracking-widest uppercase font-black text-xs text-[var(--text-secondary)]">
@@ -326,36 +370,7 @@ export default function SettingsPage() {
 
                         </div>
 
-                        {/* Language switch */}
-                        <div className="space-y-2">
-                          <label className="text-[10px] md:text-xs font-space text-[var(--text-secondary)] tracking-widest uppercase font-black">
-                            {isRTL ? 'اللغة' : 'LANGUAGE'}
-                          </label>
-                          <div className="grid grid-cols-2 gap-4">
-                            {[
-                              { key: 'en', label: 'English' },
-                              { key: 'ar', label: 'العربية' }
-                            ].map(l => (
-                              <button
-                                key={l.key}
-                                type="button"
-                                onClick={() => {
-                                  setFormData({ ...formData, language: l.key as any })
-                                  playBlip()
-                                }}
-                                className={cn(
-                                  'py-3.5 border font-space text-xs font-black transition-all rounded-xl uppercase tracking-widest',
-                                  formData.language === l.key 
-                                    ? 'text-black border-transparent shadow-lg font-black' 
-                                    : 'bg-[var(--input-bg)] border border-[var(--card-border)] text-[var(--text-secondary)] hover:text-white'
-                                )}
-                                style={formData.language === l.key ? { backgroundColor: currentTheme.color, borderColor: currentTheme.color, boxShadow: `0 0 15px ${currentTheme.color}33` } : {}}
-                              >
-                                {l.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+
 
                         {/* Connected User Email Security */}
                         <div className="space-y-2 pt-2">
@@ -470,17 +485,47 @@ export default function SettingsPage() {
                     </div>
                   )}
 
-                  {/* AUDIO SECTION VIEW */}
-                  {activeTab === 'AUDIO' && (
+                  {/* SYSTEM SECTION VIEW */}
+                  {activeTab === 'SYSTEM' && (
                     <div className="space-y-6">
                       <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-                        <span className="material-symbols-outlined text-2xl" style={{ color: currentTheme.color }}>volume_up</span>
+                        <span className="material-symbols-outlined text-2xl" style={{ color: currentTheme.color }}>settings_system_daydream</span>
                         <h3 className="font-space font-black tracking-widest text-sm uppercase text-white">
-                          {isRTL ? 'إعدادات الصوت والنظام' : 'AUDIO CALIBRATION'}
+                          {isRTL ? 'إعدادات النظام والصوت' : 'SYSTEM & AUDIO CALIBRATION'}
                         </h3>
                       </div>
 
                       <div className="space-y-8">
+                        {/* Language switch */}
+                        <div className="space-y-4 border-b border-white/10 pb-8">
+                          <label className="text-xs font-space text-[var(--text-secondary)] tracking-widest uppercase font-black">
+                            {isRTL ? 'لغة واجهة النظام' : 'INTERFACE LANGUAGE'}
+                          </label>
+                          <div className="grid grid-cols-2 gap-4">
+                            {[
+                              { key: 'en', label: 'EN' },
+                              { key: 'ar', label: 'AR' }
+                            ].map(l => (
+                              <button
+                                key={l.key}
+                                type="button"
+                                onClick={() => {
+                                  setFormData({ ...formData, language: l.key as any })
+                                  playBlip()
+                                }}
+                                className={cn(
+                                  'py-3.5 border font-space text-xs font-black transition-all rounded-xl uppercase tracking-widest',
+                                  formData.language === l.key 
+                                    ? 'text-black border-transparent shadow-lg font-black' 
+                                    : 'bg-[var(--input-bg)] border border-[var(--card-border)] text-[var(--text-secondary)] hover:text-white'
+                                )}
+                                style={formData.language === l.key ? { backgroundColor: currentTheme.color, borderColor: currentTheme.color, boxShadow: `0 0 15px ${currentTheme.color}33` } : {}}
+                              >
+                                {l.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                         {/* Master range volume slider */}
                         <div className="space-y-4">
                           <div className="flex justify-between items-center">
@@ -584,8 +629,11 @@ export default function SettingsPage() {
 
                 <button
                   type="button"
-                  onClick={handleLogout}
-                  className="py-4 px-6 border border-white/10 hover:bg-white/5 text-white/60 hover:text-white transition-all font-space font-black text-xs uppercase tracking-widest rounded-xl text-center"
+                  onClick={() => {
+                    setIsLogoutModalOpen(true)
+                    playBlip()
+                  }}
+                  className="py-4 px-6 border border-white/10 hover:bg-white/5 text-white/60 hover:text-white transition-all font-space font-black text-xs uppercase tracking-widest rounded-xl text-center cursor-pointer"
                 >
                   {t('logout')}
                 </button>
@@ -643,7 +691,66 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* CATASTROPHIC DATA WIPE CONFIRMATION MODAL */}
+      {/* BEAUTIFUL LOGOUT CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {isLogoutModalOpen && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ duration: 0.2 }}
+              className="bg-[#0c0c0c] border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl relative space-y-6 text-center"
+              style={{ boxShadow: `0 0 40px ${currentTheme.color}15` }}
+            >
+              <div className="flex justify-center">
+                <div className="w-14 h-14 rounded-full bg-white/[0.03] border border-white/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-3xl font-bold" style={{ color: currentTheme.color }}>logout</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-space font-black text-xl text-white uppercase tracking-widest leading-none">
+                  {isRTL ? 'تسجيل الخروج' : 'CONFIRM LOGOUT'}
+                </h3>
+                <p className="text-[9px] font-space tracking-[0.25em] uppercase font-black" style={{ color: currentTheme.color }}>
+                  {isRTL ? 'تأكيد الخروج من النظام' : 'DISCONNECT_SESSION'}
+                </p>
+              </div>
+
+              <p className="text-sm font-space text-white/60 leading-relaxed">
+                {isRTL 
+                  ? 'هل أنت متأكد أنك تريد تسجيل الخروج؟ نتمنى عودتك سريعاً للمهمة أيها القائد!'
+                  : 'Are you sure you want to log out? We hope to see you back soon, Operator!'}
+              </p>
+
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full text-black py-3.5 font-space font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-300 shadow-lg cursor-pointer active:scale-98 font-bold"
+                  style={{ backgroundColor: currentTheme.color, boxShadow: `0 4px 15px ${currentTheme.color}20` }}
+                >
+                  {isRTL ? 'نعم، تسجيل الخروج' : 'YES, LOGOUT'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLogoutModalOpen(false)
+                    playBlip()
+                  }}
+                  className="w-full bg-transparent border border-white/10 hover:bg-white/5 text-white/60 hover:text-white py-3 font-space font-black text-xs uppercase tracking-widest rounded-xl transition-all duration-300 cursor-pointer"
+                >
+                  {isRTL ? 'إلغاء' : 'CANCEL'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* CATASTROPHIC DATA WIPE & SURVEY MODAL */}
       <AnimatePresence>
         {isDeleteModalOpen && (
           <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[99999] flex items-center justify-center p-4">
@@ -654,38 +761,126 @@ export default function SettingsPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 15 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="bg-[#0c0c0c] border-2 border-red-500/30 rounded-2xl p-8 max-w-md w-full shadow-2xl relative space-y-6 text-center"
+              className="bg-[#0c0c0c] border border-red-500/20 rounded-2xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative space-y-6 flex flex-col max-h-[90vh] overflow-hidden"
               style={{ boxShadow: '0 0 50px rgba(239, 68, 68, 0.15)' }}
             >
-              <div className="flex justify-center">
-                <div className="w-14 h-14 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center animate-pulse">
-                  <span className="material-symbols-outlined text-red-500 text-3xl font-bold">warning</span>
+              
+              {/* Header */}
+              <div className="flex items-center gap-4 border-b border-white/5 pb-4">
+                <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center flex-shrink-0">
+                  <span className="material-symbols-outlined text-red-500 text-2xl font-bold">warning</span>
+                </div>
+                <div className="text-start">
+                  <h3 className="font-space font-black text-lg text-red-500 uppercase tracking-widest leading-tight">
+                    {isRTL ? 'تأكيد مسح الحساب والتقييم' : 'DELETE ACCOUNT & SURVEY'}
+                  </h3>
+                  <p className="text-[8px] md:text-[9px] font-space text-red-500/60 tracking-[0.2em] uppercase font-black">
+                    WARNING // PERMANENT_ACCOUNT_DESTRUCTION
+                  </p>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <h3 className="font-space font-black text-xl text-red-500 uppercase tracking-widest leading-none">
-                  {isRTL ? 'تحذير: مسح كارثي للبيانات' : 'CATASTROPHIC DATA WIPE'}
-                </h3>
-                <p className="text-[9px] font-space text-red-500/60 tracking-[0.25em] uppercase font-black">
-                  WARNING // PERMANENT_ACCOUNT_DESTRUCTION
-                </p>
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto pr-1 space-y-6 py-2 scrollbar-thin text-start">
+                
+                {/* Warning message */}
+                <div className="p-4 bg-red-500/[0.03] border border-red-500/10 rounded-xl space-y-2">
+                  <p className="font-space text-xs text-red-400 font-bold tracking-wide">
+                    {isRTL 
+                      ? 'تحذير: هذا الإجراء دائم ولا يمكن التراجع عنه. سيتم مسح جميع التقدم والبيانات بالكامل وبشكل نهائي.' 
+                      : 'Warning: This action is permanent and irreversible. All progress, metrics, and accounts will be wiped permanently.'}
+                  </p>
+                </div>
+
+                {/* Question 1: What bothered you? */}
+                <div className="space-y-3">
+                  <label className="text-[10px] md:text-xs font-space text-white/50 tracking-widest uppercase font-black">
+                    {isRTL ? '1. هل في حاجة معينة ضايقتك في الموقع؟' : '1. IS THERE SOMETHING SPECIFIC THAT BOTHERED YOU?'}
+                  </label>
+                  
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      { key: 'COMPLICATED', ar: 'صعب الاستخدام ومعقد', en: 'Too complicated/hard to use' },
+                      { key: 'LATENCY', ar: 'بطء استجابة المدرب الذكي', en: 'AI coach response latency' },
+                      { key: 'CLUTTER', ar: 'تشتت بصري في الواجهة', en: 'Too much visual clutter' },
+                      { key: 'FEATURES', ar: 'عدم وجود الميزات التي أحتاجها', en: 'Missing features I need' },
+                      { key: 'OTHER', ar: 'سبب آخر', en: 'Other reason' }
+                    ].map(opt => (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        onClick={() => {
+                          setSurveyBothered(opt.key)
+                          playBlip()
+                        }}
+                        className={cn(
+                          "w-full p-4 border rounded-xl text-xs font-bold font-space text-start transition-all uppercase tracking-wider flex items-center justify-between",
+                          surveyBothered === opt.key
+                            ? "bg-red-500/10 border-red-500/50 text-white"
+                            : "bg-white/[0.02] border-white/5 text-white/50 hover:text-white hover:border-white/10"
+                        )}
+                      >
+                        <span>{isRTL ? opt.ar : opt.en}</span>
+                        {surveyBothered === opt.key && (
+                          <span className="material-symbols-outlined text-sm text-red-500">check_circle</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Question 2: Star rating */}
+                <div className="space-y-3">
+                  <label className="text-[10px] md:text-xs font-space text-white/50 tracking-widest uppercase font-black block">
+                    {isRTL ? '2. تقييمك للموقع من 5؟' : '2. HOW WOULD YOU RATE THE HUB OUT OF 5?'}
+                  </label>
+                  
+                  <div className="flex items-center gap-3 justify-center py-2 bg-white/[0.02] border border-white/5 rounded-xl">
+                    {[1, 2, 3, 4, 5].map(star => {
+                      const isActive = surveyRating >= star
+                      return (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => {
+                            setSurveyRating(star)
+                            playBlip()
+                          }}
+                          className="p-2 transition-transform duration-200 active:scale-90"
+                        >
+                          <span 
+                            className={cn(
+                              "material-symbols-outlined text-3xl font-black transition-all",
+                              isActive ? "fill-1 text-red-500 scale-110 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]" : "text-white/20 hover:text-white/40"
+                            )}
+                          >
+                            star
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Question 3: Better alternative? */}
+                <div className="space-y-3">
+                  <label className="text-[10px] md:text-xs font-space text-white/50 tracking-widest uppercase font-black block">
+                    {isRTL ? '3. هل لقيت بديل أحسن؟' : '3. DID YOU FIND A BETTER ALTERNATIVE?'}
+                  </label>
+                  
+                  <textarea
+                    value={surveyAlternative}
+                    onChange={e => setSurveyAlternative(e.target.value)}
+                    rows={3}
+                    placeholder={isRTL ? "مثال: نعم، انتقلت لتطبيق..." : "e.g. Yes, switched to another solution..."}
+                    className="w-full bg-white/[0.02] border border-white/5 rounded-xl p-4 font-space text-xs text-white outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500/30 transition-all placeholder:text-white/20"
+                  />
+                </div>
+
               </div>
 
-              {/* Strict warn messages */}
-              <div className="space-y-4 text-left bg-black/40 border border-white/5 rounded-xl p-4 max-h-60 overflow-y-auto">
-                <p className="font-space text-xs text-white/70 leading-relaxed">
-                  <strong>English:</strong> Warning: This action is permanent. All tracked progress, logs, goals, earned ranks, and profile metadata will be completely and irrevocably wiped from the server databases.
-                </p>
-
-                <div className="h-[1px] bg-white/5 w-full" />
-
-                <p className="font-tajawal text-xs text-white/70 leading-relaxed text-right">
-                  <strong>العربية:</strong> تحذير: هذا الإجراء دائم ولا يمكن التراجع عنه. سيتم مسح جميع البيانات، ومستويات التقدم المحرز، والأهداف، والرتب المكتسبة بالكامل وبشكل نهائي من قواعد البيانات.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-3">
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3 pt-4 border-t border-white/5">
                 <button
                   type="button"
                   onClick={handlePermanentlyDeleteAccount}
@@ -705,11 +900,17 @@ export default function SettingsPage() {
                   {isRTL ? 'إلغاء' : 'CANCEL'}
                 </button>
               </div>
+
             </motion.div>
 
           </div>
         )}
       </AnimatePresence>
+
+      {/* AVATAR SELECTOR MODAL */}
+      {isAvatarSelectorOpen && (
+        <AvatarSelector onClose={() => setIsAvatarSelectorOpen(false)} />
+      )}
 
     </Shell>
   )

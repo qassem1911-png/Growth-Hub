@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg-ismail" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1976D2" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#0D47A1" stop-opacity="0.1" />
+    </radialGradient>
+    <linearGradient id="jacket-ismail" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1A237E" />
+      <stop offset="100%" stop-color="#0D47A1" />
+    </linearGradient>
+    <linearGradient id="inner-ismail" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ECEFF1" />
+      <stop offset="100%" stop-color="#CFD8DC" />
+    </linearGradient>
+    <linearGradient id="skin-ismail" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFD54F" />
+      <stop offset="50%" stop-color="#FFCA28" />
+      <stop offset="100%" stop-color="#FFB300" />
+    </linearGradient>
+    <linearGradient id="hair-ismail" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5D4037" />
+      <stop offset="50%" stop-color="#4E342E" />
+      <stop offset="100%" stop-color="#3E2723" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Glow -->
+  <circle cx="200" cy="200" r="190" fill="url(#bg-ismail)" />
+  <circle cx="200" cy="200" r="185" fill="none" stroke="#2196F3" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="12 6" />
+
+  <!-- Body / Dark Blue Robe/Jacket with inner light shirt -->
+  <path d="M110 380 C110 300, 290 300, 290 380 Z" fill="url(#jacket-ismail)" />
+  <!-- V-neck inner shirt -->
+  <path d="M165 380 L165 320 L200 360 L235 320 L235 380 Z" fill="url(#inner-ismail)" />
+  <!-- Robe Lapels -->
+  <path d="M140 320 L165 380 L130 380 Z" fill="#1565C0" opacity="0.7" />
+  <path d="M260 320 L235 380 L270 380 Z" fill="#1565C0" opacity="0.7" />
+
+  <!-- Neck -->
+  <path d="M175 250 L225 250 L220 330 L180 330 Z" fill="url(#skin-ismail)" />
+  <ellipse cx="200" cy="270" rx="20" ry="7" fill="#F57C00" opacity="0.3" />
+
+  <!-- Head/Face -->
+  <ellipse cx="200" cy="200" rx="63" ry="79" fill="url(#skin-ismail)" />
+
+  <!-- Ears -->
+  <ellipse cx="134" cy="195" rx="11" ry="17" fill="url(#skin-ismail)" />
+  <ellipse cx="266" cy="195" rx="11" ry="17" fill="url(#skin-ismail)" />
+
+  <!-- Eyes -->
+  <ellipse cx="172" cy="185" rx="13" ry="9" fill="#FFFFFF" />
+  <ellipse cx="228" cy="185" rx="13" ry="9" fill="#FFFFFF" />
+  <circle cx="172" cy="185" r="6.5" fill="#4E342E" />
+  <circle cx="228" cy="185" r="6.5" fill="#4E342E" />
+  <circle cx="174" cy="183" r="2" fill="#FFFFFF" />
+  <circle cx="230" cy="183" r="2" fill="#FFFFFF" />
+
+  <!-- Eyebrows -->
+  <path d="M155 168 Q172 162 185 167" fill="none" stroke="#3E2723" stroke-width="5" stroke-linecap="round" />
+  <path d="M215 167 Q228 162 245 168" fill="none" stroke="#3E2723" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Nose -->
+  <path d="M200 190 L205 212 L195 212" fill="none" stroke="#C68400" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Mouth / Confident smile -->
+  <path d="M185 240 Q200 250 215 238" fill="none" stroke="#A1887F" stroke-width="3.5" stroke-linecap="round" />
+
+  <!-- Round Glasses (Thin elegant dark frame) -->
+  <circle cx="172" cy="185" r="23" fill="none" stroke="#37474F" stroke-width="4.5" />
+  <circle cx="228" cy="185" r="23" fill="none" stroke="#37474F" stroke-width="4.5" />
+  <line x1="195" y1="182" x2="205" y2="182" stroke="#37474F" stroke-width="4" />
+  <line x1="149" y1="182" x2="134" y2="180" stroke="#37474F" stroke-width="4" stroke-linecap="round" />
+  <line x1="251" y1="182" x2="266" y2="180" stroke="#37474F" stroke-width="4" stroke-linecap="round" />
+  <!-- Glasses Glare -->
+  <line x1="160" y1="172" x2="175" y2="167" stroke="#FFFFFF" stroke-width="2" opacity="0.6" stroke-linecap="round" />
+  <line x1="216" y1="172" x2="231" y2="167" stroke="#FFFFFF" stroke-width="2" opacity="0.6" stroke-linecap="round" />
+
+  <!-- Hair (Brown Wavy/Voluminous top) -->
+  <path d="M130 165 C120 110, 150 80, 200 85 C250 80, 280 110, 270 165 C255 125, 220 115, 200 120 C180 115, 145 125, 130 165 Z" fill="url(#hair-ismail)" />
+  <path d="M150 115 Q175 95 195 110" fill="none" stroke="#795548" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+  <path d="M205 105 Q225 95 245 115" fill="none" stroke="#795548" stroke-width="3" stroke-linecap="round" opacity="0.6" />
+</svg>

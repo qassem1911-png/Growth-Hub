@@ -107,37 +107,37 @@ const PreviewModal = React.memo(({
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-white/60 dark:bg-black/80 backdrop-blur-md"
       onClick={onClose}
     >
       <div
         onClick={e => e.stopPropagation()}
-        className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl p-4 w-[90vw] h-[85vh] fixed inset-0 z-[9999] m-auto flex flex-col shadow-2xl"
+        className="bg-white/95 dark:bg-black/80 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-xl p-4 w-[90vw] h-[85vh] fixed inset-0 z-[9999] m-auto flex flex-col shadow-2xl"
         style={{ borderColor: `${themeColor}33`, boxShadow: `0 0 50px ${themeColor}15` }}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4 shrink-0">
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-white/10 mb-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <FileIcon type={attachment.file_type} color={themeColor} />
-            <p className="font-space font-black uppercase text-xs truncate max-w-[50vw] text-white" style={{ textShadow: `0 0 10px ${themeColor}44` }}>
+            <p className="font-space font-black uppercase text-xs truncate max-w-[50vw] text-zinc-900 dark:text-white" style={{ textShadow: `0 0 10px ${themeColor}44` }}>
               {attachment.name}
             </p>
           </div>
           
           <button
             onClick={onClose}
-            className="px-4 py-2 font-space font-black uppercase text-[10px] tracking-widest text-white/50 hover:text-white border border-white/10 hover:border-white/30 rounded-lg transition-all active:scale-95 shrink-0"
+            className="px-4 py-2 font-space font-black uppercase text-[10px] tracking-widest text-zinc-600 dark:text-white/50 hover:text-zinc-900 dark:hover:text-white border border-zinc-200 dark:border-white/10 hover:border-zinc-400 dark:hover:border-white/30 rounded-lg transition-all active:scale-95 shrink-0"
           >
             {isRTL ? '[ إغلاق المعاينة // Close Preview ]' : '[ Close Preview ]'}
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="flex-1 w-full h-full relative rounded-lg overflow-hidden bg-black/40 flex items-center justify-center">
+        <div className="flex-1 w-full h-full relative rounded-lg overflow-hidden bg-black/5 dark:bg-black/40 flex items-center justify-center">
           {iframeUrl ? (
             <iframe
               src={iframeUrl}
-              className="w-full h-full border-none rounded-lg bg-[#0e0e0e]"
+              className="w-full h-full border-none rounded-lg bg-white dark:bg-[#0e0e0e]"
               allow="autoplay"
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             />
@@ -149,7 +149,7 @@ const PreviewModal = React.memo(({
           ) : (
             <div className="flex flex-col items-center gap-6 text-center">
               <FileIcon type={attachment.file_type} color={themeColor} />
-              <p className="font-space text-white/40 text-xs uppercase tracking-widest">
+              <p className="font-space text-zinc-500 dark:text-white/40 text-xs uppercase tracking-widest">
                 Preview not available for this file type
               </p>
               <a
@@ -414,10 +414,10 @@ const MissionAttachmentsModal = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/90 backdrop-blur-md p-4" onClick={onClose}>
+      <div className="fixed inset-0 z-[300] flex items-center justify-center bg-white/60 dark:bg-black/90 backdrop-blur-md p-4" onClick={onClose}>
         <div
           onClick={e => e.stopPropagation()}
-          className="w-full max-w-xl flex flex-col bg-[#080808] border rounded-sm shadow-2xl overflow-hidden"
+          className="w-full max-w-xl flex flex-col bg-white/95 dark:bg-[#080808] border rounded-sm shadow-2xl overflow-hidden"
           style={{
             borderColor: `${themeColor}33`,
             boxShadow: `0 0 60px ${themeColor}18`,
@@ -425,11 +425,11 @@ const MissionAttachmentsModal = ({
           }}
         >
           {/* ── Modal Header ─────────────────────────────────────── */}
-          <div className="flex items-center justify-between px-6 py-5 border-b shrink-0" style={{ borderColor: `${themeColor}22` }}>
+          <div className="flex items-center justify-between px-6 py-5 border-b shrink-0 border-zinc-200 dark:border-white/10" style={{ borderColor: `${themeColor}22` }}>
             <div className="flex items-center gap-3">
               <span className="material-symbols-outlined text-xl" style={{ color: themeColor, textShadow: `0 0 12px ${themeColor}` }}>attach_file</span>
               <div>
-                <p className="font-space font-black uppercase tracking-widest text-[10px] text-white/30">
+                <p className="font-space font-black uppercase tracking-widest text-[10px] text-zinc-500 dark:text-white/30">
                   {isRTL ? 'المرفقات المزامنة' : 'Synced Attachments'}
                 </p>
                 <p className="font-space font-black uppercase italic text-sm truncate max-w-[260px]" style={{ color: themeColor }}>{missionTitle}</p>
@@ -439,26 +439,26 @@ const MissionAttachmentsModal = ({
               <span className="font-space font-black text-xs px-2 py-1 rounded-sm" style={{ color: themeColor, backgroundColor: `${themeColor}18`, border: `1px solid ${themeColor}33` }}>
                 {attachments.length}
               </span>
-              <button onClick={onClose} className="material-symbols-outlined text-white/30 hover:text-white transition-colors text-xl">close</button>
+              <button onClick={onClose} className="material-symbols-outlined text-zinc-400 dark:text-white/30 hover:text-zinc-900 dark:hover:text-white transition-colors text-xl">close</button>
             </div>
           </div>
 
           {/* ── Main Actions Panel ───────────────────────────────── */}
-          <div className="px-6 py-5 border-b shrink-0 bg-white/[0.01]" style={{ borderColor: `${themeColor}15` }}>
+          <div className="px-6 py-5 border-b shrink-0 bg-black/[0.01] dark:bg-white/[0.01] border-zinc-200 dark:border-white/10" style={{ borderColor: `${themeColor}15` }}>
             {/* Google Drive Primary Button with signature dark glass style */}
             <button
               onClick={handleConnectGoogleDrive}
-              className="w-full flex items-center justify-center gap-3 py-4 px-6 font-space font-black text-xs uppercase tracking-widest text-white/90 bg-white/[0.02] hover:bg-white/[0.06] border border-white/10 hover:border-white/20 transition-all duration-300 rounded-lg shadow-lg mb-2 cursor-pointer"
+              className="w-full flex items-center justify-center gap-3 py-4 px-6 font-space font-black text-xs uppercase tracking-widest text-zinc-900 dark:text-white/90 bg-black/[0.02] dark:bg-white/[0.02] hover:bg-black/[0.06] dark:hover:bg-white/[0.06] border border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20 transition-all duration-300 rounded-lg shadow-lg mb-2 cursor-pointer"
               onMouseEnter={e => {
                 const el = e.currentTarget;
-                el.style.backgroundColor = 'rgba(255, 255, 255, 0.06)';
-                el.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                el.style.backgroundColor = 'rgba(128, 128, 128, 0.1)';
+                el.style.borderColor = 'rgba(128, 128, 128, 0.3)';
                 el.style.boxShadow = `0 0 20px ${themeColor}22`;
               }}
               onMouseLeave={e => {
                 const el = e.currentTarget;
-                el.style.backgroundColor = 'rgba(255, 255, 255, 0.02)';
-                el.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                el.style.backgroundColor = '';
+                el.style.borderColor = '';
                 el.style.boxShadow = 'none';
               }}
             >
@@ -476,7 +476,7 @@ const MissionAttachmentsModal = ({
             <div className="mt-4">
               <button 
                 onClick={() => setShowManual(!showManual)}
-                className="w-full flex items-center justify-between py-2 text-[10px] font-space font-black uppercase tracking-widest text-white/40 hover:text-white/80 transition-colors"
+                className="w-full flex items-center justify-between py-2 text-[10px] font-space font-black uppercase tracking-widest text-zinc-500 dark:text-white/40 hover:text-zinc-900 dark:hover:text-white/80 transition-colors"
               >
                 <span>{isRTL ? 'ربط يدوي بالرابط' : 'Connect Manual Link'}</span>
                 <span className="material-symbols-outlined text-sm">
@@ -498,7 +498,7 @@ const MissionAttachmentsModal = ({
                       value={newName}
                       onChange={e => setNewName(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleAddManual()}
-                      className="w-full bg-white/5 border border-white/8 px-4 py-3 font-space text-xs font-black text-white uppercase tracking-widest outline-none placeholder:text-white/20 transition-all rounded-sm"
+                      className="w-full bg-black/5 dark:bg-white/5 border border-zinc-200 dark:border-white/8 px-4 py-3 font-space text-xs font-black text-zinc-900 dark:text-white uppercase tracking-widest outline-none placeholder:text-zinc-400 dark:placeholder:text-white/20 transition-all rounded-sm"
                     />
                     <div className="flex gap-2">
                       <input
@@ -507,7 +507,7 @@ const MissionAttachmentsModal = ({
                         value={newUrl}
                         onChange={e => setNewUrl(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && handleAddManual()}
-                        className="flex-1 bg-white/5 border border-white/8 px-4 py-3 font-space text-xs font-black text-white uppercase tracking-widest outline-none placeholder:text-white/20 transition-all rounded-sm"
+                        className="flex-1 bg-black/5 dark:bg-white/5 border border-zinc-200 dark:border-white/8 px-4 py-3 font-space text-xs font-black text-zinc-900 dark:text-white uppercase tracking-widest outline-none placeholder:text-zinc-400 dark:placeholder:text-white/20 transition-all rounded-sm"
                       />
                       <button
                         onClick={handleAddManual}
@@ -529,12 +529,12 @@ const MissionAttachmentsModal = ({
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 gap-4">
                 <span className="material-symbols-outlined text-3xl animate-spin" style={{ color: themeColor }}>progress_activity</span>
-                <p className="font-space font-black uppercase tracking-[0.2em] text-[9px] text-white/20">FETCHING_DATA...</p>
+                <p className="font-space font-black uppercase tracking-[0.2em] text-[9px] text-zinc-400 dark:text-white/20">FETCHING_DATA...</p>
               </div>
             ) : attachments.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-4">
                 <span className="material-symbols-outlined text-4xl opacity-20" style={{ color: themeColor }}>cloud_sync</span>
-                <p className="font-space font-black uppercase tracking-[0.4em] text-[9px] text-white/20">
+                <p className="font-space font-black uppercase tracking-[0.4em] text-[9px] text-zinc-400 dark:text-white/20">
                   {isRTL ? 'لا توجد مرفقات مضافة بعد' : 'NO ATTACHMENTS SYNCD'}
                 </p>
               </div>
@@ -545,16 +545,16 @@ const MissionAttachmentsModal = ({
                     <div
                       key={att.id}
                       onClick={() => setPreviewItem(att)}
-                      className="group relative flex flex-col p-4 border rounded-xl bg-white/[0.02] border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl overflow-hidden"
+                      className="group relative flex flex-col p-4 border rounded-xl bg-black/[0.02] dark:bg-white/[0.02] border-zinc-200 dark:border-white/5 hover:bg-black/[0.04] dark:hover:bg-white/[0.04] hover:border-zinc-300 dark:hover:border-white/10 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl overflow-hidden"
                     >
                       <div className="flex items-start gap-3 justify-between">
                         <div className="flex items-center gap-3 min-w-0">
                           <FileIcon type={att.file_type} color={themeColor} />
                           <div className="min-w-0">
-                            <p className="font-space font-black text-xs text-white uppercase truncate tracking-wide max-w-[140px] group-hover:text-white transition-colors">
+                            <p className="font-space font-black text-xs text-zinc-900 dark:text-white uppercase truncate tracking-wide max-w-[140px] group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
                               {att.name}
                             </p>
-                            <p className="font-space text-[8px] uppercase tracking-widest text-white/25 mt-0.5">
+                            <p className="font-space text-[8px] uppercase tracking-widest text-zinc-500 dark:text-white/25 mt-0.5">
                               {att.file_type.toUpperCase()} // {new Date(att.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                             </p>
                           </div>
@@ -565,7 +565,7 @@ const MissionAttachmentsModal = ({
                           <button
                             onClick={(e) => handleDelete(att.id, e)}
                             disabled={deletingId === att.id}
-                            className="w-7 h-7 flex items-center justify-center border border-white/5 text-white/25 hover:border-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all rounded-lg cursor-pointer"
+                            className="w-7 h-7 flex items-center justify-center border border-zinc-200 dark:border-white/5 text-zinc-500 dark:text-white/25 hover:border-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all rounded-lg cursor-pointer"
                           >
                             {deletingId === att.id ? (
                               <span className="material-symbols-outlined text-xs animate-spin">progress_activity</span>
@@ -584,16 +584,16 @@ const MissionAttachmentsModal = ({
                     </div>
                   )
                 })}
-              </div>
+               </div>
             )}
           </div>
 
           {/* Modal Footer */}
-          <div className="px-6 py-4 border-t shrink-0 flex items-center justify-between" style={{ borderColor: `${themeColor}15` }}>
-            <p className="font-space text-[8px] uppercase tracking-[0.4em] text-white/15">
+          <div className="px-6 py-4 border-t shrink-0 flex items-center justify-between border-zinc-200 dark:border-white/10" style={{ borderColor: `${themeColor}15` }}>
+            <p className="font-space text-[8px] uppercase tracking-[0.4em] text-zinc-400 dark:text-white/15">
               {isRTL ? 'مزامنة جوجل درايف // Google Drive Sync' : 'Google Drive Sync // Web Integration'}
             </p>
-            <button onClick={onClose} className="font-space font-black uppercase tracking-widest text-[9px] text-white/25 hover:text-white transition-colors cursor-pointer">
+            <button onClick={onClose} className="font-space font-black uppercase tracking-widest text-[9px] text-zinc-500 dark:text-white/25 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer">
               {isRTL ? 'إغلاق' : 'CLOSE'}
             </button>
           </div>

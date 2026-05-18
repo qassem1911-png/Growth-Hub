@@ -54,23 +54,6 @@
   --sidebar-bg: #0a0a0a;
 }
 
-.light .bg-black\/90,
-.light .bg-black\/80,
-.light .bg-black\/70,
-.light .bg-black\/60,
-.light .bg-black\/50,
-.light [class*="bg-black"] {
-  background-color: var(--card-bg) !important;
-}
-
-.light [class*="text-white"] {
-  color: var(--text-primary) !important;
-}
-
-.light [class*="border-white"] {
-  border-color: var(--card-border) !important;
-}
-
 @layer base {
   * {
     font-style: normal !important;
@@ -115,19 +98,11 @@
     direction: rtl;
     text-align: right;
   }
-  
-  [lang='ar'] .text-black\/40, [lang='ar'] .text-white\/40,
-  [lang='ar'] .text-black\/60, [lang='ar'] .text-white\/60,
-  [dir='rtl'] .text-black\/40, [dir='rtl'] .text-white\/40,
-  [dir='rtl'] .text-black\/60, [dir='rtl'] .text-white\/60 {
-    color: rgba(255, 255, 255, 0.95) !important;
-  }
 
   [lang='ar'] h1, [lang='ar'] h2, [lang='ar'] h3, [lang='ar'] .header-text,
   [dir='rtl'] h1, [dir='rtl'] h2, [dir='rtl'] h3, [dir='rtl'] .header-text {
     font-size: 1.5rem !important;
     font-weight: 900 !important;
-    color: #ffffff !important;
     letter-spacing: 0 !important;
   }
 
