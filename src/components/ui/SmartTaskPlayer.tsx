@@ -75,7 +75,7 @@ export default function SmartTaskPlayer({
             .update({ video_progress: currentTime })
             .eq('id', taskId)
         }
-      } catch {
+      } catch (_e) {
         // Player may already be destroyed — silently ignore
       }
     }
