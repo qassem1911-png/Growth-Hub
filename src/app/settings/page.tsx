@@ -82,7 +82,25 @@ export default function SettingsPage() {
     setSaving(true)
     const { data: { user } } = await supabase.auth.getUser()
     
-    if (!user) {
+    // ── GUEST MODE INTERCEPT ──
+    if (!user || profile?.id === 'guest') {
+      if (profile) {
+        const optimistic = {
+          ...profile,
+          full_name: formData.full_name || profile.full_name,
+          ai_name: formData.ai_name || null,
+          language: formData.language as any,
+          gender: formData.gender || profile.gender,
+          age: formData.age ? parseInt(formData.age) : profile.age,
+        }
+        setProfile(optimistic)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('cached_profile', JSON.stringify(optimistic))
+          localStorage.setItem('language', formData.language)
+          localStorage.setItem('cached_name', formData.full_name)
+        }
+      }
+      showToast(isRTL ? 'تم حفظ التغييرات محلياً' : 'LOCAL SETTINGS UPDATED', 'success')
       setSaving(false)
       return
     }
@@ -409,15 +427,47 @@ export default function SettingsPage() {
 
 
 
-                        {/* Connected User Email Security */}
+                        {/* Connected User Email Security / Guest Link Fallback */}
                         <div className="space-y-2 pt-2">
                           <label className="text-[10px] font-space text-[var(--text-secondary)] tracking-widest uppercase font-black flex items-center gap-1.5">
                             <span className="material-symbols-outlined text-xs">lock</span>
                             {isRTL ? 'البريد الإلكتروني المتصل' : 'CONNECTED SECURITY EMAIL'}
                           </label>
-                          <div className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3.5 font-space text-xs text-white/40 tracking-wider">
-                            {userEmail || 'UNRESOLVED_IDENTITY'}
-                          </div>
+                          {userEmail ? (
+                            <div className="w-full bg-white/[0.02] border border-white/5 rounded-xl px-4 py-3.5 font-space text-xs text-white/40 tracking-wider">
+                              {userEmail}
+                            </div>
+                          ) : (
+                            <div className="border border-amber-500/30 bg-amber-500/[0.02] rounded-xl p-4 flex flex-col gap-3">
+                              <p className="text-[10px] font-space text-amber-500/80 tracking-wider leading-relaxed">
+                                {isRTL 
+                                  ? 'حسابك الحالي مؤقت ومخزن محلياً. اضغط هنا لتأمين بياناتك ومزامنتها على السيرفر.' 
+                                  : 'Your current account is temporary and stored locally. Click here to secure your data and sync it with the server.'}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  playBlip()
+                                  const { error } = await supabase.auth.signInWithOAuth({
+                                    provider: 'google',
+                                    options: { redirectTo: `${window.location.origin}/onboarding` },
+                                  })
+                                  if (error) {
+                                    alert(error.message)
+                                  }
+                                }}
+                                className="w-full h-10 rounded-lg flex items-center justify-center gap-2 font-space font-black tracking-widest transition-all duration-300 bg-white text-black hover:bg-zinc-200 uppercase text-xs shadow-lg"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 18 18">
+                                  <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.79 2.7v2.25h2.9c1.69-1.55 2.69-3.85 2.69-6.58z"/>
+                                  <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.22l-2.9-2.25c-.8.54-1.83.87-3.06.87-2.35 0-4.35-1.59-5.06-3.73H.95v2.3C2.43 15.89 5.47 18 9 18z"/>
+                                  <path fill="#FBBC05" d="M3.94 10.67A5.4 5.4 0 0 1 3.6 9c0-.58.1-1.14.28-1.67V5.03H.95A8.99 8.99 0 0 0 0 9c0 1.45.35 2.82.95 4.03l2.99-2.36z"/>
+                                  <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2A8.99 8.99 0 0 0 0 9l2.99 2.36C3.7 5.17 5.7 3.58 9 3.58z"/>
+                                </svg>
+                                <span>{isRTL ? 'ربط الحساب بمزود جوجل' : 'LINK ACCOUNT WITH GOOGLE'}</span>
+                              </button>
+                            </div>
+                          )}
                         </div>
 
                         {/* Account Delete Alert Row */}

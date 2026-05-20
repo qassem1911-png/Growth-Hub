@@ -19,6 +19,7 @@ import CoachPanel from '@/components/ui/CoachPanel'
 import OperatorGuide from '@/components/ui/OperatorGuide'
 import GlobalActionMenu from '@/components/ui/GlobalActionMenu'
 import AuthModal from '@/components/auth/AuthModal'
+import EntryGateModal from '@/components/auth/EntryGateModal'
 import LevelUpModal from '@/components/ui/LevelUpModal'
 import GlitchOverlay from '@/components/ui/GlitchOverlay'
 import OnboardingOverlay from '@/components/ui/OnboardingOverlay'
@@ -745,6 +746,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
         />
       )}
       <AuthModal />
+      <EntryGateModal />
     </div>
   )
 }
