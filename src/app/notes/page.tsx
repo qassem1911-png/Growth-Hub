@@ -120,15 +120,23 @@ export default function NotesPage() {
   }, [])
 
   async function fetchNotes() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    const { data } = await supabase
-      .from('notes')
-      .select('*, cups(id, title)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-    if (data) setNotes(data)
-    setLoading(false)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setLoading(false)
+        return
+      }
+      const { data } = await supabase
+        .from('notes')
+        .select('*, cups(id, title)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      if (data) setNotes(data)
+    } catch (error) {
+      console.error('Error fetching notes:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function fetchMissions() {
