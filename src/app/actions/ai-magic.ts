@@ -138,9 +138,9 @@ export async function chatWithCoach(prompt: string, userData: CoachUserData, lan
     const result = await model.generateContent(systemPrompt)
     const response = await result.response
     return response.text()
-  } catch (error) {
+  } catch (error: any) {
     console.error('COACH_UPLINK_ERROR:', error)
-    return "CONNECTION ERROR // RETRY_SEQUENCE"
+    return `CONNECTION ERROR // ${error.message?.toUpperCase() || 'RETRY_SEQUENCE'}`
   }
 }
 
