@@ -10,6 +10,7 @@ import { useGrowth } from '@/context/GrowthContext'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import React from 'react'
+import InlineGuideTip from '@/components/ui/InlineGuideTip'
 
 const SLOT_COLORS = ['#39FF14', '#00F0FF', '#b600f8'] as const
 
@@ -273,6 +274,8 @@ export default function Dashboard() {
         </div>
 
         <WeatherWidget isRTL={isRTL} />
+
+        <InlineGuideTip hasTasks={allTasks.length > 0} />
 
         {/* ═══════════════════════════════════════════════════ */}
         {/* ██  FOCUS CAPACITY — BOLD, GLOWING 9-SLOT TANK   ██ */}

@@ -190,6 +190,31 @@ const MissionAttachmentsModal = ({
   const [previewItem, setPreviewItem] = useState<Attachment | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [showManual, setShowManual] = useState(false)
+  const [isDriveConnected, setIsDriveConnected] = useState(false)
+
+  // ── Shared Drive Token Cache (same keys as TaskDrawer) ────────────────────
+  const DRIVE_TOKEN_KEY = 'gd_access_token'
+  const DRIVE_EXPIRY_KEY = 'gd_expires_at'
+
+  const getCachedToken = (): string | null => {
+    if (typeof window === 'undefined') return null
+    const token = localStorage.getItem(DRIVE_TOKEN_KEY)
+    const expiry = parseInt(localStorage.getItem(DRIVE_EXPIRY_KEY) || '0', 10)
+    if (token && Date.now() < expiry) return token
+    return null
+  }
+
+  const cacheToken = (token: string) => {
+    localStorage.setItem(DRIVE_TOKEN_KEY, token)
+    localStorage.setItem(DRIVE_EXPIRY_KEY, String(Date.now() + 3600 * 1000))
+    setIsDriveConnected(true)
+  }
+
+  // Check for a valid cached token on mount
+  useEffect(() => {
+    if (getCachedToken()) setIsDriveConnected(true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── Load Google API Scripts Client-Side ────────────────────────────────────
   useEffect(() => {
@@ -237,33 +262,49 @@ const MissionAttachmentsModal = ({
       return
     }
 
-    try {
-      const google = (window as any).google
-      const gapi = (window as any).gapi
+    const google = (window as any).google
+    const gapi = (window as any).gapi
 
-      if (!google || !gapi) {
-        alert('Google API scripts are still loading. Please try again in a moment.')
-        return
-      }
-
-      // Initialize standard Google Identity Services client flow
-      const tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: clientId,
-        scope: 'https://www.googleapis.com/auth/drive.readonly',
-        callback: (response: any) => {
-          if (response.error !== undefined) {
-            console.error('GIS authentication error:', response)
-            return
-          }
-          const accessToken = response.access_token
-          launchGooglePicker(accessToken)
-        },
-      })
-
-      tokenClient.requestAccessToken({ prompt: 'consent' })
-    } catch (err) {
-      console.error('Error connecting Google Drive:', err)
+    if (!google || !gapi) {
+      alert('Google API scripts are still loading. Please try again in a moment.')
+      return
     }
+
+    // ── 1. Try cached token first ──────────────────────────────────────────
+    const cached = getCachedToken()
+    if (cached) {
+      launchGooglePicker(cached)
+      return
+    }
+
+    // ── 2. Silent renewal first, interactive as fallback ──────────────────
+    const tryAuth = (prompt: string, fallback?: () => void) => {
+      try {
+        const tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: clientId,
+          scope: 'https://www.googleapis.com/auth/drive.readonly',
+          callback: (response: any) => {
+            if (response.error !== undefined) {
+              if (fallback) { fallback(); return }
+              console.error('GIS authentication error:', response)
+              return
+            }
+            cacheToken(response.access_token)
+            launchGooglePicker(response.access_token)
+          },
+          error_callback: (err: any) => {
+            if (fallback) { fallback(); return }
+            console.error('Silent OAuth failed:', err)
+          }
+        })
+        tokenClient.requestAccessToken({ prompt })
+      } catch (err) {
+        if (fallback) { fallback(); return }
+        console.error('Error connecting Google Drive:', err)
+      }
+    }
+
+    tryAuth('none', () => tryAuth('select_account'))
   }
 
   // ── Launch Google Picker ─────────────────────────────────────────────────
@@ -461,13 +502,13 @@ const MissionAttachmentsModal = ({
                 el.style.boxShadow = 'none';
               }}
             >
-              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19.43 12.98L13.14 2.08C12.83 1.55 12.26 1.22 11.64 1.22H11.28C10.66 1.22 10.09 1.55 9.78 2.08L3.49 12.98C3.18 13.51 3.18 14.17 3.49 14.7L4.77 16.92C5.08 17.45 5.65 17.78 6.27 17.78H16.65C17.27 17.78 17.84 17.45 18.15 16.92L19.43 14.7C19.74 14.17 19.74 13.51 19.43 12.98Z" fill="#FBBC05" />
-                <path d="M12 2.08L6.27 12.13H17.73L12 2.08Z" fill="#34A853" />
-                <path d="M6.27 12.13L3.49 16.92H14.54L17.32 12.13H6.27Z" fill="#4285F4" />
-              </svg>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/Google_Drive_icon_(2020).svg" alt="Google Drive" className="w-5 h-5 shrink-0" />
               <span>
-                [ CONNECT GOOGLE DRIVE ]
+                {isDriveConnected
+                  ? `[ ${isRTL ? 'فتح جوجل درايف' : 'OPEN GOOGLE DRIVE'} ]`
+                  : `[ ${isRTL ? 'ربط جوجل درايف' : 'CONNECT GOOGLE DRIVE'} ]`
+                }
               </span>
             </button>
 

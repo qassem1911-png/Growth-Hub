@@ -108,7 +108,7 @@ export default function OperatorGuide() {
   return (
     <>
       {/* Floating Button */}
-      <div className={cn("fixed bottom-24 md:bottom-8 z-[200]", isRTL ? "left-6 md:left-12" : "right-6 md:right-12")}>
+      <div className="relative">
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}

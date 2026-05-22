@@ -73,12 +73,6 @@
     overflow-x: hidden !important;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.4s ease, color 0.4s ease;
-    cursor: none !important;
-  }
-
-  /* Force hide native OS cursor on all clickable elements */
-  a, button, input, select, textarea, [role="button"], ::-webkit-calendar-picker-indicator {
-    cursor: none !important;
   }
 
   [dir="rtl"] {
@@ -276,7 +270,6 @@
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--theme-color, var(--color-primary, #39FF14)) #0a0a0a;
-  cursor: none !important;
 }
 
 /* V8.8 PWA Absolute Override */

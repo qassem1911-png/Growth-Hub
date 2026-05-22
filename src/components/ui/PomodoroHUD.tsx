@@ -40,18 +40,33 @@ export default function PomodoroHUD() {
         {isInitialized && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8, x: 50 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1, 
+              x: 0,
+              boxShadow: isActive && !isPaused
+                ? [
+                    "0 0 15px rgba(249, 115, 22, 0.15)",
+                    "0 0 25px rgba(249, 115, 22, 0.35)",
+                    "0 0 15px rgba(249, 115, 22, 0.15)"
+                  ]
+                : "0 0 30px rgba(0,0,0,0.5)"
+            }}
             exit={{ opacity: 0, scale: 0.8, x: 50 }}
+            transition={{
+              boxShadow: {
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              },
+              duration: 0.3
+            }}
             className={cn(
-              "fixed bottom-6 right-6 z-[400] font-space border rounded-sm shadow-[0_0_30px_rgba(0,0,0,0.5)] transition-all duration-300 bg-[var(--card-bg)] text-[var(--text-primary)]",
+              "fixed bottom-6 right-6 z-[400] font-space border rounded-xl bg-zinc-950/90 backdrop-blur-md border-orange-500/30 text-white transition-all duration-300",
               isMinimized 
                 ? "w-auto px-4 py-2 cursor-pointer group" 
                 : "w-64 overflow-hidden"
             )}
-            style={{ 
-              borderColor: sessionType === 'FOCUS' ? currentTheme.color : '#00E5FF',
-              boxShadow: sessionType === 'FOCUS' ? `0 0 20px ${currentTheme.color}33` : '0 0 20px rgba(0,229,255,0.2)'
-            }}
             onClick={() => isMinimized && toggleMinimize()}
           >
             {isMinimized ? (
@@ -60,12 +75,11 @@ export default function PomodoroHUD() {
                  <motion.span 
                    animate={isActive && !isPaused ? { opacity: [0.4, 1, 0.4] } : {}}
                    transition={{ duration: 2, repeat: Infinity }}
-                   className="text-[10px] font-black" 
-                   style={{ color: sessionType === 'FOCUS' ? currentTheme.color : '#00E5FF' }}
+                   className="text-[10px] font-black text-orange-500" 
                  >
                    {sessionType === 'FOCUS' ? '⚡' : '☕'}
                  </motion.span>
-                 <span className="text-sm font-black italic text-[var(--text-primary)] transition-colors" style={{ ':hover': { color: currentTheme.color } } as any}>
+                 <span className="text-sm font-black italic text-orange-500 transition-colors">
                    {formatTime(timeRemaining)}
                  </span>
               </div>
@@ -74,30 +88,33 @@ export default function PomodoroHUD() {
               <>
                 {/* Header */}
                 <div className={cn(
-                  "px-3 py-1.5 flex justify-between items-center border-b border-[var(--card-border)]"
+                  "px-3 py-1.5 flex justify-between items-center border-b border-orange-500/20 bg-orange-500/5"
                 )}>
                   <div className="flex items-center gap-2">
                     <motion.div 
                       animate={isActive && !isPaused ? { opacity: [0.3, 1, 0.3] } : {}}
                       transition={{ duration: 2, repeat: Infinity }}
                       className="w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: sessionType === 'FOCUS' ? currentTheme.color : '#00E5FF' }}
+                      style={{ backgroundColor: sessionType === 'FOCUS' ? '#F97316' : '#00E5FF' }}
                     />
-                    <span className="text-[12px] font-black tracking-[0.2em] uppercase italic" style={{ color: sessionType === 'FOCUS' ? currentTheme.color : '#00E5FF' }}>
-                      {sessionType === 'FOCUS' ? (isRTL ? '⚡ وضع التركيز نشط' : '⚡ FOCUS_MODE_ACTIVE') : (isRTL ? '☕ فترة الاستراحة' : '☕ RECOVERY_PERIOD')}
+                    <span className="text-[10px] font-black tracking-[0.2em] uppercase italic" style={{ color: sessionType === 'FOCUS' ? '#F97316' : '#00E5FF' }}>
+                      {sessionType === 'FOCUS' ? (isRTL ? '⚡ وضع التركيز نشط' : '⚡ FOCUS_ACTIVE') : (isRTL ? '☕ فترة الاستراحة' : '☕ RECOVERY')}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-zinc-400">
                     {!isMinimized && (
                       <button 
-                        onClick={() => setShowSettings(!showSettings)} 
-                        className={cn("material-symbols-outlined text-xs transition-colors hover:text-[var(--text-primary)] pomodoro-btn")}
-                        style={{ color: showSettings ? currentTheme.color : 'var(--text-secondary)' }}
+                        onClick={(e) => { e.stopPropagation(); setShowSettings(!showSettings); }} 
+                        className={cn("material-symbols-outlined text-xs transition-colors hover:text-orange-400 pomodoro-btn")}
+                        style={{ color: showSettings ? '#F97316' : 'var(--text-secondary)' }}
                       >
                         settings
                       </button>
                     )}
-                    <button onClick={toggleMinimize} className="material-symbols-outlined text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] pomodoro-btn">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); toggleMinimize(); }} 
+                      className="material-symbols-outlined text-xs hover:text-orange-400 pomodoro-btn"
+                    >
                       unfold_less
                     </button>
                   </div>
@@ -108,37 +125,36 @@ export default function PomodoroHUD() {
                   {showSettings ? (
                     <div className="space-y-4 py-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-[12px] font-black text-[var(--text-primary)] tracking-widest uppercase">{isRTL ? 'إعدادات التايمر' : 'TIMER_CONFIG'}</span>
+                        <span className="text-[12px] font-black text-white tracking-widest uppercase">{isRTL ? 'إعدادات التايمر' : 'TIMER_CONFIG'}</span>
                       </div>
                       <div className="space-y-3">
                          <div className="space-y-1">
-                            <label className={cn("font-black uppercase tracking-widest", isRTL ? "text-[14px] text-[var(--text-primary)]" : "text-[8px] text-[var(--text-secondary)]")}>{isRTL ? 'مدة التركيز (دقيقة)' : 'FOCUS_DURATION (MIN)'}</label>
+                            <label className={cn("font-black uppercase tracking-widest block text-[8px] text-zinc-400")}>{isRTL ? 'مدة التركيز (دقيقة)' : 'FOCUS_DURATION (MIN)'}</label>
                             <input 
                               type="number"
                               min="1"
                               max="120"
                               value={localFocus}
                               onChange={e => setLocalFocus(parseInt(e.target.value) || 1)}
-                              className="w-full bg-[var(--input-bg)] border border-[var(--card-border)] p-2 text-xs font-space font-black outline-none"
-                              style={{ color: currentTheme.color }}
+                              className="w-full bg-zinc-900 border border-orange-500/20 focus:border-orange-500 p-2 text-xs font-space font-black text-orange-500 outline-none rounded"
                             />
                          </div>
                          <div className="space-y-1">
-                            <label className={cn("font-black uppercase tracking-widest", isRTL ? "text-[14px] text-[var(--text-primary)]" : "text-[8px] text-[var(--text-secondary)]")}>{isRTL ? 'مدة الراحة (دقيقة)' : 'BREAK_DURATION (MIN)'}</label>
+                            <label className={cn("font-black uppercase tracking-widest block text-[8px] text-zinc-400")}>{isRTL ? 'مدة الراحة (دقيقة)' : 'BREAK_DURATION (MIN)'}</label>
                             <input 
                               type="number"
                               min="1"
                               max="120"
                               value={localBreak}
                               onChange={e => setLocalBreak(parseInt(e.target.value) || 1)}
-                              className="w-full bg-[var(--input-bg)] border border-[var(--card-border)] p-2 text-xs font-space font-black text-cyan-400 outline-none focus:border-cyan-400"
+                              className="w-full bg-zinc-900 border border-cyan-500/20 focus:border-cyan-500 p-2 text-xs font-space font-black text-cyan-400 outline-none rounded"
                             />
                          </div>
                       </div>
                       <button 
                         onClick={handleSave}
-                        className="w-full py-2 font-space font-black text-[11px] uppercase tracking-widest text-zinc-900 pomodoro-btn"
-                        style={{ backgroundColor: currentTheme.color }}
+                        className="w-full py-2 font-space font-black text-[11px] uppercase tracking-widest text-zinc-900 rounded transition-all hover:brightness-110 cursor-pointer"
+                        style={{ backgroundColor: '#F97316' }}
                       >
                         {isRTL ? 'حفظ الإعدادات' : 'SAVE_CONFIG'}
                       </button>
@@ -146,22 +162,26 @@ export default function PomodoroHUD() {
                   ) : (
                     <>
                       <div className="space-y-1">
-                        <p className={cn("font-black uppercase tracking-widest", isRTL ? "text-[14px] text-[var(--text-primary)]" : "text-[8px] text-[var(--text-secondary)]")}>{isRTL ? 'المهمة الحالية:' : 'CURRENT_OBJECTIVE:'}</p>
-                        <p className="text-[11px] font-bold text-[var(--text-primary)] uppercase truncate">{taskName || (isRTL ? 'بدون عنوان' : 'UNTITLED_PROTOCOL')}</p>
+                        <p className={cn("font-black uppercase tracking-widest block text-[8px] text-zinc-400")}>{isRTL ? 'المهمة الحالية:' : 'CURRENT_OBJECTIVE:'}</p>
+                        <p className="text-[11px] font-bold text-white uppercase truncate">{taskName || (isRTL ? 'بدون عنوان' : 'UNTITLED_PROTOCOL')}</p>
                       </div>
 
                       <div className="flex flex-col items-center justify-center py-2">
                         <motion.p 
-                          animate={isActive && !isPaused ? { opacity: [0.8, 1, 0.8], scale: [1, 1.02, 1] } : {}}
-                          transition={{ duration: 1, repeat: Infinity }}
+                          animate={isActive && !isPaused ? { 
+                            opacity: [0.9, 1, 0.9],
+                            scale: [1, 1.03, 1],
+                            textShadow: [
+                              "0 0 4px rgba(249, 115, 22, 0.2)",
+                              "0 0 16px rgba(249, 115, 22, 0.6)",
+                              "0 0 4px rgba(249, 115, 22, 0.2)"
+                            ]
+                          } : {}}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                           className={cn(
-                            "text-4xl font-black italic tracking-tighter transition-colors",
+                            "text-4xl font-black tracking-widest text-orange-500 font-mono transition-all",
                             !isActive && "opacity-40"
                           )}
-                          style={{ 
-                            color: sessionType === 'FOCUS' ? currentTheme.color : '#00E5FF',
-                            filter: `drop-shadow(0 0 8px ${isActive && (sessionType === 'FOCUS' ? currentTheme.color + '44' : '#00E5FF44')})` 
-                          }}
                         >
                           {formatTime(timeRemaining)}
                         </motion.p>
@@ -171,30 +191,30 @@ export default function PomodoroHUD() {
                         {!isActive ? (
                           <button 
                             onClick={startTimer}
-                            className="flex-1 py-2 text-zinc-900 font-space font-black text-[12px] uppercase tracking-[0.2em] pomodoro-btn"
-                            style={{ backgroundColor: currentTheme.color, boxShadow: `0 0 15px ${currentTheme.color}66` }}
+                            className="flex-1 py-2 text-zinc-900 font-space font-black text-[12px] uppercase tracking-[0.2em] rounded transition-all hover:brightness-110 cursor-pointer"
+                            style={{ backgroundColor: '#F97316', boxShadow: `0 0 15px rgba(249, 115, 22, 0.4)` }}
                           >
-                            {isRTL ? 'ابدأ الجلسة' : 'START_SESSION'}
+                            {isRTL ? 'ابدأ التركيز' : 'START'}
                           </button>
                         ) : isPaused ? (
                           <button 
                             onClick={resume}
-                            className="flex-1 py-1.5 text-zinc-900 font-space font-black text-[9px] uppercase tracking-widest hover:brightness-110 pomodoro-btn"
-                            style={{ backgroundColor: currentTheme.color }}
+                            className="flex-1 py-1.5 text-zinc-900 font-space font-black text-[9px] uppercase tracking-widest rounded transition-all hover:brightness-110 cursor-pointer"
+                            style={{ backgroundColor: '#F97316' }}
                           >
                             RESUME
                           </button>
                         ) : (
                           <button 
                             onClick={pause}
-                            className="flex-1 py-1.5 bg-[var(--input-bg)] border border-[var(--card-border)] text-[var(--text-primary)] font-space font-black text-[9px] uppercase tracking-widest pomodoro-btn"
+                            className="flex-1 py-1.5 bg-zinc-900 border border-orange-500/20 text-white font-space font-black text-[9px] uppercase tracking-widest rounded transition-all hover:bg-zinc-800 cursor-pointer"
                           >
                             PAUSE
                           </button>
                         )}
                         <button 
                           onClick={stop}
-                          className="px-3 py-1.5 bg-[#FF0055]/10 text-[#FF0055] border border-[#FF0055]/30 font-space font-black text-[11px] uppercase tracking-widest hover:bg-[#FF0055]/20 pomodoro-btn"
+                          className="px-3 py-1.5 bg-[#FF0055]/10 text-[#FF0055] border border-[#FF0055]/30 font-space font-black text-[11px] uppercase tracking-widest hover:bg-[#FF0055]/20 rounded transition-all cursor-pointer"
                         >
                           {isActive ? (isRTL ? 'إيقاف' : 'STOP') : (isRTL ? 'إغلاق' : 'CLOSE')}
                         </button>

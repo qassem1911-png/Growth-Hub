@@ -20,7 +20,7 @@ export default function GlobalActionMenu() {
   }
 
   return (
-    <div className={cn("fixed bottom-40 md:bottom-28 z-[200]", isRTL ? "left-6 md:left-12" : "right-6 md:right-12")}>
+    <div className="relative">
       <AnimatePresence>
         {isOpen && (
           <motion.div

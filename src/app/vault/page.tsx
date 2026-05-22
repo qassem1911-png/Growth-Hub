@@ -312,6 +312,17 @@ export function VaultContent() {
       vessel: 'Hex'
     },
     {
+      id: 'DIAMOND',
+      name: 'DIAMOND',
+      threshold: 1800,
+      themeId: 'DIAMOND',
+      color: '#d500f9',
+      neonClass: 'neon-diamond',
+      perk: 'Quantum Sync Protocols',
+      unlocks: 'Access to custom quantum themes',
+      vessel: 'Crystal'
+    },
+    {
       id: 'CROWN',
       name: 'CROWN',
       threshold: 3500,

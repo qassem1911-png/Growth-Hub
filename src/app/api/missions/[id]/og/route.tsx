@@ -70,7 +70,6 @@ export async function GET(
     else if (xp >= 3500) userRank = 'CROWN'
     else if (xp >= 1800) userRank = 'DIAMOND'
     else if (xp >= 800) userRank = 'PLATINUM'
-    else if (xp >= 300) userRank = 'GOLD'
 
     const activeTheme = profile?.active_theme || userRank
     let cleanTheme = activeTheme

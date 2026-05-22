@@ -34,7 +34,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
   }, [profile?.full_name])
 
   const { currentXp, nextRankName, xpNeeded, progressPct } = useMemo(() => {
-    if (!profile) return { currentXp: 0, nextRankName: 'GOLD', xpNeeded: 300, progressPct: 0 }
+    if (!profile) return { currentXp: 0, nextRankName: 'PLATINUM', xpNeeded: 800, progressPct: 0 }
     const xp = profile.xp || 0
     const currentRankIdx = Math.max(0, RANK_THRESHOLDS.findIndex(r => r.rank === profile.rank))
     const nextRank = RANK_THRESHOLDS[currentRankIdx + 1]

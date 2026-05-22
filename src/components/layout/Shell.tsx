@@ -22,7 +22,8 @@ import AuthModal from '@/components/auth/AuthModal'
 import EntryGateModal from '@/components/auth/EntryGateModal'
 import LevelUpModal from '@/components/ui/LevelUpModal'
 import GlitchOverlay from '@/components/ui/GlitchOverlay'
-import OnboardingOverlay from '@/components/ui/OnboardingOverlay'
+import CommandPalette from '@/components/ui/CommandPalette'
+
 
 interface ShellProps {
   children: React.ReactNode
@@ -41,6 +42,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
   const [inboxOpen, setInboxOpen] = useState(false)
   const [selectedReport, setSelectedReport] = useState<any>(null)
   const [streak, setStreak] = useState(0)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
 
   const desktopInboxRef = useRef<HTMLDivElement>(null)
   const mobileInboxRef = useRef<HTMLDivElement>(null)
@@ -163,13 +165,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
   }
 
   const [mounted, setMounted] = useState(false)
-  const [onboardingComplete, setOnboardingComplete] = useState(() => {
-    // Read synchronously on init to prevent flash for existing users
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('onboarding_complete') === 'true'
-    }
-    return true // default to true on SSR (no overlay shown)
-  })
+
   const [shellIsRTL, setShellIsRTL] = useState(false)
 
   useEffect(() => {
@@ -177,7 +173,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
     const lang = localStorage.getItem('language') || 'en'
     const rtl = lang === 'ar'
     setShellIsRTL(rtl)
-    setOnboardingComplete(localStorage.getItem('onboarding_complete') === 'true')
+
     if (typeof document !== 'undefined') {
       document.documentElement.dir = rtl ? 'rtl' : 'ltr'
       document.documentElement.lang = rtl ? 'ar' : 'en'
@@ -188,15 +184,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
     setShellIsRTL(isRTL)
   }, [isRTL])
 
-  const handleOnboardingComplete = async () => {
-    localStorage.setItem('onboarding_complete', 'true')
-    setOnboardingComplete(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase.from('profiles').update({ onboarded: true }).eq('id', user.id)
-    }
-  }
+
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
@@ -260,74 +248,158 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
     return () => clearTimeout(timer)
   }, [aiOpen])
 
-  // Global Escape key listener to close active overlays/panels/modals in Shell
+  // Ctrl+G / Cmd+G Global Quick-Add Interception
+  useEffect(() => {
+    const handleCtrlG = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.code === 'KeyG') {
+        e.preventDefault()
+        e.stopPropagation()
+        setCommandPaletteOpen(prev => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleCtrlG, { capture: true })
+    return () => window.removeEventListener('keydown', handleCtrlG, { capture: true })
+  }, [])
+
+  // Global Escape & Enter keys listener to manage popups, modals, and actions
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return
+      if (e.key !== 'Escape' && e.key !== 'Enter') return
 
-      // Input Protection Guardrail:
-      // If focused inside input/textarea/contenteditable, blur and stop.
       const activeEl = document.activeElement
+
+      // Input/Textarea/Contenteditable Protection:
+      // Let standard browser behaviors and local keydown listeners handle text area typing and editing.
       if (
         activeEl && (
-          activeEl.tagName === 'INPUT' ||
           activeEl.tagName === 'TEXTAREA' ||
           activeEl.getAttribute('contenteditable') === 'true' ||
           (activeEl as HTMLElement).isContentEditable
         )
       ) {
-        (activeEl as HTMLElement).blur()
-        e.stopPropagation()
-        e.preventDefault()
-        return
-      }
-
-      // CONDITION 1 (Active Modals):
-      // Check if any popup modal is open.
-      const isModalOpenInDOM = typeof document !== 'undefined' && (
-        !!document.querySelector('.fixed.inset-0.backdrop-blur-md') ||
-        !!document.querySelector('.fixed.inset-0.backdrop-blur-sm') ||
-        !!document.querySelector('.fixed.inset-0.bg-black\\/80') ||
-        !!document.querySelector('.fixed.inset-0.bg-white\\/90') ||
-        !!document.querySelector('.fixed.inset-0.bg-white\\/60')
-      )
-      
-      const isModalOpen = isRankUpModalOpen || !!selectedReport || isModalOpenInDOM
-
-      if (isModalOpen) {
-        // Close global modals managed by Shell/Context:
-        if (isRankUpModalOpen) {
-          setIsRankUpModalOpen(false)
+        if (e.key === 'Escape') {
+          (activeEl as HTMLElement).blur()
+          e.stopPropagation()
+          e.preventDefault()
         }
-        if (selectedReport) {
-          setSelectedReport(null)
+        return
+      }
+
+      // --- ESCAPE KEY ACTIONS ---
+      if (e.key === 'Escape') {
+        // Blur inputs if focused
+        if (activeEl && activeEl.tagName === 'INPUT') {
+          (activeEl as HTMLElement).blur()
+          e.stopPropagation()
+          e.preventDefault()
+          return
         }
-        // Dispatch custom window event to notify child pages to close their local modals
-        window.dispatchEvent(new CustomEvent('close-all-modals'))
+
+        // CONDITION 1 (Active Modals):
+        // Check if any popup modal is open in the DOM.
+        const isModalOpenInDOM = typeof document !== 'undefined' && (
+          !!document.querySelector('.fixed.inset-0.backdrop-blur-md') ||
+          !!document.querySelector('.fixed.inset-0.backdrop-blur-sm') ||
+          !!document.querySelector('.fixed.inset-0.bg-black\\/80') ||
+          !!document.querySelector('.fixed.inset-0.bg-white\\/90') ||
+          !!document.querySelector('.fixed.inset-0.bg-white\\/60')
+        )
+        
+        const isModalOpen = isRankUpModalOpen || !!selectedReport || isModalOpenInDOM
+
+        if (isModalOpen) {
+          // Close global modals managed by Shell/Context:
+          if (isRankUpModalOpen) {
+            setIsRankUpModalOpen(false)
+          }
+          if (selectedReport) {
+            setSelectedReport(null)
+          }
+          // Dispatch custom window event to notify child pages to close their local modals
+          window.dispatchEvent(new CustomEvent('close-all-modals'))
+          e.stopPropagation()
+          e.preventDefault()
+          return
+        }
+
+        // CONDITION 2 (Active Dropdowns/Inbox/Panels):
+        if (inboxOpen || coachPanelOpen || aiOpen || commandPaletteOpen) {
+          setInboxOpen(false)
+          setCoachPanelOpen(false)
+          setAiOpen(false)
+          setCommandPaletteOpen(false)
+          e.stopPropagation()
+          e.preventDefault()
+          return
+        }
+
+        // CONDITION 3 (Page Navigation):
+        // DO NOT navigate back when Escape is pressed. Just stop propagation.
         e.stopPropagation()
         e.preventDefault()
-        return
       }
 
-      // CONDITION 2 (Active Dropdowns/Inbox/Panels):
-      if (inboxOpen || coachPanelOpen || aiOpen) {
-        setInboxOpen(false)
-        setCoachPanelOpen(false)
-        setAiOpen(false)
-        e.stopPropagation()
-        e.preventDefault()
-        return
-      }
+      // --- ENTER KEY ACTIONS ---
+      if (e.key === 'Enter') {
+        // Find if there is an active modal open in the DOM
+        const modalEl = typeof document !== 'undefined' ? document.querySelector(
+          '.fixed.inset-0.backdrop-blur-md, .fixed.inset-0.backdrop-blur-sm, .fixed.inset-0.bg-black\\/80, .fixed.inset-0.bg-white\\/90, .fixed.inset-0.bg-white\\/60'
+        ) : null
 
-      // CONDITION 3 (Page Navigation):
-      router.back()
-      e.stopPropagation()
-      e.preventDefault()
+        if (modalEl) {
+          // Find buttons in the active modal
+          const buttons = Array.from(modalEl.querySelectorAll('button, [role="button"], input[type="submit"]')) as HTMLElement[]
+          
+          // Filter out disabled or invisible buttons
+          const activeButtons = buttons.filter(btn => {
+            if ((btn as any).disabled) return false
+            if (btn.offsetParent === null) return false
+            return true
+          })
+
+          // Find confirm/submit/primary button by positive keywords
+          const positiveKeywords = [
+            'create', 'deploy', 'add', 'submit', 'confirm', 'save', 'scan', 'find', 'enter', 'yes', 'ok', 
+            'تأكيد', 'إنشاء', 'حفظ', 'نعم', 'موافق', 'دخول', 'تفعيل', 'استخراج', 'إضافة'
+          ]
+          
+          let targetButton = activeButtons.find(btn => {
+            const text = btn.innerText?.toLowerCase() || ''
+            return positiveKeywords.some(keyword => text.includes(keyword))
+          })
+
+          // Fallback: If no keyword matched, grab the last button that isn't a cancel/close action
+          if (!targetButton && activeButtons.length > 0) {
+            const nonCancelButtons = activeButtons.filter(btn => {
+              const text = btn.innerText?.toLowerCase() || ''
+              return !(
+                text.includes('cancel') || 
+                text.includes('close') || 
+                text.includes('back') || 
+                text.includes('إلغاء') || 
+                text.includes('رجوع') || 
+                text.includes('إغلاق') || 
+                btn.innerText?.trim() === '×' ||
+                btn.innerText?.trim() === 'close'
+              )
+            })
+            if (nonCancelButtons.length > 0) {
+              targetButton = nonCancelButtons[nonCancelButtons.length - 1]
+            }
+          }
+
+          if (targetButton) {
+            targetButton.click()
+            e.stopPropagation()
+            e.preventDefault()
+          }
+        }
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isRankUpModalOpen, selectedReport, inboxOpen, coachPanelOpen, aiOpen, router, setIsRankUpModalOpen])
+  }, [isRankUpModalOpen, selectedReport, inboxOpen, coachPanelOpen, aiOpen, commandPaletteOpen, router, setIsRankUpModalOpen])
 
   // Click outside to dismiss notifications
   useEffect(() => {
@@ -724,22 +796,22 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
         "inset-inline-start-72"
       )} />
 
-      <OperatorGuide />
-      <GlobalActionMenu />
+      {/* Central Command Hub */}
+      <div className="fixed bottom-8 ltr:left-8 rtl:right-8 flex items-center gap-4 z-[40]">
+        <OperatorGuide />
+        <GlobalActionMenu />
+      </div>
 
       <LevelUpModal />
       <GlitchOverlay active={isRankUpModalOpen} />
 
       {/* Overlays */}
-      {mounted && !onboardingComplete && profile?.id !== 'guest' && (
-        <OnboardingOverlay 
-          language={profile?.language || 'en'}
-          onComplete={() => {
-            setOnboardingComplete(true)
-            if (typeof window !== 'undefined') localStorage.setItem('onboarding_complete', 'true')
-          }} 
-        />
-      )}
+
+      <CommandPalette 
+        isOpen={commandPaletteOpen} 
+        onClose={() => setCommandPaletteOpen(false)} 
+        missions={syncedMissions} 
+      />
       <AuthModal />
       <EntryGateModal />
     </div>

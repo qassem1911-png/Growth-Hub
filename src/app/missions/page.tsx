@@ -22,7 +22,7 @@ const SIZES = [
 ]
 
 export default function MissionsPage() {
-  const { profile, t, calculateAccountability, isRTL, mounted, currentTheme, setShowAuthModal } = useGrowth()
+  const { profile, t, calculateAccountability, isRTL, mounted, currentTheme, setShowAuthModal, addXp } = useGrowth()
   const { showToast } = useToast()
   const router = useRouter()
   const { playDeploy, playBlip, playError } = useSound()
@@ -35,6 +35,7 @@ export default function MissionsPage() {
   const [syncOnCreate, setSyncOnCreate] = useState(true)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [defaultView, setDefaultView] = useState<'list' | 'board'>('list')
   const [showWarningModal, setShowWarningModal] = useState(false)
   const [warningSlots, setWarningSlots] = useState(0)
   const [warningCriticalCount, setWarningCriticalCount] = useState(0)
@@ -66,6 +67,7 @@ export default function MissionsPage() {
       setShowWarningModal(false)
       setAttachmentMissionId(null)
       setActiveAttachments([])
+      setDefaultView('list')
     }
     window.addEventListener('close-all-modals', handleCloseAll)
     return () => window.removeEventListener('close-all-modals', handleCloseAll)
@@ -139,6 +141,21 @@ export default function MissionsPage() {
     if (error) {
       fetchMissions()
     } else {
+      const mission = missions.find(m => m.id === task.cup_id)
+      if (mission && mission.tasks) {
+        const taskIndex = mission.tasks.findIndex((t: any) => t.id === task.id)
+        if (taskIndex !== -1) {
+          const sizeStr = mission.size?.toLowerCase() || 'md'
+          let xpCeiling = 8
+          if (sizeStr === 'sm' || sizeStr === 's' || sizeStr === 'small') xpCeiling = 4
+          else if (sizeStr === 'lg' || sizeStr === 'l' || sizeStr === 'large') xpCeiling = 20
+
+          if (taskIndex < xpCeiling) {
+            await addXp(updatedStatus ? ((Number(task.weight) || 3) * 10) : -((Number(task.weight) || 3) * 10))
+          }
+        }
+      }
+
       if (updatedStatus) {
         const { data: { user } } = await supabase.auth.getUser()
         if (user) {
@@ -245,7 +262,8 @@ export default function MissionsPage() {
           start_date: startDate || null,
           end_date: endDate || null,
           created_at: new Date().toISOString(),
-          tasks: []
+          tasks: [],
+          metadata: { defaultView }
         }
 
         const updated = [newLocalGoal, ...guestGoals]
@@ -258,6 +276,7 @@ export default function MissionsPage() {
         setNewSize('md')
         setStartDate('')
         setEndDate('')
+        setDefaultView('list')
         showToast(isRTL ? 'تم حفظ الهدف محلياً' : 'Goal saved locally!', 'success')
         playDeploy()
         router.push(`/missions/${fakeId}`)
@@ -319,13 +338,15 @@ export default function MissionsPage() {
       }
     }
 
+      console.log('Activating new goal with layout strategy:', defaultView)
       const insertData: any = {
         user_id: user.id,
         title: titleToCheck,
         status: 'active',
         size: newSize,
         is_archived: false,
-        sync_to_dashboard: syncOnCreate
+        sync_to_dashboard: syncOnCreate,
+        metadata: { defaultView }
       }
     if (startDate) insertData.start_date = startDate
     if (endDate) insertData.end_date = endDate
@@ -340,6 +361,7 @@ export default function MissionsPage() {
         setNewSize('md')
         setStartDate('')
         setEndDate('')
+        setDefaultView('list')
         showToast(isRTL ? 'تم إنشاء الهدف' : 'Goal activated!', 'success')
         playDeploy()
         router.push(`/missions/${data.id}`)
@@ -460,7 +482,7 @@ export default function MissionsPage() {
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9 }}
                 onClick={e => e.stopPropagation()}
-                className="w-[calc(100%-2rem)] mx-auto md:max-w-xl bg-[var(--card-bg)]/90 backdrop-blur-xl border border-[var(--card-border)] p-5 md:p-8 space-y-6 rounded-2xl shadow-2xl my-auto max-h-[90vh] overflow-y-auto"
+                className="w-[calc(100%-2rem)] mx-auto md:max-w-xl bg-zinc-950/90 border border-white/10 backdrop-blur-md p-5 md:p-8 space-y-6 rounded-2xl shadow-2xl my-auto max-h-[90vh] overflow-y-auto"
               >
                 <h2 className="text-xl md:text-2xl font-space font-black uppercase italic text-black dark:text-white tracking-tighter">
                   {isRTL ? 'إنشاء هدف جديد' : 'Create New Goal'}
@@ -474,7 +496,7 @@ export default function MissionsPage() {
                     value={newTitle}
                     placeholder={isRTL ? 'اسم هدفك...' : 'Name your goal...'}
                     onChange={e => setNewTitle(e.target.value)}
-                    className="w-full bg-[var(--input-bg)] border border-[var(--card-border)] py-2.5 px-4 rounded-xl font-space text-base md:text-lg font-black text-[var(--text-primary)] italic outline-none transition-all"
+                    className="w-full bg-zinc-900/50 border border-white/10 py-2.5 px-4 rounded-xl font-space text-base font-black text-white italic outline-none transition-all placeholder:text-zinc-500"
                     onFocus={e => e.currentTarget.style.borderColor = currentTheme.color}
                     onBlur={e => e.currentTarget.style.borderColor = ''}
                   />
@@ -486,7 +508,7 @@ export default function MissionsPage() {
                     <label className="text-xs md:text-sm font-space tracking-widest uppercase font-black" style={{ color: currentTheme.color }}>{isRTL ? 'حجم الهدف' : 'Goal Size'}</label>
                     <div className="group relative flex items-center cursor-help">
                       <span className="material-symbols-outlined text-sm transition-colors group-hover:text-white">info</span>
-                      <div className="pointer-events-none absolute bottom-full mb-2 w-64 md:w-80 rounded-xl bg-[var(--card-bg)] border border-[var(--card-border)] p-3 md:p-4 text-xs md:text-sm text-[var(--text-primary)] shadow-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-[300]">
+                      <div className="pointer-events-none absolute bottom-full mb-2 w-64 md:w-80 rounded-xl bg-zinc-900 border border-white/10 p-3 md:p-4 text-xs md:text-sm text-zinc-200 shadow-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 z-[300]">
                         {isRTL 
                           ? "حجم الهدف يحدد سعة الـ Slots المستهلكة في لوحة القيادة، وسقف نقاط الـ XP المكتسبة (Small: 4 مهام، Medium: 8 مهام، Large: 20 مهمة). يمكنك إضافة مهام إضافية بعد السقف للتنظيم فقط."
                           : "Goal size determines Focus Slots consumed on the dashboard and the XP reward ceiling (Small: 4 tasks, Medium: 8 tasks, Large: 20 tasks). Extra tasks can be added freely for organization."}
@@ -497,22 +519,77 @@ export default function MissionsPage() {
                     {SIZES.map(s => (
                       <button
                         key={s.key}
-                        onClick={() => setNewSize(s.key)}
+                        type="button"
+                        onClick={() => { playBlip(); setNewSize(s.key); }}
                         className={cn(
-                          "p-3 md:p-4 border flex flex-col items-center gap-2 transition-all rounded-xl",
+                          "p-3 border flex items-center justify-center gap-2 transition-all rounded-xl cursor-pointer text-sm font-bold uppercase tracking-wider",
                           newSize === s.key 
                             ? "text-black border-transparent shadow-lg" 
-                            : "border-[var(--card-border)] text-[var(--text-secondary)] hover:border-transparent"
+                            : "border-white/10 text-zinc-400 hover:border-white/20 hover:text-white bg-black/20"
                         )}
                         style={newSize === s.key ? { backgroundColor: currentTheme.color, borderColor: currentTheme.color, boxShadow: `0 0 15px ${currentTheme.color}55` } : {}}
                         onMouseEnter={e => { if (newSize !== s.key) e.currentTarget.style.borderColor = `${currentTheme.color}60` }}
                         onMouseLeave={e => { if (newSize !== s.key) e.currentTarget.style.borderColor = '' }}
                       >
-                        <span className="material-symbols-outlined text-xl md:text-2xl">{s.icon}</span>
-                        <span className="text-xs md:text-sm font-space font-black uppercase tracking-tighter">{isRTL ? (s.key === 'lg' ? 'كبيرة' : s.key === 'md' ? 'متوسطة' : 'صغيرة') : s.label}</span>
+                        <span className="material-symbols-outlined text-base md:text-lg">{s.icon}</span>
+                        <span className="text-xs md:text-sm font-space font-black uppercase tracking-tighter">{isRTL ? (s.key === 'lg' ? 'كبيرة' : s.key === 'md' ? 'متوسطة' : 'صغيرة') : (s.key === 'lg' ? 'Large' : s.key === 'md' ? 'Medium' : 'Small')}</span>
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Default Layout View Selection */}
+                <div className="space-y-2">
+                  <label className="text-xs md:text-sm font-space tracking-widest uppercase font-black" style={{ color: currentTheme.color }}>
+                    {isRTL ? 'طريقة العرض الافتراضية' : 'DEFAULT LAYOUT'}
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* List View Toggle Option */}
+                    <button
+                      type="button"
+                      onClick={() => { playBlip(); setDefaultView('list'); }}
+                      className={cn(
+                        "p-3 border flex items-center justify-center gap-2.5 transition-all rounded-xl cursor-pointer text-sm font-black uppercase tracking-wider",
+                        defaultView === 'list'
+                          ? "text-black border-transparent shadow-lg"
+                          : "border-white/10 text-zinc-400 hover:border-white/20 hover:text-white bg-black/20"
+                      )}
+                      style={defaultView === 'list' ? { backgroundColor: currentTheme.color, borderColor: currentTheme.color, boxShadow: `0 0 15px ${currentTheme.color}55` } : {}}
+                      onMouseEnter={e => { if (defaultView !== 'list') e.currentTarget.style.borderColor = `${currentTheme.color}60` }}
+                      onMouseLeave={e => { if (defaultView !== 'list') e.currentTarget.style.borderColor = '' }}
+                    >
+                      <span className="material-symbols-outlined text-base md:text-lg">list</span>
+                      <span className="text-xs md:text-sm font-space font-black uppercase tracking-tighter">
+                        {isRTL ? 'قائمة (المناهج)' : 'List View'}
+                      </span>
+                    </button>
+
+                    {/* Board View Toggle Option */}
+                    <button
+                      type="button"
+                      onClick={() => { playBlip(); setDefaultView('board'); }}
+                      className={cn(
+                        "p-3 border flex items-center justify-center gap-2.5 transition-all rounded-xl cursor-pointer text-sm font-black uppercase tracking-wider",
+                        defaultView === 'board'
+                          ? "text-black border-transparent shadow-lg"
+                          : "border-white/10 text-zinc-400 hover:border-white/20 hover:text-white bg-black/20"
+                      )}
+                      style={defaultView === 'board' ? { backgroundColor: currentTheme.color, borderColor: currentTheme.color, boxShadow: `0 0 15px ${currentTheme.color}55` } : {}}
+                      onMouseEnter={e => { if (defaultView !== 'board') e.currentTarget.style.borderColor = `${currentTheme.color}60` }}
+                      onMouseLeave={e => { if (defaultView !== 'board') e.currentTarget.style.borderColor = '' }}
+                    >
+                      <span className="material-symbols-outlined text-base md:text-lg">view_kanban</span>
+                      <span className="text-xs md:text-sm font-space font-black uppercase tracking-tighter">
+                        {isRTL ? 'لوحة (المشاريع)' : 'Board View'}
+                      </span>
+                    </button>
+                  </div>
+                  {/* Subtle Subtitle Description for options */}
+                  <p className="text-[10px] text-zinc-500 font-medium tracking-wide leading-normal">
+                    {isRTL 
+                      ? "قائمة: تناسب المسارات التعليمية والخطوات المنهجية. لوحة: تناسب المشاريع والمهام التفاعلية."
+                      : "List View: Perfect for courses, syllabi and sequential steps. Board View: Ideal for interactive projects and kanban tasks."}
+                  </p>
                 </div>
 
                 {/* ══════════════════════════════════════ */}
@@ -527,7 +604,7 @@ export default function MissionsPage() {
                       type="date"
                       value={startDate}
                       onChange={e => setStartDate(e.target.value)}
-                      className="w-full bg-[var(--input-bg)] border border-[var(--card-border)] py-2.5 px-4 font-space text-xs md:text-sm font-black text-[var(--text-primary)] outline-none transition-all uppercase rounded-xl date-input-tactical"
+                      className="w-full bg-zinc-900/50 border border-white/10 py-2.5 px-4 font-space text-base font-black text-white outline-none transition-all uppercase rounded-xl date-input-tactical"
                       style={{ colorScheme: 'dark' }}
                       onFocus={e => e.currentTarget.style.borderColor = currentTheme.color}
                       onBlur={e => e.currentTarget.style.borderColor = ''}
@@ -541,7 +618,7 @@ export default function MissionsPage() {
                       type="date"
                       value={endDate}
                       onChange={e => setEndDate(e.target.value)}
-                      className="w-full bg-[var(--input-bg)] border border-[var(--card-border)] py-2.5 px-4 font-space text-xs md:text-sm font-black text-[var(--text-primary)] outline-none transition-all uppercase rounded-xl date-input-tactical"
+                      className="w-full bg-zinc-900/50 border border-white/10 py-2.5 px-4 font-space text-base font-black text-white outline-none transition-all uppercase rounded-xl date-input-tactical"
                       style={{ colorScheme: 'dark' }}
                       onFocus={e => e.currentTarget.style.borderColor = currentTheme.color}
                       onBlur={e => e.currentTarget.style.borderColor = ''}
@@ -554,8 +631,9 @@ export default function MissionsPage() {
                   <div className="space-y-2 flex-1">
                      <label className="text-xs md:text-sm font-space tracking-widest uppercase font-black" style={{ color: currentTheme.color }}>{isRTL ? 'عرض في اللوحة' : 'Show on Dashboard'}</label>
                      <button 
-                       onClick={() => setSyncOnCreate(!syncOnCreate)}
-                       className="w-full py-2.5 px-4 border font-space text-xs md:text-sm font-black uppercase tracking-widest transition-all duration-300 rounded-xl flex items-center justify-between gap-4"
+                       type="button"
+                       onClick={() => { playBlip(); setSyncOnCreate(!syncOnCreate); }}
+                       className="w-full py-2.5 px-4 border font-space text-base font-black uppercase tracking-widest transition-all duration-300 rounded-xl flex items-center justify-between gap-4 cursor-pointer"
                        style={syncOnCreate ? {
                          backgroundColor: currentTheme.color,
                          borderColor: currentTheme.color,
@@ -563,13 +641,13 @@ export default function MissionsPage() {
                          boxShadow: `0 0 18px ${currentTheme.color}55`
                        } : {
                          backgroundColor: 'transparent',
-                         borderColor: 'var(--card-border)',
+                         borderColor: 'white/10',
                          color: 'var(--text-secondary)'
                        }}
                      >
                        <span className="flex items-center gap-3">
                          <span className="material-symbols-outlined text-xl">
-                           {syncOnCreate ? 'hub' : 'hub'}
+                           hub
                          </span>
                          {syncOnCreate
                            ? (isRTL ? 'مرئي في اللوحة' : 'SHOW ON DASHBOARD')
@@ -584,7 +662,7 @@ export default function MissionsPage() {
                            color: '#000'
                          } : {
                            backgroundColor: 'transparent',
-                           borderColor: 'var(--card-border)',
+                           borderColor: 'white/10',
                            color: 'var(--text-secondary)'
                          }}
                        >
@@ -594,13 +672,13 @@ export default function MissionsPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-6 pt-4 border-t border-black/5 dark:border-white/5">
-                  <button onClick={() => setShowCreate(false)} className="px-6 py-4 border border-[var(--card-border)] rounded-sm text-[var(--text-secondary)] font-space text-sm md:text-base uppercase tracking-widest hover:text-[var(--text-primary)] hover:border-[var(--text-primary)] transition-all font-black">{isRTL ? 'إلغاء' : 'Cancel'}</button>
+                <div className="flex justify-end gap-6 pt-4 border-t border-white/10">
+                  <button onClick={() => { setShowCreate(false); setDefaultView('list'); }} className="px-6 py-4 border border-white/10 rounded-xl text-zinc-400 font-space text-base uppercase tracking-widest hover:text-white hover:border-white/20 transition-all font-black cursor-pointer">{isRTL ? 'إلغاء' : 'Cancel'}</button>
                   <button 
                     onClick={() => addMission()} 
                     disabled={isSubmitting}
                     className={cn(
-                      "px-10 py-4 font-space font-black text-sm md:text-base uppercase tracking-widest shadow-lg rounded-sm transition-all hover:brightness-110 flex items-center justify-center gap-2",
+                      "px-10 py-4 font-space font-black text-base uppercase tracking-widest shadow-lg rounded-xl transition-all hover:brightness-110 flex items-center justify-center gap-2 cursor-pointer",
                       isSubmitting && "opacity-50 cursor-not-allowed"
                     )}
                     style={{ backgroundColor: currentTheme.color, color: '#000', boxShadow: `0 0 20px ${currentTheme.color}4d` }}

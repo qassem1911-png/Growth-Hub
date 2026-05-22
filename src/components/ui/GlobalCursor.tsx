@@ -80,26 +80,6 @@ export default function GlobalCursor() {
           filter: 'blur(120px)',
         }}
       />
-
-      {/* Custom Kinetic SVG Cursor */}
-      <motion.div
-        style={{
-          x: springX,
-          y: springY,
-          translateX: '-20%',
-          translateY: '-20%',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          pointerEvents: 'none',
-          zIndex: 99999,
-          opacity: cursorOpacity,
-        }}
-      >
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transform: 'rotate(-15deg)', filter: `drop-shadow(0px 0px 8px ${currentTheme.color})` }}>
-          <path d="M3 3L10.07 19.97L12.58 12.58L19.97 10.07L3 3Z" fill={currentTheme.color} fillOpacity="0.8" stroke="#ffffff" strokeWidth="1.5" strokeLinejoin="round"/>
-        </svg>
-      </motion.div>
     </>
   )
 }

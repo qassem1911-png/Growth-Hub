@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Shell from '@/components/layout/Shell'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase'
 import { useGrowth } from '@/context/GrowthContext'
 import CustomSelect from '@/components/ui/CustomSelect'
+import { useRouter } from 'next/navigation'
 
 interface WikiSearchProps {
   onInsert: (text: string) => void
@@ -97,8 +98,22 @@ export default function NotesPage() {
   const [newMissionId, setNewMissionId] = useState<string>('')
   const [searchQuery, setSearchQuery] = useState('')
   const [filterTag, setFilterTag] = useState('all')
+  const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null)
+  const router = useRouter()
   const supabase = createClient()
   const { currentTheme, isRTL, mounted } = useGrowth()
+
+  const uniqueMissions = useMemo(() => {
+    const missionsMap = new Map<string, string>()
+    notes.forEach(note => {
+      const missionId = note.cups?.id || note.mission_id || note.cup_id
+      const missionTitle = note.cups?.title || note.cups_title
+      if (missionId && missionTitle) {
+        missionsMap.set(missionId, missionTitle)
+      }
+    })
+    return Array.from(missionsMap.entries()).map(([id, title]) => ({ id, title }))
+  }, [notes])
 
   useEffect(() => { 
     fetchNotes()
@@ -122,16 +137,111 @@ export default function NotesPage() {
   async function fetchNotes() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        setLoading(false)
-        return
+      let dbNotes: any[] = []
+      let extractedTaskNotes: any[] = []
+
+      if (user) {
+        // Authenticated mode:
+        // 1. Fetch standalone notes
+        const { data: notesData } = await supabase
+          .from('notes')
+          .select('*, cups(id, title)')
+          .eq('user_id', user.id)
+        if (notesData) dbNotes = notesData
+
+        // 2. Fetch all user cups (missions) with tasks
+        const { data: cupsData } = await supabase
+          .from('cups')
+          .select('*, tasks(*)')
+          .eq('user_id', user.id)
+
+        if (cupsData) {
+          cupsData.forEach((mission: any) => {
+            const tasks = mission.tasks || []
+            tasks.forEach((task: any) => {
+              const notesArr = task.metadata?.notes || []
+              notesArr.forEach((noteItem: any, index: number) => {
+                const content = typeof noteItem === 'string' ? noteItem : (noteItem.content || '')
+                const createdAt = typeof noteItem === 'string' 
+                  ? task.created_at || new Date().toISOString() 
+                  : (noteItem.created_at || task.created_at || new Date().toISOString())
+                
+                // Deduplicate: If notesData already has a synced row with matching task_id and content
+                const isDuplicate = dbNotes.some(n => n.task_id === task.id && n.content === content)
+                if (!isDuplicate) {
+                  extractedTaskNotes.push({
+                    id: `task_note_${task.id}_${index}`,
+                    user_id: user.id,
+                    title: task.title || (isRTL ? 'ملاحظة مهمة' : 'Task Note'),
+                    tag: 'task',
+                    content: content,
+                    color: mission.color || currentTheme.color,
+                    is_locked: false,
+                    is_on_home: false,
+                    pos_x: 0,
+                    pos_y: 0,
+                    font_settings: { family: 'space', weight: 'normal', style: 'normal' },
+                    mission_id: mission.id,
+                    task_id: task.id,
+                    created_at: createdAt,
+                    cups: {
+                      id: mission.id,
+                      title: mission.title
+                    },
+                    _isTaskNote: true,
+                    _noteIndex: index
+                  })
+                }
+              })
+            })
+          })
+        }
+      } else {
+        // Guest mode:
+        // 1. Fetch from localStorage guest_goals
+        const guestGoals = JSON.parse(localStorage.getItem('guest_goals') || '[]')
+        guestGoals.forEach((mission: any) => {
+          const tasks = mission.tasks || []
+          tasks.forEach((task: any) => {
+            const notesArr = task.metadata?.notes || []
+            notesArr.forEach((noteItem: any, index: number) => {
+              const content = typeof noteItem === 'string' ? noteItem : (noteItem.content || '')
+              const createdAt = typeof noteItem === 'string'
+                ? task.created_at || new Date().toISOString()
+                : (noteItem.created_at || task.created_at || new Date().toISOString())
+
+              extractedTaskNotes.push({
+                id: `task_note_${task.id}_${index}`,
+                user_id: '',
+                title: task.title || (isRTL ? 'ملاحظة مهمة' : 'Task Note'),
+                tag: 'task',
+                content: content,
+                color: mission.color || currentTheme.color,
+                is_locked: false,
+                is_on_home: false,
+                pos_x: 0,
+                pos_y: 0,
+                font_settings: { family: 'space', weight: 'normal', style: 'normal' },
+                mission_id: mission.id,
+                task_id: task.id,
+                created_at: createdAt,
+                cups: {
+                  id: mission.id,
+                  title: mission.title
+                },
+                _isTaskNote: true,
+                _noteIndex: index
+              })
+            })
+          })
+        })
       }
-      const { data } = await supabase
-        .from('notes')
-        .select('*, cups(id, title)')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-      if (data) setNotes(data)
+
+      // Merge and sort by created_at descending
+      const merged = [...dbNotes, ...extractedTaskNotes].sort((a, b) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+      setNotes(merged)
     } catch (error) {
       console.error('Error fetching notes:', error)
     } finally {
@@ -141,27 +251,146 @@ export default function NotesPage() {
 
   async function fetchMissions() {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    const { data } = await supabase
-      .from('cups')
-      .select('id, title')
-      .eq('user_id', user.id)
-      .eq('is_archived', false)
-      .order('created_at', { ascending: false })
-    if (data) setMissions(data)
+    if (user) {
+      const { data } = await supabase
+        .from('cups')
+        .select('id, title')
+        .eq('user_id', user.id)
+        .eq('is_archived', false)
+        .order('created_at', { ascending: false })
+      if (data) setMissions(data)
+    } else {
+      const guestGoals = JSON.parse(localStorage.getItem('guest_goals') || '[]')
+      const formatted = guestGoals.map((m: any) => ({ id: m.id, title: m.title }))
+      setMissions(formatted)
+    }
   }
 
   const deleteNote = async (id: string) => {
+    const noteToDelete = notes.find(n => n.id === id)
+    if (!noteToDelete) return
+
     if (confirm(isRTL ? 'هل تريد حذف هذه الملاحظة؟' : 'Delete this note?')) {
       setNotes(prev => prev.filter(n => n.id !== id))
-      await supabase.from('notes').delete().eq('id', id)
+
+      if (noteToDelete._isTaskNote) {
+        const { task_id, mission_id, _noteIndex } = noteToDelete
+        if (mission_id && mission_id.startsWith('local_')) {
+          // Guest mode
+          const guestGoals = JSON.parse(localStorage.getItem('guest_goals') || '[]')
+          const goal = guestGoals.find((g: any) => g.id === mission_id)
+          if (goal && goal.tasks) {
+            const taskObj = goal.tasks.find((t: any) => t.id === task_id)
+            if (taskObj && taskObj.metadata && taskObj.metadata.notes) {
+              taskObj.metadata.notes = taskObj.metadata.notes.filter((_: any, idx: number) => idx !== _noteIndex)
+              localStorage.setItem('guest_goals', JSON.stringify(guestGoals))
+            }
+          }
+        } else {
+          // Authenticated mode
+          try {
+            const supabase = createClient()
+            // Delete from standalone notes if it matches
+            await supabase.from('notes').delete().eq('task_id', task_id).eq('content', noteToDelete.content)
+
+            // Update metadata in tasks table
+            const { data: taskData } = await supabase
+              .from('tasks')
+              .select('metadata')
+              .eq('id', task_id)
+              .single()
+            if (taskData) {
+              const notesArr = taskData.metadata?.notes || []
+              const updatedNotes = notesArr.filter((_: any, idx: number) => idx !== _noteIndex)
+              const updatedMetadata = { ...taskData.metadata, notes: updatedNotes }
+              await supabase
+                .from('tasks')
+                .update({ metadata: updatedMetadata })
+                .eq('id', task_id)
+            }
+          } catch (err) {
+            console.error('Error deleting task note in database:', err)
+          }
+        }
+      } else {
+        // Standalone note
+        await supabase.from('notes').delete().eq('id', id)
+      }
     }
   }
 
   const updateNote = async (id: string, updates: any) => {
     setNotes(prev => prev.map(n => n.id === id ? { ...n, ...updates } : n))
     if (editingNote?.id === id) setEditingNote((prev: any) => ({ ...prev, ...updates }))
-    await supabase.from('notes').update(updates).eq('id', id)
+
+    const noteToUpdate = notes.find(n => n.id === id)
+    if (!noteToUpdate) return
+
+    if (noteToUpdate._isTaskNote) {
+      const { task_id, mission_id, _noteIndex } = noteToUpdate
+      if (mission_id && mission_id.startsWith('local_')) {
+        // Guest mode
+        const guestGoals = JSON.parse(localStorage.getItem('guest_goals') || '[]')
+        const goal = guestGoals.find((g: any) => g.id === mission_id)
+        if (goal && goal.tasks) {
+          const taskObj = goal.tasks.find((t: any) => t.id === task_id)
+          if (taskObj && taskObj.metadata && taskObj.metadata.notes) {
+            const notesArr = taskObj.metadata.notes
+            const currentItem = notesArr[_noteIndex]
+            if (typeof currentItem === 'string') {
+              notesArr[_noteIndex] = updates.content !== undefined ? updates.content : currentItem
+            } else if (currentItem) {
+              notesArr[_noteIndex] = {
+                ...currentItem,
+                content: updates.content !== undefined ? updates.content : currentItem.content,
+              }
+            }
+            localStorage.setItem('guest_goals', JSON.stringify(guestGoals))
+          }
+        }
+      } else {
+        // Authenticated mode
+        try {
+          const supabase = createClient()
+          // Update in global notes table
+          if (updates.content !== undefined || updates.title !== undefined) {
+            const dbUpdates: any = {}
+            if (updates.content !== undefined) dbUpdates.content = updates.content
+            if (updates.title !== undefined) dbUpdates.title = updates.title
+            await supabase.from('notes').update(dbUpdates).eq('task_id', task_id).eq('content', noteToUpdate.content)
+          }
+
+          // Update in tasks table metadata
+          const { data: taskData } = await supabase
+            .from('tasks')
+            .select('metadata')
+            .eq('id', task_id)
+            .single()
+          if (taskData) {
+            const notesArr = taskData.metadata?.notes || []
+            const currentItem = notesArr[_noteIndex]
+            if (typeof currentItem === 'string') {
+              notesArr[_noteIndex] = updates.content !== undefined ? updates.content : currentItem
+            } else if (currentItem) {
+              notesArr[_noteIndex] = {
+                ...currentItem,
+                content: updates.content !== undefined ? updates.content : currentItem.content,
+              }
+            }
+            const updatedMetadata = { ...taskData.metadata, notes: notesArr }
+            await supabase
+              .from('tasks')
+              .update({ metadata: updatedMetadata })
+              .eq('id', task_id)
+          }
+        } catch (err) {
+          console.error('Error updating task note in database:', err)
+        }
+      }
+    } else {
+      // Standalone note
+      await supabase.from('notes').update(updates).eq('id', id)
+    }
   }
 
   const TAGS = [
@@ -180,7 +409,9 @@ export default function NotesPage() {
       n.cups?.title?.toLowerCase().includes(q)
     )
     const matchesTag = filterTag === 'all' || n.tag === filterTag
-    return matchesSearch && matchesTag
+    const missionId = n.cups?.id || n.mission_id || n.cup_id
+    const matchesMission = selectedMissionId === null || missionId === selectedMissionId
+    return matchesSearch && matchesTag && matchesMission
   })
 
   async function createNote() {
@@ -370,6 +601,44 @@ export default function NotesPage() {
 
         </AnimatePresence>
 
+        {/* Goal Filter Bar */}
+        {uniqueMissions.length > 0 && (
+          <div className="flex flex-col gap-2 bg-white/[0.01] dark:bg-white/[0.01] border border-black/5 dark:border-white/5 p-4 rounded-xl backdrop-blur-md">
+            <span className="text-[10px] font-space text-black/40 dark:text-white/30 tracking-widest uppercase font-black">
+              {isRTL ? 'تصفية حسب الهدف' : 'Filter by Goal'}
+            </span>
+            <div className="flex gap-2.5 overflow-x-auto pb-1.5 no-scrollbar">
+              <button
+                onClick={() => setSelectedMissionId(null)}
+                className={cn(
+                  "px-4 py-1.5 border font-space text-[9px] font-black tracking-widest uppercase transition-all whitespace-nowrap rounded-lg cursor-pointer",
+                  selectedMissionId === null
+                    ? "text-black border-transparent shadow-md"
+                    : "border-[var(--card-border)] text-[var(--text-secondary)] hover:border-[var(--card-border)]/50 hover:text-[var(--text-primary)]"
+                )}
+                style={selectedMissionId === null ? { backgroundColor: currentTheme.color, borderColor: currentTheme.color, boxShadow: `0 0 15px ${currentTheme.color}33` } : {}}
+              >
+                {isRTL ? 'جميع الأهداف' : 'ALL GOALS'}
+              </button>
+              {uniqueMissions.map(m => (
+                <button
+                  key={m.id}
+                  onClick={() => setSelectedMissionId(selectedMissionId === m.id ? null : m.id)}
+                  className={cn(
+                    "px-4 py-1.5 border font-space text-[9px] font-black tracking-widest uppercase transition-all whitespace-nowrap rounded-lg cursor-pointer",
+                    selectedMissionId === m.id
+                      ? "text-black border-transparent shadow-md"
+                      : "border-[var(--card-border)] text-[var(--text-secondary)] hover:border-[var(--card-border)]/50 hover:text-[var(--text-primary)]"
+                  )}
+                  style={selectedMissionId === m.id ? { backgroundColor: currentTheme.color, borderColor: currentTheme.color, boxShadow: `0 0 15px ${currentTheme.color}33` } : {}}
+                >
+                  {m.title.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Tag Filter Bar */}
         <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
           <button
@@ -422,7 +691,7 @@ export default function NotesPage() {
                 const date = dateObj.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
                 const dateSuffix = `${dateObj.getDate()}_${dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}`
                 
-                // Fix 4: Clean preview text
+                // Clean preview text
                 const plainText = (note.content || '')
                   .replace(/<[^>]*>/g, '') // Strip HTML
                   .replace(/[#*`_~]/g, '') // Strip Markdown symbols
@@ -441,7 +710,11 @@ export default function NotesPage() {
                       "group relative p-7 border cursor-pointer transition-all duration-300 min-h-[220px] flex flex-col",
                       "bg-[var(--card-bg)] border-[var(--card-border)] hover:border-[var(--card-border)]/50",
                       "backdrop-blur-xl",
-                      isRTL ? "text-right" : "text-left"
+                      isRTL ? "text-right" : "text-left",
+                      note._isTaskNote && (isRTL 
+                        ? "border-r-2 border-indigo-500/50 shadow-[inset_-3px_0_10px_rgba(99,102,241,0.05)]" 
+                        : "border-l-2 border-indigo-500/50 shadow-[inset_3px_0_10px_rgba(99,102,241,0.05)]"
+                      )
                     )}
                   >
                     {/* Neon top accent */}
@@ -452,7 +725,15 @@ export default function NotesPage() {
 
                     {/* Mission badge */}
                     {linkedMission && (
-                      <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-sm text-[8px] font-space font-black tracking-wider uppercase" style={{ backgroundColor: `${noteColor}15`, color: noteColor, border: `1px solid ${noteColor}30` }}>
+                      <div 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const mId = linkedMission.id || note.mission_id || note.cup_id
+                          if (mId) router.push(`/missions/${mId}`)
+                        }}
+                        className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-sm text-[8px] font-space font-black tracking-wider uppercase hover:bg-zinc-800 hover:scale-105 transition-all cursor-pointer z-10"
+                        style={{ backgroundColor: `${noteColor}15`, color: noteColor, border: `1px solid ${noteColor}30` }}
+                      >
                         <span className="material-symbols-outlined text-[10px]">link</span>
                         <span className="max-w-[80px] truncate">{linkedMission.title}</span>
                       </div>
@@ -472,7 +753,7 @@ export default function NotesPage() {
 
                     {/* Preview */}
                     <p className={cn(
-                      'text-xs leading-relaxed text-[var(--text-secondary)] mt-3 italic font-space'
+                       'text-xs leading-relaxed text-[var(--text-secondary)] mt-3 italic font-space'
                     )}>
                       "{plainText}"
                     </p>
@@ -486,6 +767,15 @@ export default function NotesPage() {
                             style={{ borderColor: `${noteColor}40`, color: noteColor, backgroundColor: `${noteColor}08` }}
                           >
                             {tagObj.label}
+                          </span>
+                        )}
+                        {note._isTaskNote && (
+                          <span 
+                            className="flex items-center gap-1 text-[8px] font-mono text-indigo-400 font-bold uppercase tracking-wider bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20"
+                            title="Embedded Task Note"
+                          >
+                            <span className="material-symbols-outlined text-[10px]">layers</span>
+                            {isRTL ? 'مدمج' : 'NESTED'}
                           </span>
                         )}
                         <span className="text-[9px] font-space text-[var(--text-secondary)] font-black tracking-widest">
@@ -533,10 +823,20 @@ export default function NotesPage() {
 
               <div className="flex justify-between items-center mb-6">
                  {editingNote.cups && (
-                   <div className="flex items-center gap-2 text-[10px] font-space font-black tracking-widest uppercase" style={{ color: currentTheme.color }}>
-                     <span className="material-symbols-outlined text-sm">link</span>
-                     {isRTL ? `مرتبط بـ: ${editingNote.cups.title}` : `Linked to: ${editingNote.cups.title}`}
-                   </div>
+                    <div 
+                      onClick={() => {
+                        const mId = editingNote.cups.id || editingNote.mission_id || editingNote.cup_id
+                        if (mId) {
+                          setEditingNote(null)
+                          router.push(`/missions/${mId}`)
+                        }
+                      }}
+                      className="flex items-center gap-2 text-[10px] font-space font-black tracking-widest uppercase hover:underline cursor-pointer transition-all" 
+                      style={{ color: currentTheme.color }}
+                    >
+                      <span className="material-symbols-outlined text-sm">link</span>
+                      {isRTL ? `مرتبط بـ: ${editingNote.cups.title}` : `Linked to: ${editingNote.cups.title}`}
+                    </div>
                  )}
                   <span className="text-[9px] font-space text-[var(--text-secondary)]/30 font-black tracking-widest">
                     ID: {editingNote?.id?.slice(0, 8) ?? 'NEW'}

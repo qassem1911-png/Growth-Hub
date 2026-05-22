@@ -178,7 +178,6 @@ export const THEME_PACKAGES = {
 
 export const RANK_THRESHOLDS = [
   { rank: 'SILVER', xp: 0, theme: 'SILVER', perk: 'Basic Protocol' },
-  { rank: 'GOLD', xp: 300, theme: 'GOLD', perk: 'Focus Expansion' },
   { rank: 'PLATINUM', xp: 800, theme: 'PLATINUM', perk: 'Energy Streams' },
   { rank: 'DIAMOND', xp: 1800, theme: 'DIAMOND', perk: 'Quantum Sync' },
   { rank: 'CROWN', xp: 3500, theme: 'CROWN', perk: 'Savage AI Coach' },
@@ -249,6 +248,33 @@ export const TRANSLATIONS = {
     deploy: 'DEPLOY',
     missionColor: 'MISSION COLOR',
     missionScale: 'MISSION SCALE',
+    details: 'DETAILS',
+    time: 'TIME',
+    notes: 'NOTES',
+    attachments: 'ATTACHMENTS',
+    noDescription: 'NO DESCRIPTION AVAILABLE',
+    writeNotePlaceholder: '[ WRITE A NEW NOTE FOR THE TASK... ]',
+    googleDriveLinkBtn: 'LINK GOOGLE DRIVE FILE',
+    googleDriveDesc: 'With one click, link your files directly from your personal account. No server space is consumed.',
+    taskDetail: 'TASK DETAIL',
+    savedProgress: 'SAVED PROGRESS',
+    coreTaskStatement: 'CORE TASK STATEMENT',
+    writeDescriptionPlaceholder: 'Write a description for this task...',
+    completed: 'COMPLETED',
+    inProgress: 'IN PROGRESS',
+    priority: 'PRIORITY: ',
+    high: 'HIGH',
+    regular: 'REGULAR',
+    statusComplexity: 'STATUS & COMPLEXITY',
+    currentStatus: 'CURRENT STATUS',
+    taskWeight: 'TASK WEIGHT',
+    timeTrackingTitle: 'Time Tracking Coming Soon',
+    timeTrackingDesc: 'Phase 2 integration will support detailed pomodoro counts, custom stopwatch, and session logs mapped explicitly to this subtask.',
+    addNote: 'ADD NOTE',
+    deleteAttachment: 'DELETE ATTACHMENT',
+    markIncomplete: 'MARK INCOMPLETE',
+    markCompleted: 'MARK COMPLETED',
+    googleApiNotConfigured: 'Google API keys are not configured.',
   },
   ar: {
     dashboard: 'الرئيسية',
@@ -294,6 +320,33 @@ export const TRANSLATIONS = {
     deploy: 'بدء الهدف',
     missionColor: 'لون المهمة',
     missionScale: 'حجم المهمة',
+    details: 'تفاصيل',
+    time: 'الوقت',
+    notes: 'ملاحظات',
+    attachments: 'المرفقات',
+    noDescription: 'لا يوجد وصف متاح',
+    writeNotePlaceholder: '[ اكتب ملحوظة جديدة للتاسك... ]',
+    googleDriveLinkBtn: 'ربط ملف من Google Drive',
+    googleDriveDesc: 'بضغطة واحدة، اربط ملفاتك مباشرة من حسابك الشخصي. لا يتم استهلاك أي مساحة من السيرفر.',
+    taskDetail: 'تفاصيل المهمة',
+    savedProgress: 'التقدم المحفوظ',
+    coreTaskStatement: 'بيان المهمة الأساسية',
+    writeDescriptionPlaceholder: 'اكتب وصفاً أو بياناً لهذه المهمة...',
+    completed: 'مكتملة',
+    inProgress: 'جاري العمل',
+    priority: 'أولوية: ',
+    high: 'عالية 🔥',
+    regular: 'عادية',
+    statusComplexity: 'الحالة والتقدير',
+    currentStatus: 'الحالة الحالية',
+    taskWeight: 'الوزن / الأهمية',
+    timeTrackingTitle: 'تتبع الوقت وقريبًا',
+    timeTrackingDesc: 'في التحديث القادم (Phase 2)، ستتمكن من بدء مؤقت بومودورو مخصص لكل مهمة وربطها بالكامل مع سجل التتبع الإجمالي.',
+    addNote: 'إضافة ملحوظة',
+    deleteAttachment: 'حذف المرفق',
+    markIncomplete: 'إلغاء الإكمال',
+    markCompleted: 'اعتماد كمكتملة',
+    googleApiNotConfigured: 'مفاتيح Google API غير مهيأة بعد.',
   }
 }
 
@@ -375,7 +428,6 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
     if (xp >= 3500) return 'CROWN'
     if (xp >= 1800) return 'DIAMOND'
     if (xp >= 800) return 'PLATINUM'
-    if (xp >= 300) return 'GOLD'
     return 'SILVER'
   }, [profile?.xp])
 
@@ -619,18 +671,18 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
 
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
-            .insert({
+            .upsert({
               id: user.id,
               full_name,
               avatar_url: resolvedAvatarUrl,
               gender,
               age,
-              onboarded: false,
+              onboarded: true,
               xp: 0,
               rank: 'RECRUIT',
               active_theme: 'INIT_GREEN',
               language: storedLang || 'en'
-            })
+            }, { onConflict: 'id' })
             .select()
             .single()
 
@@ -645,11 +697,34 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
             setProfile(newProfileData)
             if (typeof window !== 'undefined') {
               localStorage.setItem('cached_profile', JSON.stringify(newProfileData))
+              localStorage.setItem('onboarding_complete', 'true')
             }
           } else {
-            console.error('PROFILE_CREATION_FAILED:', createError)
-            if (!window.location.pathname.startsWith('/auth') && window.location.pathname !== '/onboarding') {
-              router.push('/onboarding')
+            if (process.env.NODE_ENV === 'development') {
+              console.error('PROFILE_CREATION_FAILED:', createError)
+            } else {
+              console.warn('PROFILE_CREATION_SILENCED: metadata fallback active.')
+            }
+            
+            const fallbackProfileData = {
+              id: user.id,
+              full_name,
+              avatar_url: resolvedAvatarUrl,
+              gender,
+              age,
+              onboarded: true,
+              xp: 0,
+              rank: 'RECRUIT',
+              active_theme: 'INIT_GREEN',
+              language: storedLang || 'en',
+              custom_avatar: customAvatar,
+              google_avatar_url: googleAvatar,
+              email: user.email || null
+            } as Profile
+            setProfile(fallbackProfileData)
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('cached_profile', JSON.stringify(fallbackProfileData))
+              localStorage.setItem('onboarding_complete', 'true')
             }
           }
         }
@@ -729,26 +804,6 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
     const interval = setInterval(updateLastSeen, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [profile?.id])
-  // ── ROUTE GUARD PROTECTION ──────────────────────────────────────────────
-  useEffect(() => {
-    if (!mounted || !profile || profile.id === 'guest') return
-    
-    // SAFE PROPERTY CHECK: Safely resolve onboarding status from profile
-    // Defaults to false without throwing uncaught exceptions.
-    const isComplete = profile?.onboarded ?? (profile as any)?.onboarding_complete ?? false;
-    
-    const isAtOnboarding = window.location.pathname === '/onboarding'
-    const isAtAuth = window.location.pathname.startsWith('/auth')
-    const isLocalComplete = localStorage.getItem('onboarding_complete') === 'true'
-
-    if (!isAtAuth) {
-      if (!isComplete && !isLocalComplete && !isAtOnboarding) {
-        router.push('/onboarding')
-      } else if ((isComplete || isLocalComplete) && isAtOnboarding) {
-        router.push('/')
-      }
-    }
-  }, [profile, mounted, router])
 
 
   useEffect(() => {
