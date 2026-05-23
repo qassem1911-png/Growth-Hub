@@ -76,11 +76,14 @@ const ComplexityDashes = ({ weight, color }: { weight: number; color: string }) 
 export default function MissionDetailPage() {
   const { id } = useParams()
   const router = useRouter()
-  const { calculateAccountability, t, isRTL, mounted, addXp, currentTheme } = useGrowth()
+  const { calculateAccountability, t, isRTL, mounted, addXp, currentTheme, profile } = useGrowth()
   const { showToast } = useToast()
   const { playSuccess, playError, playBlip } = useSound()
   const [mission, setMission] = useState<any>(null)
   const [squadMembers, setSquadMembers] = useState<any[]>([])
+  const [showSquadPanel, setShowSquadPanel] = useState(false)
+  const [pendingRequests, setPendingRequests] = useState<any[]>([])
+  const [isReviewing, setIsReviewing] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [activeView, setActiveView] = useState<'list' | 'board'>('list')
   const [activeViewInitialized, setActiveViewInitialized] = useState(false)
@@ -217,6 +220,27 @@ export default function MissionDetailPage() {
     }
   }, [id, supabase])
 
+  const fetchPendingRequests = useCallback(async () => {
+    if (!id || !profile?.id || !mission) return
+    const isOwner = mission.user_id === profile.id
+    if (!isOwner || mission.metadata?.type !== 'squad') return
+
+    const { data, error } = await supabase
+      .from('squad_join_requests')
+      .select('*, profiles(*)')
+      .eq('goal_id', id)
+      .eq('status', 'pending')
+
+    if (error) {
+      console.error("ERROR FETCHING PENDING REQUESTS:", error)
+      return
+    }
+
+    if (data) {
+      setPendingRequests(data)
+    }
+  }, [id, profile?.id, mission, supabase])
+
   useEffect(() => {
     if (mounted) {
       fetchMission()
@@ -224,6 +248,12 @@ export default function MissionDetailPage() {
       fetchTimeStats()
     }
   }, [id, mounted])
+
+  useEffect(() => {
+    if (mounted && mission?.id && profile?.id) {
+      fetchPendingRequests()
+    }
+  }, [mounted, mission?.id, profile?.id, fetchPendingRequests])
 
   useEffect(() => {
     setActiveViewInitialized(false)
@@ -383,8 +413,10 @@ export default function MissionDetailPage() {
           setSquadMembers(
             members.map((m: any) => ({
               id: m.profiles?.id || m.user_id,
+              member_row_id: m.id,
               full_name: m.profiles?.full_name || 'Unknown Operator',
               avatar_url: m.profiles?.avatar_url || null,
+              rank: m.profiles?.rank || 'ROOKIE',
               role: m.role
             }))
           )
@@ -1021,6 +1053,24 @@ export default function MissionDetailPage() {
                )}
              </button>
 
+              {/* SQUAD button */}
+              {mission?.metadata?.type === 'squad' && (
+                <button
+                  onClick={() => { playBlip(); setShowSquadPanel(true); }}
+                  className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-sm uppercase flex items-center gap-3 hover:opacity-85 font-bold"
+                  style={{
+                    borderColor: 'rgba(20, 184, 166, 0.4)',
+                    color: '#14b8a6',
+                    backgroundColor: 'rgba(20, 184, 166, 0.05)',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(20, 184, 166, 0.1)' }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(20, 184, 166, 0.05)' }}
+                >
+                  <span className="material-symbols-outlined text-base">group</span>
+                  {isRTL ? 'إدارة الفريق' : 'SQUAD'}
+                </button>
+              )}
+
              {/* SHARE button */}
              <button
                 onClick={handleShare}
@@ -1523,6 +1573,317 @@ export default function MissionDetailPage() {
           onCountChange={count => setAttachmentCount(count)}
         />
       )}
+
+      {/* Squad Management Slide Panel */}
+      <AnimatePresence>
+        {showSquadPanel && (
+          <div className="fixed inset-0 z-[250] flex justify-end">
+            {/* Backdrop overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => { playBlip(); setShowSquadPanel(false); }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-md cursor-pointer"
+            />
+
+            {/* Slide panel */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative w-full max-w-md h-full bg-[#050505]/95 border-l border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)] flex flex-col font-space text-white backdrop-blur-2xl z-10"
+              style={{
+                boxShadow: `-10px 0 50px rgba(20, 184, 166, 0.05)`
+              }}
+            >
+              {/* Decorative top neon bar */}
+              <div className="absolute top-0 inset-x-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, #14b8a6, transparent)' }} />
+
+              {/* Panel Header */}
+              <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/[0.01]">
+                <div className="space-y-1">
+                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#14b8a6] flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">shield</span>
+                    {isRTL ? 'إدارة الفريق // العمليات' : 'SQUAD_CONTROL // OPERATIONS'}
+                  </h3>
+                  <p className="text-[10px] text-[var(--text-secondary)] font-bold tracking-wider uppercase">
+                    ID: {mission?.id?.substring(0, 8)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => { playBlip(); setShowSquadPanel(false); }}
+                  className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white/20 transition-all cursor-pointer bg-white/5"
+                >
+                  <span className="material-symbols-outlined text-sm">close</span>
+                </button>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                {/* SECTION 1: MEMBERS (Always visible) */}
+                <div className="space-y-4">
+                  <h4 className="text-[10px] font-black tracking-[0.3em] uppercase text-zinc-500 border-b border-white/5 pb-1">
+                    {isRTL ? 'أعضاء الفريق' : 'SQUAD MEMBERS'} ({squadMembers.length})
+                  </h4>
+
+                  <div className="space-y-3">
+                    {squadMembers.map((member: any) => {
+                      const isMemberOwner = member.role === 'owner'
+                      const isMemberCoAdmin = member.role === 'co-admin'
+                      return (
+                        <div key={member.id} className="flex items-center justify-between p-3 border border-white/5 bg-white/[0.02] rounded-lg">
+                          <div className="flex items-center gap-3">
+                            {member.avatar_url ? (
+                              <img src={member.avatar_url} alt={member.full_name} className="w-9 h-9 rounded-full border border-white/10 object-cover" />
+                            ) : (
+                              <div className="w-9 h-9 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center">
+                                <span className="text-xs font-bold">{member.full_name?.charAt(0) || '?'}</span>
+                              </div>
+                            )}
+                            <div className="flex flex-col">
+                              <span className="text-xs font-bold">{member.full_name}</span>
+                              <span className="text-[8px] font-black text-white/40 tracking-wider flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[8px]">verified</span>
+                                {member.rank || 'ROOKIE'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {isMemberOwner ? (
+                              <span className="px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-amber-950/30 border border-amber-500/30 text-amber-400 rounded-sm">
+                                OWNER
+                              </span>
+                            ) : isMemberCoAdmin ? (
+                              <span className="px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-teal-950/30 border border-teal-500/30 text-teal-400 rounded-sm">
+                                CO-ADMIN
+                              </span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-zinc-900 border border-white/10 text-zinc-400 rounded-sm">
+                                MEMBER
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* SECTION 2: PENDING REQUESTS (Owner only) */}
+                {mission?.user_id === profile?.id && (
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-black tracking-[0.3em] uppercase text-zinc-500 border-b border-white/5 pb-1">
+                      {isRTL ? 'طلبات الانضمام المعلقة' : 'PENDING REQUESTS'}
+                    </h4>
+
+                    {pendingRequests.length === 0 ? (
+                      <div className="text-center py-6 border border-dashed border-white/5 rounded-lg bg-white/[0.01]">
+                        <p className="text-[10px] font-black tracking-widest text-zinc-600 uppercase">
+                          {isRTL ? 'لا توجد طلبات معلقة // الفريق آمن' : 'NO PENDING REQUESTS // SQUAD SECURE'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {pendingRequests.map((req: any) => {
+                          const requesterProfile = req.profiles || {}
+                          return (
+                            <div key={req.id} className="flex flex-col gap-3 p-4 border border-amber-500/10 bg-amber-500/[0.02] rounded-lg">
+                              <div className="flex items-center gap-3">
+                                {requesterProfile.avatar_url ? (
+                                  <img src={requesterProfile.avatar_url} alt={requesterProfile.full_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
+                                ) : (
+                                  <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center">
+                                    <span className="text-xs font-bold">{requesterProfile.full_name?.charAt(0) || '?'}</span>
+                                  </div>
+                                )}
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-bold">{requesterProfile.full_name || 'Unknown Operator'}</span>
+                                  <span className="text-[8px] font-black text-amber-500/60 tracking-wider">
+                                    RANK: {requesterProfile.rank || 'ROOKIE'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 mt-1">
+                                <button
+                                  disabled={isReviewing !== null}
+                                  onClick={async () => {
+                                    setIsReviewing(req.id)
+                                    playBlip()
+                                    const { data, error } = await supabase.rpc('review_squad_join_request', { p_request_id: req.id, p_action: 'approve' })
+                                    if (error) {
+                                      showToast(isRTL ? 'فشل قبول الطلب' : 'FAILED TO APPROVE', 'warning')
+                                      playError()
+                                    } else {
+                                      showToast(isRTL ? 'تم قبول العضو الجديد في الفريق!' : 'MEMBER APPROVED // JOINED SQUAD', 'success')
+                                      playSuccess()
+                                      await fetchPendingRequests()
+                                      await fetchMission() // reload members list
+                                    }
+                                    setIsReviewing(null)
+                                  }}
+                                  className="flex-1 py-1.5 border border-teal-500/40 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 rounded font-black tracking-widest text-[9px] uppercase transition-all duration-300 disabled:opacity-50 cursor-pointer text-center"
+                                >
+                                  {isReviewing === req.id ? 'PROCESSING...' : (isRTL ? '✓ قبول' : '✓ APPROVE')}
+                                </button>
+                                <button
+                                  disabled={isReviewing !== null}
+                                  onClick={async () => {
+                                    setIsReviewing(req.id)
+                                    playBlip()
+                                    const { data, error } = await supabase.rpc('review_squad_join_request', { p_request_id: req.id, p_action: 'reject' })
+                                    if (error) {
+                                      showToast(isRTL ? 'فشل رفض الطلب' : 'FAILED TO REJECT', 'warning')
+                                      playError()
+                                    } else {
+                                      showToast(isRTL ? 'تم رفض طلب الانضمام' : 'MEMBER REJECTED // SQUAD SECURE', 'success')
+                                      playSuccess()
+                                      await fetchPendingRequests()
+                                    }
+                                    setIsReviewing(null)
+                                  }}
+                                  className="flex-1 py-1.5 border border-red-500/40 hover:border-red-400 text-red-400 hover:text-red-300 bg-red-500/5 hover:bg-red-500/10 rounded font-black tracking-widest text-[9px] uppercase transition-all duration-300 disabled:opacity-50 cursor-pointer text-center"
+                                >
+                                  {isReviewing === req.id ? 'PROCESSING...' : (isRTL ? '✗ رفض' : '✗ REJECT')}
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* SECTION 3: ROLE MANAGEMENT (Owner only) */}
+                {mission?.user_id === profile?.id && (
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] font-black tracking-[0.3em] uppercase text-zinc-500 border-b border-white/5 pb-1">
+                      {isRTL ? 'إدارة الأدوار والإزالة' : 'ROLE MANAGEMENT'}
+                    </h4>
+
+                    {squadMembers.filter(m => m.role !== 'owner').length === 0 ? (
+                      <div className="text-center py-6 border border-dashed border-white/5 rounded-lg bg-white/[0.01]">
+                        <p className="text-[10px] font-black tracking-widest text-zinc-600 uppercase">
+                          {isRTL ? 'لا يوجد أعضاء آخرون في الفريق' : 'NO OTHER MEMBERS IN SQUAD'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {squadMembers.filter(m => m.role !== 'owner').map((member: any) => {
+                          return (
+                            <div key={member.id} className="flex flex-col gap-3 p-3 border border-white/5 bg-white/[0.01] rounded-lg">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  {member.avatar_url ? (
+                                    <img src={member.avatar_url} alt={member.full_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center">
+                                      <span className="text-xs font-bold">{member.full_name?.charAt(0) || '?'}</span>
+                                    </div>
+                                  )}
+                                  <span className="text-xs font-bold">{member.full_name}</span>
+                                </div>
+
+                                <button
+                                  onClick={async () => {
+                                    if (confirm(isRTL ? `هل أنت متأكد من إزالة ${member.full_name} من الفريق؟` : `Are you sure you want to remove ${member.full_name} from the squad?`)) {
+                                      playBlip()
+                                      const { error } = await supabase
+                                        .from('goal_members')
+                                        .delete()
+                                        .eq('id', member.member_row_id)
+                                      
+                                      if (error) {
+                                        showToast(isRTL ? 'فشل إزالة العضو' : 'FAILED TO REMOVE MEMBER', 'warning')
+                                        playError()
+                                      } else {
+                                        showToast(isRTL ? 'تم إزالة العضو من الفريق' : 'MEMBER REMOVED FROM SQUAD', 'success')
+                                        playSuccess()
+                                        await fetchMission() // Reload members
+                                      }
+                                    }
+                                  }}
+                                  className="w-7 h-7 rounded border border-red-500/20 hover:border-red-500/50 bg-red-500/5 hover:bg-red-500/15 flex items-center justify-center text-red-400 hover:text-red-300 transition-all cursor-pointer"
+                                >
+                                  <span className="material-symbols-outlined text-[15px]">delete</span>
+                                </button>
+                              </div>
+
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-black uppercase text-zinc-500 shrink-0">
+                                  {isRTL ? 'الدور:' : 'ROLE:'}
+                                </span>
+                                <div className="flex-1 flex gap-1 bg-black/40 border border-white/10 p-0.5 rounded-sm">
+                                  <button
+                                    onClick={async () => {
+                                      if (member.role === 'member') return
+                                      playBlip()
+                                      const { error } = await supabase
+                                        .from('goal_members')
+                                        .update({ role: 'member' })
+                                        .eq('id', member.member_row_id)
+                                      if (error) {
+                                        showToast(isRTL ? 'فشل تحديث الدور' : 'FAILED TO UPDATE ROLE', 'warning')
+                                        playError()
+                                      } else {
+                                        showToast(isRTL ? 'تم تحديث الدور إلى عضو!' : 'ROLE UPDATED TO MEMBER', 'success')
+                                        playSuccess()
+                                        await fetchMission()
+                                      }
+                                    }}
+                                    className={cn(
+                                      "flex-1 py-1 text-[8px] font-black tracking-widest uppercase text-center rounded-sm transition-all cursor-pointer",
+                                      member.role === 'member'
+                                        ? "bg-zinc-800 text-zinc-300 border border-white/10 font-bold"
+                                        : "text-zinc-600 hover:text-zinc-400"
+                                    )}
+                                  >
+                                    MEMBER
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      if (member.role === 'co-admin') return
+                                      playBlip()
+                                      const { error } = await supabase
+                                        .from('goal_members')
+                                        .update({ role: 'co-admin' })
+                                        .eq('id', member.member_row_id)
+                                      if (error) {
+                                        showToast(isRTL ? 'فشل تحديث الدور' : 'FAILED TO UPDATE ROLE', 'warning')
+                                        playError()
+                                      } else {
+                                        showToast(isRTL ? 'تم تحديث الدور إلى مشرف!' : 'ROLE UPDATED TO CO-ADMIN', 'success')
+                                        playSuccess()
+                                        await fetchMission()
+                                      }
+                                    }}
+                                    className={cn(
+                                      "flex-1 py-1 text-[8px] font-black tracking-widest uppercase text-center rounded-sm transition-all cursor-pointer",
+                                      member.role === 'co-admin'
+                                        ? "bg-teal-950/50 text-[#14b8a6] border border-[#14b8a6]/30 font-bold"
+                                        : "text-zinc-600 hover:text-zinc-400"
+                                    )}
+                                  >
+                                    CO-ADMIN
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Premium Centered Glassmorphic Share Modal */}
       <AnimatePresence>
