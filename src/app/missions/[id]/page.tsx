@@ -1050,7 +1050,10 @@ export default function MissionDetailPage() {
     }
 
     const { error } = await supabase.from('cups').delete().eq('id', id)
-    if (!error) {
+    if (error) {
+      console.error('Delete cup error:', error)
+      showToast(isRTL ? `فشل الحذف: ${error.message}` : `DELETE FAILED: ${error.message}`, 'warning')
+    } else {
       showToast(isRTL ? 'تم حذف المهمة' : 'GOAL DELETED', 'success')
       router.push('/missions')
     }
