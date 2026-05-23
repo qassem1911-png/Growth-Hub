@@ -1,12 +1,15 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase'
+import { useSound } from '@/context/SoundContext'
+import { useRouter } from 'next/navigation'
 
 interface Report {
   id: string
-  type: 'daily_brief' | 'deadline_alert' | 'mission_complete'
+  type: 'daily_brief' | 'deadline_alert' | 'mission_complete' | 'weekly_review' | 'squad_join_request' | 'squad_join_approved' | 'squad_join_rejected'
   title: string
   content: any
   is_read: boolean
@@ -21,7 +24,58 @@ interface Props {
 }
 
 export default function ReportModal({ report, onClose, themeColor, isRTL }: Props) {
+  const [actionStatus, setActionStatus] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const supabase = createClient()
+  const { playDeploy, playError, playBlip } = useSound()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (report) {
+      setActionStatus(report.content?.status || null)
+    } else {
+      setActionStatus(null)
+    }
+  }, [report])
+
   if (!report) return null
+
+  const handleReviewRequest = async (action: 'approve' | 'reject') => {
+    if (loading) return
+    setLoading(true)
+    playBlip()
+
+    try {
+      const { data, error } = await supabase.rpc('review_squad_join_request', {
+        p_request_id: report.content.request_id,
+        p_action: action
+      })
+
+      if (error) {
+        alert(error.message)
+        playError()
+        setLoading(false)
+        return
+      }
+
+      const result = typeof data === 'string' ? JSON.parse(data) : data
+      if (result && result.success) {
+        setActionStatus(result.status)
+        if (action === 'approve') {
+          playDeploy()
+        } else {
+          playError()
+        }
+      } else {
+        alert(result?.error || 'Failed to process request')
+        playError()
+      }
+    } catch (err) {
+      playError()
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -52,7 +106,7 @@ export default function ReportModal({ report, onClose, themeColor, isRTL }: Prop
             <div className="flex justify-between items-end border-b border-zinc-200 dark:border-white/5 pb-4">
               <div>
                 <p className="text-[10px] text-zinc-500 dark:text-white/30 uppercase tracking-[0.3em] font-black">DOCUMENT_TYPE</p>
-                <p className="text-xs font-black uppercase italic" style={{ color: themeColor }}>{report.type.replace('_', ' // ')}</p>
+                <p className="text-xs font-black uppercase italic" style={{ color: themeColor }}>{report.type.replace(/_/g, ' // ')}</p>
               </div>
               <div className="text-right">
                 <p className="text-[10px] text-zinc-500 dark:text-white/30 uppercase tracking-[0.3em] font-black">TIMESTAMP</p>
@@ -106,17 +160,117 @@ export default function ReportModal({ report, onClose, themeColor, isRTL }: Prop
 
               {report.type === 'mission_complete' && (
                 <div className="space-y-6">
-                   <div className="flex flex-col items-center justify-center py-6 bg-neon-green/10 border border-neon-green/30 rounded-xl" style={{ backgroundColor: `${themeColor}10`, borderColor: `${themeColor}30` }}>
+                  <div className="flex flex-col items-center justify-center py-6 bg-neon-green/10 border border-neon-green/30 rounded-xl" style={{ backgroundColor: `${themeColor}10`, borderColor: `${themeColor}30` }}>
                     <span className="material-symbols-outlined text-5xl mb-2" style={{ color: themeColor }}>workspace_premium</span>
                     <p className="text-sm font-black uppercase tracking-[0.4em] italic" style={{ color: themeColor }}>GOAL_ACCOMPLISHED</p>
                   </div>
                   <div className="py-2.5 px-4 bg-black/5 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl text-center w-full">
-                     <p className="text-[9px] font-black tracking-widest uppercase opacity-40 mb-1">XP_REWARD_COLLECTED</p>
-                     <p className="text-3xl font-black" style={{ color: themeColor }}>+{report.content.xp_earned || 500}</p>
+                    <p className="text-[9px] font-black tracking-widest uppercase opacity-40 mb-1">XP_REWARD_COLLECTED</p>
+                    <p className="text-3xl font-black" style={{ color: themeColor }}>+{report.content.xp_earned || 500}</p>
                   </div>
                   <div className="pt-4 border-t border-zinc-200 dark:border-white/5 text-center">
                     <p className="text-[10px] text-zinc-500 dark:text-white/30 uppercase tracking-widest">STATUS: ARCHIVED_TO_WINS_VAULT</p>
                   </div>
+                </div>
+              )}
+
+              {/* PART C - Squad Join Request Details */}
+              {report.type === 'squad_join_request' && (
+                <div className="space-y-6">
+                  <div className="flex flex-col items-center justify-center p-5 bg-black/5 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl relative overflow-hidden">
+                    <div className="flex items-center gap-4 w-full">
+                      <img
+                        src={report.content.requester_avatar || "/avatars/omar.svg"}
+                        alt="avatar"
+                        className="w-14 h-14 rounded-xl border border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)] bg-[#050505]"
+                      />
+                      <div className="space-y-1 text-left flex-1 min-w-0">
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em]">OPERATOR_IDENTITY</p>
+                        <p className="text-sm font-black text-zinc-900 dark:text-white truncate font-space">
+                          {report.content.requester_name}
+                        </p>
+                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[8px] font-space font-black tracking-widest uppercase">
+                          {isRTL ? 'قيد المراجعة' : 'PENDING REVIEW'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {actionStatus === 'pending' ? (
+                      <div className="grid grid-cols-2 gap-4">
+                        <button
+                          onClick={() => handleReviewRequest('reject')}
+                          disabled={loading}
+                          className="h-11 border border-red-500/30 hover:border-red-500/80 bg-red-950/15 hover:bg-red-500/10 text-red-400 font-space font-black text-xs uppercase tracking-widest transition-all duration-300 rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-40 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-base">close</span>
+                          {isRTL ? '[ ✗ رفض ]' : '[ ✗ REJECT ]'}
+                        </button>
+                        <button
+                          onClick={() => handleReviewRequest('approve')}
+                          disabled={loading}
+                          className="h-11 bg-teal-500 hover:bg-teal-400 text-black hover:shadow-[0_0_20px_rgba(20,184,166,0.4)] font-space font-black text-xs uppercase tracking-widest transition-all duration-300 rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-40 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-base">done</span>
+                          {isRTL ? '[ ✓ قبول ]' : '[ ✓ APPROVE ]'}
+                        </button>
+                      </div>
+                    ) : actionStatus === 'approved' ? (
+                      <div className="py-4 bg-teal-500/10 border border-teal-500/30 rounded-xl flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined text-teal-400">check_circle</span>
+                        <p className="text-xs font-space font-black text-teal-400 uppercase tracking-widest">
+                          {isRTL ? 'APPROVED // تم قبول العضو للفريق' : 'APPROVED // MEMBER ADDED'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="py-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined text-red-400">cancel</span>
+                        <p className="text-xs font-space font-black text-red-400 uppercase tracking-widest">
+                          {isRTL ? 'REJECTED // تم رفض طلب الوصول' : 'REJECTED // ACCESS CLASSIFIED'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* PART C - Squad Join Approved Congratulations Portal */}
+              {report.type === 'squad_join_approved' && (
+                <div className="space-y-6">
+                  <div className="flex flex-col items-center justify-center py-6 bg-teal-500/10 border border-teal-500/30 rounded-xl text-center">
+                    <span className="material-symbols-outlined text-5xl text-teal-400 mb-2 animate-bounce">workspace_premium</span>
+                    <p className="text-sm font-black uppercase tracking-[0.4em] italic text-teal-400">
+                      {isRTL ? 'تم منح الإذن // الفريق جاهز' : 'ACCESS GRANTED // SQUAD READY'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      onClose();
+                      router.push(`/missions/${report.content.goal_id}`);
+                    }}
+                    className="w-full h-12 bg-teal-500 hover:bg-teal-400 text-black font-space font-black text-xs uppercase tracking-widest transition-all duration-300 rounded-xl shadow-[0_0_20px_rgba(20,184,166,0.3)] flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-base">bolt</span>
+                    {isRTL ? '[ ⚡ دخول لوحة الفريق ]' : '[ ⚡ ENTER SQUAD CANVAS ]'}
+                  </button>
+                </div>
+              )}
+
+              {/* PART C - Squad Join Rejected Classified Screen */}
+              {report.type === 'squad_join_rejected' && (
+                <div className="space-y-6">
+                  <div className="flex flex-col items-center justify-center py-6 bg-red-500/10 border border-red-500/30 rounded-xl text-center">
+                    <span className="material-symbols-outlined text-5xl text-red-500 mb-2">lock</span>
+                    <p className="text-sm font-black uppercase tracking-[0.4em] italic text-red-500">
+                      {isRTL ? 'الوصول مرفوض // هدف مصنف' : 'ACCESS DENIED // CLASSIFIED'}
+                    </p>
+                  </div>
+                  <p className="text-xs text-center text-zinc-500 dark:text-zinc-400 font-space tracking-wide">
+                    {isRTL 
+                      ? 'تم رفض طلبك للانضمام إلى هذا الفريق من قبل القائد.' 
+                      : 'Your request to join this squad goal was rejected by the owner.'}
+                  </p>
                 </div>
               )}
             </div>

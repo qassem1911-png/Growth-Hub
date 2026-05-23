@@ -7,7 +7,7 @@ import { useGrowth } from '@/context/GrowthContext'
 
 interface Report {
   id: string
-  type: 'daily_brief' | 'deadline_alert' | 'mission_complete' | 'weekly_review'
+  type: 'daily_brief' | 'deadline_alert' | 'mission_complete' | 'weekly_review' | 'squad_join_request' | 'squad_join_approved' | 'squad_join_rejected'
   title: string
   content: any
   is_read: boolean
@@ -152,6 +152,18 @@ export default function InboxDropdown({ isOpen, reports, onClose, onRead, themeC
                     isRTL 
                       ? `الحصاد الأسبوعي // نقاط الخبرة: +${report.content.gained_xp || report.content.total_xp || 0}` 
                       : `Weekly review // XP: +${report.content.gained_xp || report.content.total_xp || 0}`
+                  ) : report.type === 'squad_join_request' ? (
+                    isRTL 
+                      ? `طلب انضمام من ${report.content.requester_name} لـ ${report.content.goal_title}` 
+                      : `Join request from ${report.content.requester_name} for ${report.content.goal_title}`
+                  ) : report.type === 'squad_join_approved' ? (
+                    isRTL 
+                      ? `تمت الموافقة على انضمامك لـ ${report.content.goal_title}` 
+                      : `Approved: your request to join ${report.content.goal_title}`
+                  ) : report.type === 'squad_join_rejected' ? (
+                    isRTL 
+                      ? `تم رفض انضمامك لـ ${report.content.goal_title}` 
+                      : `Rejected: your request to join ${report.content.goal_title}`
                   ) : (
                     isRTL 
                       ? `اكتملت المهمة: ${report.content.mission_title || report.content.mission_name}` 

@@ -80,6 +80,7 @@ export default function MissionDetailPage() {
   const { showToast } = useToast()
   const { playSuccess, playError, playBlip } = useSound()
   const [mission, setMission] = useState<any>(null)
+  const [squadMembers, setSquadMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeView, setActiveView] = useState<'list' | 'board'>('list')
   const [activeViewInitialized, setActiveViewInitialized] = useState(false)
@@ -370,6 +371,25 @@ export default function MissionDetailPage() {
         return a.id.localeCompare(b.id)
       })
       setMission(data)
+
+      // Fetch squad members if goal type is squad
+      if (data.metadata?.type === 'squad') {
+        const { data: members } = await supabase
+          .from('goal_members')
+          .select('*, profiles(*)')
+          .eq('goal_id', id)
+        
+        if (members) {
+          setSquadMembers(
+            members.map((m: any) => ({
+              id: m.profiles?.id || m.user_id,
+              full_name: m.profiles?.full_name || 'Unknown Operator',
+              avatar_url: m.profiles?.avatar_url || null,
+              role: m.role
+            }))
+          )
+        }
+      }
     } else {
       router.push('/missions')
     }
@@ -899,6 +919,33 @@ export default function MissionDetailPage() {
                   <span className="material-symbols-outlined text-sm mr-1.5" style={{ color: missionColor }}>checklist</span>
                   <span>{isRTL ? 'المهام الإجمالية:' : 'Total Tasks:'} <strong className="text-white font-black ml-1">{totalCount}</strong></span>
                </div>
+               {mission?.metadata?.type === 'squad' && squadMembers.length > 0 && (
+                 <div className="inline-flex items-center text-xs font-mono text-white/50 border-r border-white/10 pr-3 mr-3 last:border-0">
+                    <span className="material-symbols-outlined text-sm mr-1.5" style={{ color: missionColor }}>group</span>
+                    <span className="mr-2">{isRTL ? 'الفريق:' : 'Squad:'}</span>
+                    <div className="flex items-center -space-x-2">
+                       {squadMembers.slice(0, 4).map((m: any, i: number) => (
+                          <div key={m.id || i} className="relative group cursor-default shrink-0">
+                             {m.avatar_url ? (
+                                <img src={m.avatar_url} alt={m.full_name} className="w-6 h-6 rounded-full border border-black/80 object-cover relative z-10" />
+                             ) : (
+                                <div className="w-6 h-6 rounded-full bg-zinc-800 border border-black/80 flex items-center justify-center relative z-10 text-[9px] font-black text-white">
+                                   {m.full_name?.charAt(0) || '?'}
+                                </div>
+                             )}
+                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-max px-2 py-1 bg-black/90 backdrop-blur-md rounded border border-white/10 text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none text-white font-space">
+                                {m.full_name}
+                             </div>
+                          </div>
+                       ))}
+                       {squadMembers.length > 4 && (
+                          <div className="w-6 h-6 rounded-full bg-white/10 border border-black/80 flex items-center justify-center relative z-10 text-[8px] font-black shrink-0 text-white">
+                             +{squadMembers.length - 4}
+                          </div>
+                       )}
+                    </div>
+                 </div>
+               )}
             </div>
 
             <div className="w-full h-[1.5px] bg-[var(--input-bg)] relative">
@@ -1611,11 +1658,21 @@ export default function MissionDetailPage() {
                     showToast(isRTL ? 'تم نسخ الرابط العام!' : 'PUBLIC VIEW LINK COPIED', 'success')
                     playSuccess()
 
-                    // Silent database public_share update
-                    if (!mission?.metadata?.public_share) {
-                      const newMetadata = { ...mission.metadata, public_share: true }
-                      setMission((prev: any) => ({ ...prev, metadata: newMetadata }))
-                      await supabase.from('cups').update({ metadata: newMetadata }).eq('id', id)
+                    // Database public_share update
+                    const currentMetadata = mission?.metadata || {}
+                    if (currentMetadata.public_share !== 'true' && currentMetadata.public_share !== true) {
+                      const newMetadata = { ...currentMetadata, public_share: true }
+                      setMission((prev: any) => {
+                        if (!prev) return prev
+                        return { ...prev, metadata: newMetadata }
+                      })
+                      const { error } = await supabase
+                        .from('cups')
+                        .update({ metadata: newMetadata })
+                        .eq('id', id)
+                      if (error) {
+                        console.error("Error enabling public share:", error)
+                      }
                     }
                   }}
                   className="w-full flex items-center justify-between p-4 border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02] hover:bg-zinc-100 dark:hover:bg-white/5 rounded-xl transition-all duration-300 group text-left cursor-pointer relative overflow-hidden"

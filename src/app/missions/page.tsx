@@ -156,7 +156,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
     playBlip()
 
     try {
-      const { data, error } = await supabase.rpc('join_squad_by_invite', { input_code: code })
+      const { data, error } = await supabase.rpc('submit_squad_join_request', { input_code: code })
       
       if (error) {
         setJoinStatus('invalid')
@@ -168,23 +168,36 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
       const result = typeof data === 'string' ? JSON.parse(data) : data
       if (result && result.success) {
         setJoinStatus('success')
-        showToast(isRTL ? 'انضممت للفريق // أهلاً بك!' : 'SQUAD JOINED // WELCOME OPERATOR', 'success')
+        showToast(
+          isRTL 
+            ? 'تم إرسال طلب الانضمام // بانتظار موافقة القائد' 
+            : 'JOIN REQUEST SUBMITTED // WAITING FOR OWNER APPROVAL', 
+          'success'
+        )
         playDeploy()
         setTimeout(() => {
           setShowJoinGoal(false)
           setJoinCodeInput('')
           setJoinStatus('idle')
           fetchMissions()
-        }, 1500)
+        }, 2000)
       } else {
         const err = result?.error || 'INVALID_CODE // TRY AGAIN'
         if (err.includes('ALREADY IN THIS SQUAD')) {
           setJoinStatus('already_member')
+        } else if (err.includes('REQUEST_PENDING')) {
+          setJoinStatus('invalid')
+          setJoinErrorText(isRTL ? 'الطلب قيد الانتظار بالفعل // يرجى الانتظار' : 'REQUEST_PENDING // ALREADY SENT')
+          playError()
+        } else if (err.includes('REQUEST_REJECTED')) {
+          setJoinStatus('invalid')
+          setJoinErrorText(isRTL ? 'تم رفض طلبك السابق // الوصول مصنف' : 'REQUEST_REJECTED // ACCESS CLASSIFIED')
+          playError()
         } else {
           setJoinStatus('invalid')
           setJoinErrorText(err)
+          playError()
         }
-        playError()
       }
     } catch (err) {
       setJoinStatus('invalid')
@@ -1626,7 +1639,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                     )}
                     {joinStatus === 'success' && (
                       <p className="text-[10px] font-space font-black text-emerald-400 uppercase tracking-widest text-center animate-pulse">
-                        SQUAD JOINED // WELCOME OPERATOR
+                        {isRTL ? 'تم تقديم الطلب // بانتظار موافقة القائد' : 'REQUEST SUBMITTED // WAITING FOR APPROVAL'}
                       </p>
                     )}
                   </div>
