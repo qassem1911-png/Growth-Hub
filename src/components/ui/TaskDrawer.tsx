@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState, FormEvent, KeyboardEvent, useEffect } from 'react'
+import React, { useState, FormEvent, KeyboardEvent, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGrowth } from '@/context/GrowthContext'
 import { createClient } from '@/lib/supabase'
+import { usePomodoro } from '@/context/PomodoroContext'
 import SmartTaskPlayer from './SmartTaskPlayer'
 
 interface TaskDrawerProps {
@@ -14,6 +15,9 @@ interface TaskDrawerProps {
   onComplete: () => void
   onProgressUpdate?: (currentTime: number, duration: number) => void
   onUpdateTask: (taskId: string, updates: any) => Promise<void> | void
+  cupId?: string
+  squadMembers?: any[]
+  isSquad?: boolean
 }
 
 const getYouTubeId = (urlOrId: string) => {
@@ -33,9 +37,13 @@ export default function TaskDrawer({
   themeColor,
   onComplete,
   onProgressUpdate,
-  onUpdateTask
+  onUpdateTask,
+  cupId,
+  squadMembers = [],
+  isSquad = false
 }: TaskDrawerProps) {
   const { isRTL, t, addXp } = useGrowth()
+  const { startFocus } = usePomodoro()
   const [activeTab, setActiveTab] = useState<'details' | 'time' | 'notes' | 'attachments'>('details')
 
   // --- DATE STATE ---
@@ -596,6 +604,7 @@ export default function TaskDrawer({
                 transition={{ duration: 0.2 }}
                 className="space-y-4"
               >
+                {/* 1. STATUS & COMPLEXITY */}
                 <div className="p-5 border border-white/5 bg-zinc-900/40 rounded-xl space-y-4">
                   <h3 className="text-base font-bold text-white/90 font-space tracking-wide uppercase border-b border-white/5 pb-2">
                     {t('statusComplexity')}
@@ -617,6 +626,115 @@ export default function TaskDrawer({
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* 2. ASSIGNEE SECTION (Squad Goals Only) */}
+                {isSquad && squadMembers && squadMembers.length > 0 && (
+                  <div className="p-5 border border-white/5 bg-zinc-900/40 rounded-xl space-y-4">
+                    <h3 className="text-base font-bold text-white/90 font-space tracking-wide uppercase border-b border-white/5 pb-2">
+                      {isRTL ? 'المنفذ المسؤول // ASSIGNEE' : 'OPERATOR ASSIGNMENT // ASSIGNEE'}
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      {task.assignee ? (
+                        <div className="flex items-center gap-3 bg-white/[0.02] border border-white/10 p-3 rounded-xl w-full justify-between">
+                          <div className="flex items-center gap-3 min-w-0">
+                            {task.assignee.avatar_url ? (
+                              <img src={task.assignee.avatar_url} className="w-8 h-8 rounded-full object-cover border border-white/10" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center text-xs font-bold text-white">
+                                {task.assignee.full_name?.charAt(0) || '?'}
+                              </div>
+                            )}
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-xs font-bold text-white truncate">{task.assignee.full_name}</span>
+                              <span className="text-[9px] font-black text-white/40 uppercase tracking-wider">{task.assignee.rank || 'ROOKIE'}</span>
+                            </div>
+                          </div>
+                          
+                          <button
+                            type="button"
+                            onClick={() => onUpdateTask(task.id, { assigned_to: null, assignee: null })}
+                            className="px-3 py-1.5 border border-red-500/30 hover:border-red-500 hover:bg-red-500/10 text-red-400 hover:text-red-300 font-black tracking-widest text-[9px] uppercase rounded-lg transition-colors cursor-pointer"
+                          >
+                            {isRTL ? 'إلغاء التعيين' : 'UNASSIGN'}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between bg-white/[0.01] border border-dashed border-white/10 p-4 rounded-xl w-full text-center text-white/40 text-xs font-space">
+                          <span>{isRTL ? 'المهمة غير معينة لأي عضو' : 'NO OPERATOR ASSIGNED TO THIS TASK'}</span>
+                        </div>
+                      )}
+                      
+                      <div className="space-y-2">
+                        <label className="text-[9px] font-black uppercase tracking-widest font-mono text-zinc-500">
+                          {isRTL ? 'تعيين عضو:' : 'ASSIGN OPERATOR:'}
+                        </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+                          {squadMembers.map((member: any) => {
+                            const isAssigned = task.assigned_to === member.id
+                            return (
+                              <button
+                                key={member.id}
+                                type="button"
+                                onClick={() => {
+                                  if (isAssigned) return
+                                  onUpdateTask(task.id, {
+                                    assigned_to: member.id,
+                                    assignee: {
+                                      id: member.id,
+                                      full_name: member.full_name,
+                                      avatar_url: member.avatar_url,
+                                      rank: member.rank
+                                    }
+                                  })
+                                }}
+                                className={`flex items-center gap-3 p-2.5 border rounded-xl text-left transition-all duration-300 cursor-pointer min-w-0 w-full ${
+                                  isAssigned
+                                    ? "bg-teal-500/10 border-teal-500/50 text-[#14b8a6]"
+                                    : "bg-white/[0.01] border-white/5 hover:border-white/15 text-zinc-400 hover:text-white"
+                                }`}
+                              >
+                                {member.avatar_url ? (
+                                  <img src={member.avatar_url} className="w-6 h-6 rounded-full object-cover shrink-0" />
+                                ) : (
+                                  <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[9px] font-bold shrink-0 text-white">
+                                    {member.full_name?.charAt(0) || '?'}
+                                  </div>
+                                )}
+                                <span className="text-xs font-bold truncate flex-1">{member.full_name}</span>
+                                {isAssigned && (
+                                  <span className="material-symbols-outlined text-sm font-black shrink-0 text-[#14b8a6]">done</span>
+                                )}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. POMODORO FOCUS TIMER */}
+                <div className="p-5 border border-white/5 bg-zinc-900/40 rounded-xl space-y-3">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest font-mono text-zinc-500">
+                    {isRTL ? 'التركيز على المهمة // FOCUS TIME' : 'FOCUS CONSOLE // POMODORO TIMER'}
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      startFocus(task.title, task.id, cupId || task.cup_id);
+                      onClose();
+                    }}
+                    className="w-full flex items-center justify-center gap-2.5 py-3 px-4 font-space font-black text-xs uppercase tracking-widest text-black transition-all duration-300 rounded-xl cursor-pointer hover:scale-[1.02]"
+                    style={{
+                      backgroundColor: themeColor,
+                      boxShadow: `0 0 15px ${themeColor}44`
+                    }}
+                  >
+                    <span className="material-symbols-outlined text-sm font-black">timer</span>
+                    <span>{isRTL ? 'بدء جلسة تركيز' : 'START FOCUS SESSION'}</span>
+                  </button>
                 </div>
               </motion.div>
             )}

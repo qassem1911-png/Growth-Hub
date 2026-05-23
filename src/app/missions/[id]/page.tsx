@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Shell from '@/components/layout/Shell'
 import EnergyCell from '@/components/ui/EnergyCell'
@@ -93,6 +93,10 @@ export default function MissionDetailPage() {
     if (!selectedTaskState) return null
     return mission?.tasks?.find((t: any) => t.id === selectedTaskState.id) || selectedTaskState
   }, [mission?.tasks, selectedTaskState])
+
+  const [onlineUsers, setOnlineUsers] = useState<any[]>([])
+  const [mySessionColor, setMySessionColor] = useState<string | null>(null)
+  const presenceChannelRef = useRef<any>(null)
 
   const setSelectedTask = (task: any | null) => {
     setSelectedTaskState(task)
@@ -564,6 +568,81 @@ export default function MissionDetailPage() {
     }
   }, [id, fetchMission, fetchPendingRequests, supabase])
 
+  // --- REAL-TIME PRESENCE ---
+  useEffect(() => {
+    if (!id || typeof id !== 'string' || id.startsWith('local_')) return
+    if (mission?.metadata?.type !== 'squad' || !profile?.id) return
+
+    const PALETTE = ['#1D9E75', '#BA7517', '#7F77DD', '#D85A30', '#378ADD']
+
+    const channel = supabase.channel(`goal:${id}`, {
+      config: {
+        presence: {
+          key: profile.id,
+        },
+      },
+    })
+
+    presenceChannelRef.current = channel
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState()
+        const users = Object.values(state).flatMap((presences: any) => presences[0] || [])
+        setOnlineUsers(users)
+
+        // Color assignment logic
+        setMySessionColor((prevColor) => {
+          if (prevColor) return prevColor
+
+          // Extract colors taken by other users
+          const otherColors = users
+            .filter((u: any) => u.user_id !== profile.id)
+            .map((u: any) => u.session_color)
+
+          // Assign first unused color from the palette
+          const assigned = PALETTE.find((c) => !otherColors.includes(c)) || PALETTE[0]
+          
+          // Track presence with assigned color
+          channel.track({
+            user_id: profile.id,
+            full_name: profile.full_name || 'Anonymous',
+            rank: profile.rank || 'ROOKIE',
+            avatar_url: profile.avatar_url,
+            session_color: assigned,
+            cursor_task_id: selectedTaskRef.current || null
+          })
+
+          return assigned
+        })
+      })
+      .subscribe()
+
+    return () => {
+      if (presenceChannelRef.current) {
+        presenceChannelRef.current.untrack()
+        supabase.removeChannel(presenceChannelRef.current)
+        presenceChannelRef.current = null
+      }
+    }
+  }, [id, mission?.metadata?.type, profile, supabase])
+
+  // Track cursor_task_id when selectedTask changes
+  const selectedTaskRef = useRef<string | null>(null)
+  useEffect(() => {
+    selectedTaskRef.current = selectedTask?.id || null
+    if (presenceChannelRef.current && mySessionColor && profile?.id) {
+      presenceChannelRef.current.track({
+        user_id: profile.id,
+        full_name: profile.full_name || 'Anonymous',
+        rank: profile.rank || 'ROOKIE',
+        avatar_url: profile.avatar_url,
+        session_color: mySessionColor,
+        cursor_task_id: selectedTask?.id || null
+      })
+    }
+  }, [selectedTask?.id, mySessionColor, profile])
+
   // MISSION PERSISTENCE ENGINE
   useEffect(() => {
     if (!mission || !mission.tasks || mission.tasks.length === 0) return
@@ -633,9 +712,12 @@ export default function MissionDetailPage() {
       return
     }
 
+    // Separate relational fields from database columns
+    const { assignee, ...dbUpdates } = updates
+
     const { error } = await supabase
       .from('tasks')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', taskId)
 
     if (!error) {
@@ -1094,7 +1176,8 @@ export default function MissionDetailPage() {
                 </span>
                 <div className="flex items-center -space-x-2.5">
                   {squadMembers.map((m: any) => {
-                    const isOwner = m.role === 'owner'
+                    const isOwner = m.role === 'owner' || mission?.user_id === m.id || mission?.user_id === m.user_id
+                    const onlinePresence = onlineUsers.find((ou: any) => ou.user_id === m.id)
                     return (
                       <div key={m.id} className="relative group cursor-default shrink-0 z-10 hover:z-20">
                         <div className={cn(
@@ -1114,8 +1197,19 @@ export default function MissionDetailPage() {
                             👑
                           </div>
                         )}
+                        {onlinePresence && (
+                          <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full z-30 flex">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: onlinePresence.session_color }}></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: onlinePresence.session_color }}></span>
+                          </span>
+                        )}
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-max px-2 py-1 bg-black/90 backdrop-blur-md rounded border border-white/10 text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity z-40 pointer-events-none text-white font-space">
                           {m.full_name} ({m.role?.toUpperCase()})
+                          {onlinePresence && (
+                            <span className="block text-[8px] mt-0.5" style={{ color: onlinePresence.session_color }}>
+                              {isRTL ? 'يشاهد الآن' : 'is viewing now'}
+                            </span>
+                          )}
                         </div>
                       </div>
                     )
@@ -1214,23 +1308,6 @@ export default function MissionDetailPage() {
                )}
              </button>
 
-              {/* SQUAD button */}
-              {mission?.metadata?.type === 'squad' && (
-                <button
-                  onClick={() => { playBlip(); setShowSquadPanel(true); }}
-                  className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-sm uppercase flex items-center gap-3 hover:opacity-85 font-bold"
-                  style={{
-                    borderColor: 'rgba(20, 184, 166, 0.4)',
-                    color: '#14b8a6',
-                    backgroundColor: 'rgba(20, 184, 166, 0.05)',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(20, 184, 166, 0.1)' }}
-                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(20, 184, 166, 0.05)' }}
-                >
-                  <span className="material-symbols-outlined text-base">group</span>
-                  {isRTL ? 'إدارة الفريق' : 'SQUAD'}
-                </button>
-              )}
 
              {/* SHARE button */}
              <button
@@ -1368,9 +1445,8 @@ export default function MissionDetailPage() {
                          const match = urlOrId.match(regExp)
                          return (match && match[2].length === 11) ? match[2] : urlOrId
                        } catch (e) { return urlOrId }
-                     }
-
-                     const storedProgress = typeof window !== 'undefined' ? parseFloat(localStorage.getItem(`growth_hub_video_progress_${task.id}`) || '0') : 0
+                      }
+                      const storedProgress = typeof window !== 'undefined' ? parseFloat(localStorage.getItem(`growth_hub_video_progress_${task.id}`) || '0') : 0
                      const storedDuration = typeof window !== 'undefined' ? parseFloat(localStorage.getItem(`growth_hub_video_duration_${task.id}`) || '0') : 0
                      const videoProgress = task.video_progress ?? storedProgress
                      const videoDuration = task.video_duration ?? storedDuration
@@ -1385,6 +1461,8 @@ export default function MissionDetailPage() {
                      }
 
                      const videoProgressPct = videoDuration > 0 ? (videoProgress / videoDuration) * 100 : 0
+                     const taskViewers = onlineUsers.filter((ou: any) => ou.cursor_task_id === task.id)
+                     const firstViewer = taskViewers[0]
 
                      return (
                        <motion.div
@@ -1744,25 +1822,33 @@ export default function MissionDetailPage() {
                 </h4>
                 <div className="space-y-2">
                   {squadMembers.map((member: any) => {
-                    const isMemberOwner = member.role === 'owner'
+                    const isMemberOwner = member.role === 'owner' || mission?.user_id === member.id || mission?.user_id === member.user_id
                     const isMemberCoAdmin = member.role === 'co-admin'
                     const isCurrentUserOwner = mission?.user_id === profile?.id
+                    const onlinePresence = onlineUsers.find((ou: any) => ou.user_id === member.id)
                     
                     return (
                       <div key={member.id} className="flex flex-col gap-2 p-2.5 border border-white/5 bg-white/[0.01] rounded-lg">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className={cn(
-                              "w-7 h-7 rounded-full overflow-hidden shrink-0 flex items-center justify-center",
-                              getRankRingClass(member.rank)
-                            )}>
-                              {member.avatar_url ? (
-                                <img src={member.avatar_url} alt={member.full_name} className="w-full h-full object-cover" />
-                              ) : (
-                                <span className="text-[10px] font-bold text-white">
-                                  {member.full_name?.charAt(0) || '?'}
-                                </span>
-                              )}
+                            <div className="relative shrink-0">
+                              <div className={cn(
+                                "w-7 h-7 rounded-full overflow-hidden flex items-center justify-center relative",
+                                getRankRingClass(member.rank)
+                              )}>
+                                {member.avatar_url ? (
+                                  <img src={member.avatar_url} alt={member.full_name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <span className="text-[10px] font-bold text-white">
+                                    {member.full_name?.charAt(0) || '?'}
+                                  </span>
+                                )}
+                              </div>
+                              {/* Status dot */}
+                              <div 
+                                className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-black shadow-sm"
+                                style={{ backgroundColor: onlinePresence ? onlinePresence.session_color : '#4b5563' }}
+                              />
                             </div>
                             <div className="flex flex-col min-w-0">
                               <span className="text-xs font-bold truncate text-white">{member.full_name}</span>
@@ -1773,44 +1859,50 @@ export default function MissionDetailPage() {
                           </div>
                           
                           {/* Role Badge / Remove Button */}
-                          <div className="flex items-center gap-1 shrink-0">
+                          <div className="flex items-center gap-1.5 shrink-0">
                             {isMemberOwner ? (
                               <span className="px-1 py-0.5 text-[7px] font-black tracking-widest bg-amber-950/30 border border-amber-500/30 text-amber-400 rounded-sm">
-                                OWNER
-                              </span>
-                            ) : isCurrentUserOwner ? (
-                              <button
-                                onClick={async () => {
-                                  if (confirm(isRTL ? `هل أنت متأكد من إزالة ${member.full_name} من الفريق؟` : `Are you sure you want to remove ${member.full_name} from the squad?`)) {
-                                    playBlip()
-                                    const { error } = await supabase
-                                      .from('goal_members')
-                                      .delete()
-                                      .eq('id', member.member_row_id)
-                                    
-                                    if (error) {
-                                      showToast(isRTL ? 'فشل إزالة العضو' : 'FAILED TO REMOVE MEMBER', 'warning')
-                                      playError()
-                                    } else {
-                                      showToast(isRTL ? 'تم إزالة العضو من الفريق' : 'MEMBER REMOVED FROM SQUAD', 'success')
-                                      playSuccess()
-                                      await fetchMission() // Reload members
-                                    }
-                                  }
-                                }}
-                                className="w-5 h-5 rounded border border-red-500/20 hover:border-red-500/50 bg-red-500/5 hover:bg-red-500/15 flex items-center justify-center text-red-400 hover:text-red-300 transition-all cursor-pointer"
-                                title="REMOVE_MEMBER"
-                              >
-                                <span className="material-symbols-outlined text-[12px]">close</span>
-                              </button>
-                            ) : isMemberCoAdmin ? (
-                              <span className="px-1 py-0.5 text-[7px] font-black tracking-widest bg-teal-950/30 border border-teal-500/30 text-teal-400 rounded-sm">
-                                CO-ADMIN
+                                👑 OWNER
                               </span>
                             ) : (
-                              <span className="px-1 py-0.5 text-[7px] font-black tracking-widest bg-zinc-900 border border-white/10 text-zinc-400 rounded-sm">
-                                MEMBER
-                              </span>
+                              <>
+                                {isMemberCoAdmin ? (
+                                  <span className="px-1 py-0.5 text-[7px] font-black tracking-widest bg-teal-950/30 border border-teal-500/30 text-teal-400 rounded-sm">
+                                    CO-ADMIN
+                                  </span>
+                                ) : (
+                                  <span className="px-1 py-0.5 text-[7px] font-black tracking-widest bg-zinc-900 border border-white/10 text-zinc-400 rounded-sm">
+                                    MEMBER
+                                  </span>
+                                )}
+                                
+                                {isCurrentUserOwner && (
+                                  <button
+                                    onClick={async () => {
+                                      if (confirm(isRTL ? `هل أنت متأكد من إزالة ${member.full_name} من الفريق؟` : `Are you sure you want to remove ${member.full_name} from the squad?`)) {
+                                        playBlip()
+                                        const { error } = await supabase
+                                          .from('goal_members')
+                                          .delete()
+                                          .eq('id', member.member_row_id)
+                                        
+                                        if (error) {
+                                          showToast(isRTL ? 'فشل إزالة العضو' : 'FAILED TO REMOVE MEMBER', 'warning')
+                                          playError()
+                                        } else {
+                                          showToast(isRTL ? 'تم إزالة العضو من الفريق' : 'MEMBER REMOVED FROM SQUAD', 'success')
+                                          playSuccess()
+                                          await fetchMission() // Reload members
+                                        }
+                                      }
+                                    }}
+                                    className="w-5 h-5 rounded border border-red-500/20 hover:border-red-500/50 bg-red-500/5 hover:bg-red-500/15 flex items-center justify-center text-red-400 hover:text-red-300 transition-all cursor-pointer"
+                                    title={isRTL ? "إزالة العضو" : "REMOVE_MEMBER"}
+                                  >
+                                    <span className="material-symbols-outlined text-[10px] font-black">close</span>
+                                  </button>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
@@ -1964,22 +2056,6 @@ export default function MissionDetailPage() {
                 </div>
               )}
 
-              {/* SECTION 3: INVITE LINK */}
-              <div className="pt-2 border-t border-white/5">
-                <button
-                  onClick={() => {
-                    playBlip()
-                    const inviteUrl = `${window.location.origin}/goals/squad?join=${mission.metadata?.invite_code || ''}`
-                    navigator.clipboard.writeText(inviteUrl)
-                    showToast(isRTL ? 'تم نسخ رابط الدعوة!' : 'COPIED ✓', 'success')
-                    playSuccess()
-                  }}
-                  className="w-full py-2 bg-teal-500/5 border border-teal-500/30 hover:border-teal-500 hover:bg-teal-500/10 text-[#14b8a6] hover:text-teal-300 font-mono text-[9px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(20,184,166,0.05)] hover:shadow-[0_0_15px_rgba(20,184,166,0.2)]"
-                >
-                  <span className="material-symbols-outlined text-[11px]">link</span>
-                  {isRTL ? 'نسخ رابط الدعوة' : '🔗 COPY INVITE LINK'}
-                </button>
-              </div>
             </div>
           </div>
         )}
@@ -2192,18 +2268,27 @@ export default function MissionDetailPage() {
 
                   <div className="space-y-3">
                     {squadMembers.map((member: any) => {
-                      const isMemberOwner = member.role === 'owner'
+                      const isMemberOwner = member.role === 'owner' || mission?.user_id === member.id || mission?.user_id === member.user_id
                       const isMemberCoAdmin = member.role === 'co-admin'
+                      const onlinePresence = onlineUsers.find((ou: any) => ou.user_id === member.id)
+                      
                       return (
                         <div key={member.id} className="flex items-center justify-between p-3 border border-white/5 bg-white/[0.02] rounded-lg">
                           <div className="flex items-center gap-3">
-                            {member.avatar_url ? (
-                              <img src={member.avatar_url} alt={member.full_name} className="w-9 h-9 rounded-full border border-white/10 object-cover" />
-                            ) : (
-                              <div className="w-9 h-9 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center">
-                                <span className="text-xs font-bold">{member.full_name?.charAt(0) || '?'}</span>
-                              </div>
-                            )}
+                            <div className="relative shrink-0">
+                              {member.avatar_url ? (
+                                <img src={member.avatar_url} alt={member.full_name} className="w-9 h-9 rounded-full border border-white/10 object-cover" />
+                              ) : (
+                                <div className="w-9 h-9 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center">
+                                  <span className="text-xs font-bold">{member.full_name?.charAt(0) || '?'}</span>
+                                </div>
+                              )}
+                              {/* Status dot */}
+                              <div 
+                                className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-black shadow-sm"
+                                style={{ backgroundColor: onlinePresence ? onlinePresence.session_color : '#4b5563' }}
+                              />
+                            </div>
                             <div className="flex flex-col">
                               <span className="text-xs font-bold">{member.full_name}</span>
                               <span className="text-[8px] font-black text-white/40 tracking-wider flex items-center gap-1">
@@ -2216,7 +2301,7 @@ export default function MissionDetailPage() {
                           <div className="flex items-center gap-2">
                             {isMemberOwner ? (
                               <span className="px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-amber-950/30 border border-amber-500/30 text-amber-400 rounded-sm">
-                                OWNER
+                                👑 OWNER
                               </span>
                             ) : isMemberCoAdmin ? (
                               <span className="px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-teal-950/30 border border-teal-500/30 text-teal-400 rounded-sm">
