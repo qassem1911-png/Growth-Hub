@@ -92,7 +92,7 @@ export default function ReportModal({ report, onClose, themeColor, isRTL }: Prop
           <div className="px-6 py-5 border-b flex justify-between items-center border-zinc-200 dark:border-white/10" style={{ borderColor: `${themeColor}20` }}>
             <div className="flex items-center gap-3">
               <span className="material-symbols-outlined" style={{ color: themeColor }}>description</span>
-              <h2 className="font-space font-black uppercase italic tracking-widest text-sm" style={{ color: themeColor }}>
+              <h2 className="font-space font-black uppercase tracking-widest text-sm" style={{ color: themeColor }}>
                 {report.title}
               </h2>
             </div>
@@ -106,7 +106,7 @@ export default function ReportModal({ report, onClose, themeColor, isRTL }: Prop
             <div className="flex justify-between items-end border-b border-zinc-200 dark:border-white/5 pb-4">
               <div>
                 <p className="text-[10px] text-zinc-500 dark:text-white/30 uppercase tracking-[0.3em] font-black">DOCUMENT_TYPE</p>
-                <p className="text-xs font-black uppercase italic" style={{ color: themeColor }}>{report.type.replace(/_/g, ' // ')}</p>
+                <p className="text-xs font-black uppercase" style={{ color: themeColor }}>{report.type.replace(/_/g, ' // ')}</p>
               </div>
               <div className="text-right">
                 <p className="text-[10px] text-zinc-500 dark:text-white/30 uppercase tracking-[0.3em] font-black">TIMESTAMP</p>
@@ -129,11 +129,11 @@ export default function ReportModal({ report, onClose, themeColor, isRTL }: Prop
                   <div className="grid grid-cols-2 gap-4">
                     <div className="py-2.5 px-4 bg-black/5 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl">
                       <p className="text-[9px] font-black tracking-widest uppercase opacity-40 mb-1">TOTAL_XP</p>
-                      <p className="text-2xl font-black italic" style={{ color: themeColor }}>{report.content.total_xp}</p>
+                      <p className="text-2xl font-black" style={{ color: themeColor }}>{report.content.total_xp}</p>
                     </div>
                     <div className="py-2.5 px-4 bg-black/5 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl">
                       <p className="text-[9px] font-black tracking-widest uppercase opacity-40 mb-1">PROGRESS</p>
-                      <p className="text-2xl font-black italic text-cyan-400">{report.content.overall_progress}%</p>
+                      <p className="text-2xl font-black text-cyan-400">{report.content.overall_progress}%</p>
                     </div>
                   </div>
                 </div>
@@ -162,7 +162,7 @@ export default function ReportModal({ report, onClose, themeColor, isRTL }: Prop
                 <div className="space-y-6">
                   <div className="flex flex-col items-center justify-center py-6 bg-neon-green/10 border border-neon-green/30 rounded-xl" style={{ backgroundColor: `${themeColor}10`, borderColor: `${themeColor}30` }}>
                     <span className="material-symbols-outlined text-5xl mb-2" style={{ color: themeColor }}>workspace_premium</span>
-                    <p className="text-sm font-black uppercase tracking-[0.4em] italic" style={{ color: themeColor }}>GOAL_ACCOMPLISHED</p>
+                    <p className="text-sm font-black uppercase tracking-[0.4em]" style={{ color: themeColor }}>GOAL_ACCOMPLISHED</p>
                   </div>
                   <div className="py-2.5 px-4 bg-black/5 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl text-center w-full">
                     <p className="text-[9px] font-black tracking-widest uppercase opacity-40 mb-1">XP_REWARD_COLLECTED</p>
@@ -240,7 +240,7 @@ export default function ReportModal({ report, onClose, themeColor, isRTL }: Prop
                 <div className="space-y-6">
                   <div className="flex flex-col items-center justify-center py-6 bg-teal-500/10 border border-teal-500/30 rounded-xl text-center">
                     <span className="material-symbols-outlined text-5xl text-teal-400 mb-2 animate-bounce">workspace_premium</span>
-                    <p className="text-sm font-black uppercase tracking-[0.4em] italic text-teal-400">
+                    <p className="text-sm font-black uppercase tracking-[0.4em] text-teal-400">
                       {isRTL ? 'تم منح الإذن // الفريق جاهز' : 'ACCESS GRANTED // SQUAD READY'}
                     </p>
                   </div>
@@ -262,7 +262,7 @@ export default function ReportModal({ report, onClose, themeColor, isRTL }: Prop
                 <div className="space-y-6">
                   <div className="flex flex-col items-center justify-center py-6 bg-red-500/10 border border-red-500/30 rounded-xl text-center">
                     <span className="material-symbols-outlined text-5xl text-red-500 mb-2">lock</span>
-                    <p className="text-sm font-black uppercase tracking-[0.4em] italic text-red-500">
+                    <p className="text-sm font-black uppercase tracking-[0.4em] text-red-500">
                       {isRTL ? 'الوصول مرفوض // هدف مصنف' : 'ACCESS DENIED // CLASSIFIED'}
                     </p>
                   </div>
@@ -277,7 +277,7 @@ export default function ReportModal({ report, onClose, themeColor, isRTL }: Prop
 
             {/* Footer */}
             <div className="pt-6 border-t border-zinc-200 dark:border-white/10 flex justify-between items-center opacity-40">
-              <p className="text-[8px] tracking-[0.5em] font-black uppercase italic">GROWTH HUB // ONLINE</p>
+              <p className="text-[8px] tracking-[0.5em] font-black uppercase">GROWTH HUB // ONLINE</p>
               <p className="text-[8px] font-black uppercase">REF: {report.id.slice(0, 8)}</p>
             </div>
           </div>

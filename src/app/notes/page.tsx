@@ -747,13 +747,13 @@ export default function NotesPage() {
                     )}
 
                     {/* Title (Fix 5) */}
-                    <h3 className="text-xl font-black font-space text-[var(--text-primary)] mt-4 uppercase italic tracking-tighter truncate">
+                    <h3 className="text-xl font-black font-space text-[var(--text-primary)] mt-4 uppercase tracking-tighter truncate">
                       {note.title && note.title !== 'Untitled Note' ? note.title : (isRTL ? `ملاحظة — ${dateSuffix}` : `Note — ${dateSuffix}`)}
                     </h3>
 
                     {/* Preview */}
                     <p className={cn(
-                       'text-xs leading-relaxed text-[var(--text-secondary)] mt-3 italic font-space'
+                       'text-xs leading-relaxed text-[var(--text-secondary)] mt-3 font-space'
                     )}>
                       "{plainText}"
                     </p>
@@ -848,7 +848,7 @@ export default function NotesPage() {
                  onChange={(e) => updateNote(editingNote.id, { title: e.target.value })}
                  placeholder={isRTL ? 'عنوان الملاحظة...' : 'Note title...'}
                  className={cn(
-                   "w-full bg-transparent border-none p-0 mb-8 font-space font-black text-4xl md:text-5xl text-[var(--text-primary)] outline-none transition-colors italic tracking-tighter",
+                   "w-full bg-transparent border-none p-0 mb-8 font-space font-black text-4xl md:text-5xl text-[var(--text-primary)] outline-none transition-colors tracking-tighter",
                    isRTL ? "text-right" : "text-left"
                  )}
                  onFocus={e => e.currentTarget.style.color = currentTheme.color}

@@ -401,8 +401,8 @@ export default function TaskDrawer({
         exit={{ x: isRTL ? '-100%' : '100%' }}
         transition={{ type: 'tween', duration: 0.35, ease: 'easeOut' }}
         className={`fixed top-0 bottom-0 z-[9995] w-full md:w-[50vw] lg:w-[45vw] bg-zinc-950/98 shadow-2xl flex flex-col border-white/10 ${
-          isRTL ? 'left-0 border-r-2' : 'right-0 border-l-2'
-        }`}
+ isRTL ? 'left-0 border-r-2' : 'right-0 border-l-2'
+ }`}
         style={{ borderColor: themeColor }}
       >
         {/* Decorative Top Accent Glow */}
@@ -575,10 +575,10 @@ export default function TaskDrawer({
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`py-4 text-center text-base font-space font-bold transition-all relative cursor-pointer ${
-                    isActive
-                      ? 'text-[#FFFFFF]'
-                      : 'text-[var(--text-secondary)] hover:text-white/80'
-                  }`}
+ isActive
+ ? 'text-[#FFFFFF]'
+ : 'text-[var(--text-secondary)] hover:text-white/80'
+ }`}
                   style={isActive ? { color: themeColor } : {}}
                 >
                   <span className="relative z-10">{tab.label}</span>
@@ -690,10 +690,10 @@ export default function TaskDrawer({
                                   })
                                 }}
                                 className={`flex items-center gap-3 p-2.5 border rounded-xl text-left transition-all duration-300 cursor-pointer min-w-0 w-full ${
-                                  isAssigned
-                                    ? "bg-teal-500/10 border-teal-500/50 text-[#14b8a6]"
-                                    : "bg-white/[0.01] border-white/5 hover:border-white/15 text-zinc-400 hover:text-white"
-                                }`}
+ isAssigned
+ ?"bg-teal-500/10 border-teal-500/50 text-[#14b8a6]"
+ :"bg-white/[0.01] border-white/5 hover:border-white/15 text-zinc-400 hover:text-white"
+ }`}
                               >
                                 {member.avatar_url ? (
                                   <img src={member.avatar_url} className="w-6 h-6 rounded-full object-cover shrink-0" />
@@ -815,12 +815,12 @@ export default function TaskDrawer({
                               await onUpdateTask(task.id, { metadata: updatedMetadata })
                             }}
                             className="w-full bg-zinc-900/70 border rounded-xl px-4 py-3.5 text-base font-space font-bold text-white outline-none transition-all
-                              disabled:opacity-40 disabled:cursor-not-allowed
-                              [color-scheme:dark]
-                              [&::-webkit-calendar-picker-indicator]:opacity-40
-                              [&::-webkit-calendar-picker-indicator]:invert
-                              [&::-webkit-calendar-picker-indicator]:cursor-pointer
-                              focus:ring-0"
+ disabled:opacity-40 disabled:cursor-not-allowed
+ [color-scheme:dark]
+ [&::-webkit-calendar-picker-indicator]:opacity-40
+ [&::-webkit-calendar-picker-indicator]:invert
+ [&::-webkit-calendar-picker-indicator]:cursor-pointer
+ focus:ring-0"
                             style={{
                               borderColor: isStartLocked ? 'rgba(245,158,11,0.25)' : `${themeColor}30`,
                               boxShadow: isStartLocked ? '0 0 8px rgba(245,158,11,0.08)' : `0 0 8px ${themeColor}08`
@@ -853,12 +853,12 @@ export default function TaskDrawer({
                         const isUrgent = daysLeft >= 0 && daysLeft <= 3
                         return (
                           <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full border ${
-                            isOverdue
-                              ? 'text-red-400 bg-red-500/10 border-red-500/20'
-                              : isUrgent
-                                ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
-                                : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
-                          }`}>
+ isOverdue
+ ? 'text-red-400 bg-red-500/10 border-red-500/20'
+ : isUrgent
+ ? 'text-amber-400 bg-amber-500/10 border-amber-500/20'
+ : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20'
+ }`}>
                             {isOverdue
                               ? (isRTL ? `متأخر ${Math.abs(daysLeft)} يوم` : `${Math.abs(daysLeft)}d OVERDUE`)
                               : isUrgent

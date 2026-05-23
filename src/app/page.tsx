@@ -419,7 +419,7 @@ export default function Dashboard() {
                     >
                       {isInRedZone ? (isRTL ? 'تنبيه خطير' : '⚠ RED_ZONE') : (isRTL ? 'هدف نشط' : 'ACTIVE GOAL')}
                     </p>
-                    <h3 className="text-base font-space font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-wide truncate leading-tight italic">
+                    <h3 className="text-base font-space font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-wide truncate leading-tight">
                       {mission.title}
                     </h3>
                   </div>
@@ -565,7 +565,7 @@ export default function Dashboard() {
                   {isRTL ? 'نصيحة المدرب' : 'Coach Tip'}
                 </h2>
               </div>
-              <p className="text-xl md:text-2xl font-space text-zinc-900 dark:text-zinc-100 leading-relaxed italic font-bold">
+              <p className="text-xl md:text-2xl font-space text-zinc-900 dark:text-zinc-100 leading-relaxed font-bold">
                 "{coachTip}"
               </p>
             </div>

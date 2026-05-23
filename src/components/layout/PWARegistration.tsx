@@ -144,7 +144,7 @@ export default function PWARegistration() {
               </div>
               <div className="flex-1 min-w-0">
                 <h3
-                  className="text-sm font-black font-space uppercase italic tracking-wider leading-none"
+                  className="text-sm font-black font-space uppercase tracking-wider leading-none"
                   style={{ color: currentTheme.color }}
                 >
                   {isRTL ? 'تثبيت التطبيق على جهازك' : 'INSTALL THE APP'}

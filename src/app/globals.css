@@ -60,7 +60,7 @@
   }
   
   em, .italic {
-    font-style: italic !important;
+    font-style: normal;
   }
 
   html, body {

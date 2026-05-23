@@ -37,7 +37,7 @@ export default function BlockedPage() {
             <span className="material-symbols-outlined text-4xl text-red-500 animate-pulse">lock_open</span>
           </div>
 
-          <h1 className="text-3xl font-black text-red-500 tracking-tighter italic uppercase">
+          <h1 className="text-3xl font-black text-red-500 tracking-tighter uppercase">
             ACCESS_DENIED
           </h1>
           

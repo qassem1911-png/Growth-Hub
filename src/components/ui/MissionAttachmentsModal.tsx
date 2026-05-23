@@ -472,7 +472,7 @@ const MissionAttachmentsModal = ({
                 <p className="font-space font-black uppercase tracking-widest text-[10px] text-zinc-500 dark:text-white/30">
                   {isRTL ? 'المرفقات المزامنة' : 'Synced Attachments'}
                 </p>
-                <p className="font-space font-black uppercase italic text-sm truncate max-w-[260px]" style={{ color: themeColor }}>{missionTitle}</p>
+                <p className="font-space font-black uppercase text-sm truncate max-w-[260px]" style={{ color: themeColor }}>{missionTitle}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">

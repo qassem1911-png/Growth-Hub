@@ -1143,7 +1143,7 @@ export default function MissionDetailPage() {
             <div className="flex flex-col items-center gap-6">
               <span className="material-symbols-outlined text-5xl text-[#FF0055] animate-pulse">lock</span>
               <div className="space-y-2">
-                <h2 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-[#FF0055]">
+                <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-[#FF0055]">
                   CLASSIFIED_GOAL // ACCESS DENIED
                 </h2>
                 <p className="text-xs md:text-sm font-bold text-zinc-400 max-w-sm leading-relaxed">
@@ -1183,7 +1183,7 @@ export default function MissionDetailPage() {
             
             <div className="flex justify-between items-start gap-4">
                <div className="space-y-1 flex-1 min-w-0">
-                  <h1 className="text-2xl md:text-5xl font-black font-space tracking-tighter uppercase italic text-[var(--text-primary)] leading-none break-words">
+                  <h1 className="text-2xl md:text-5xl font-black font-space tracking-tighter uppercase text-[var(--text-primary)] leading-none break-words">
                      {mission.title}
                   </h1>
                </div>
@@ -1196,7 +1196,7 @@ export default function MissionDetailPage() {
                       >
                          <span className="material-symbols-outlined text-xl">delete_forever</span>
                       </button>
-                      <span className="text-3xl md:text-6xl font-black font-space italic" style={{ color: missionColor }}>{roundedProgress}%</span>
+                      <span className="text-3xl md:text-6xl font-black font-space" style={{ color: missionColor }}>{roundedProgress}%</span>
                    </div>
                    <p className="text-[9px] font-space text-[var(--text-secondary)] tracking-[0.4em] uppercase font-black">{isRTL ? 'مكتمل' : 'Complete'}</p>
                 </div>
@@ -1218,73 +1218,72 @@ export default function MissionDetailPage() {
                </div>
             </div>
 
-            {/* Overhauled Squad Avatars Row */}
-            {mission?.metadata?.type === 'squad' && (
+            {/* Squad Facepile — Clickable, capped to 3 + overflow bubble */}
+            {mission?.metadata?.type === 'squad' && squadMembers.length > 0 && (
               <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-white/5">
                 <span className="text-[10px] font-mono text-white/40 tracking-widest uppercase font-black">
-                  {isRTL ? 'الفريق:' : 'SQUAD:'}
+                  {isRTL ? '\u0627\u0644\u0641\u0631\u064a\u0642:' : 'SQUAD:'}
                 </span>
-                <div className="flex items-center -space-x-2.5">
-                  {squadMembers.map((m: any) => {
-                    const isOwner = m.role === 'owner' || mission?.user_id === m.id || mission?.user_id === m.user_id
-                    const onlinePresence = onlineUsers.find((ou: any) => ou.user_id === m.id)
-                    return (
-                      <div key={m.id} className="relative group cursor-default shrink-0 z-10 hover:z-20">
-                        <div className={cn(
-                          "w-7 h-7 rounded-full overflow-hidden bg-zinc-950 flex items-center justify-center relative",
-                          isOwner ? "border-2 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]" : "border-2 border-teal-500"
-                        )}>
-                          {m.avatar_url ? (
-                            <img src={m.avatar_url} alt={m.full_name} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="text-[10px] font-bold text-white">
-                              {m.full_name?.charAt(0) || '?'}
-                            </span>
-                          )}
-                        </div>
-                        {isOwner && (
-                          <div className="absolute -top-2 -right-1.5 text-[10px] drop-shadow-[0_0_4px_rgba(0,0,0,0.8)] z-30 select-none">
-                            👑
+
+                {/* Clickable Facepile */}
+                <button
+                  onClick={() => { playBlip(); setShowSquadPanel(true); }}
+                  className="flex items-center group cursor-pointer"
+                  title={isRTL ? '\u0625\u062f\u0627\u0631\u0629 \u0627\u0644\u0641\u0631\u064a\u0642' : 'Manage Squad'}
+                >
+                  <div className="flex items-center -space-x-2.5">
+                    {squadMembers.slice(0, 3).map((m: any) => {
+                      const isOwner = m.role === 'owner' || mission?.user_id === m.id || mission?.user_id === m.user_id
+                      const onlinePresence = onlineUsers.find((ou: any) => ou.user_id === m.id)
+                      return (
+                        <div key={m.id} className="relative shrink-0 z-10 hover:z-20">
+                          <div className={cn(
+                            "w-8 h-8 rounded-full overflow-hidden bg-zinc-950 flex items-center justify-center relative transition-transform group-hover:scale-105",
+                            isOwner ? "border-2 border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.4)]" : "border-2 border-teal-500/60"
+                          )}>
+                            {m.avatar_url ? (
+                              <img src={m.avatar_url} alt={m.full_name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-[10px] font-bold text-white">
+                                {m.full_name?.charAt(0) || '?'}
+                              </span>
+                            )}
                           </div>
-                        )}
-                        {onlinePresence && (
-                          <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full z-30 flex">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: onlinePresence.session_color }}></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: onlinePresence.session_color }}></span>
-                          </span>
-                        )}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-max px-2 py-1 bg-black/90 backdrop-blur-md rounded border border-white/10 text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity z-40 pointer-events-none text-white font-space">
-                          {m.full_name} ({m.role?.toUpperCase()})
+                          {isOwner && (
+                            <div className="absolute -top-2 -right-1.5 text-[10px] drop-shadow-[0_0_4px_rgba(0,0,0,0.8)] z-30 select-none">👑</div>
+                          )}
                           {onlinePresence && (
-                            <span className="block text-[8px] mt-0.5" style={{ color: onlinePresence.session_color }}>
-                              {isRTL ? 'يشاهد الآن' : 'is viewing now'}
+                            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full z-30 flex">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: onlinePresence.session_color }}></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: onlinePresence.session_color }}></span>
                             </span>
                           )}
                         </div>
+                      )
+                    })}
+
+                    {/* +X overflow bubble */}
+                    {squadMembers.length > 3 && (
+                      <div className="relative z-10 w-8 h-8 rounded-full bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center text-[10px] font-black text-white/70 group-hover:bg-zinc-700 transition-colors">
+                        +{squadMembers.length - 3}
                       </div>
-                    )
-                  })}
+                    )}
 
-                  {/* Pending Requests Circle */}
-                  {pendingRequests.length > 0 && (
-                    <div 
-                      onClick={() => { playBlip(); setShowSquadPanel(true); }}
-                      className="w-7 h-7 rounded-full bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center text-[9px] font-black text-white cursor-pointer hover:bg-zinc-700 transition-colors z-30 shadow-[0_0_10px_rgba(0,0,0,0.5)]"
-                      title={isRTL ? "طلبات انضمام معلقة" : "Pending Join Requests"}
-                    >
-                      +{pendingRequests.length}
-                    </div>
-                  )}
-                </div>
+                    {/* Pending requests badge */}
+                    {pendingRequests.length > 0 && (
+                      <div className="relative z-20 w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black text-black animate-pulse" style={{ backgroundColor: '#f59e0b' }}>
+                        {pendingRequests.length}
+                      </div>
+                    )}
+                  </div>
 
-                <span className="text-xs font-mono text-white/50 ml-2">
-                  {isRTL 
-                    ? `${squadMembers.length} أعضاء • ${activeTodayCount} نشط اليوم`
-                    : `${squadMembers.length} members • ${activeTodayCount} active today`}
-                </span>
+                  {/* Count label */}
+                  <span className="ml-3 text-xs font-mono text-white/40 group-hover:text-white/60 transition-colors">
+                    {squadMembers.length} {isRTL ? '\u0639\u0636\u0648' : 'members'} {onlineUsers.length > 0 ? `• ${onlineUsers.length} ${isRTL ? '\u0623\u0648\u0646\u0644\u0627\u064a\u0646' : 'online'}` : ''}
+                  </span>
+                </button>
               </div>
             )}
-
             <div className="w-full h-[1.5px] bg-[var(--input-bg)] relative">
                <motion.div
                  initial={{ width: 0 }}
@@ -1794,7 +1793,7 @@ export default function MissionDetailPage() {
                       value={newTaskTitle}
                       onChange={e => setNewTaskTitle(e.target.value)}
                       placeholder={isRTL ? 'إضافة مهمة... (ENTER)' : 'ADD_TASK... (PRESS ENTER)'}
-                      className="w-full bg-[var(--input-bg)] border border-[var(--card-border)] p-4 md:p-6 font-space text-sm font-black text-[var(--text-primary)] outline-none transition-all italic"
+                      className="w-full bg-[var(--input-bg)] border border-[var(--card-border)] p-4 md:p-6 font-space text-sm font-black text-[var(--text-primary)] outline-none transition-all"
                       style={{ borderColor: `${currentTheme.color}20` }}
                    />
                    <button 
@@ -1833,7 +1832,7 @@ export default function MissionDetailPage() {
                if (sizeStr === 'sm' || sizeStr === 's' || sizeStr === 'small') {
                  if (tCount > 4) {
                    return (
-                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="text-xs text-yellow-500/80 italic font-space px-2">
+                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="text-xs text-yellow-500/80 font-space px-2">
                        {isRTL ? "واضح إن الهدف ده فيه مهام كتير! إيه رأيك تكبر حجمه لـ Medium عشان يعكس مجهودك الحقيقي وتكسب نقاط XP أكتر؟" : "Looks like this goal has a lot of tasks! How about upgrading it to Medium to reflect your true effort and earn more XP?"}
                      </motion.div>
                    )
@@ -1841,7 +1840,7 @@ export default function MissionDetailPage() {
                } else if (sizeStr === 'md' || sizeStr === 'm' || sizeStr === 'medium') {
                  if (tCount > 8) {
                    return (
-                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="text-xs text-yellow-500/80 italic font-space px-2">
+                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="text-xs text-yellow-500/80 font-space px-2">
                        {isRTL ? "المهام بدأت تزيد هنا! إيه رأيك تخليه Large؟ الحجم الأكبر هيديك مساحة أفضل وسقف XP أعلى يناسب تعبك." : "Tasks are piling up! Consider upgrading to Large to give yourself more space and unlock a higher XP ceiling."}
                      </motion.div>
                    )
@@ -1852,266 +1851,10 @@ export default function MissionDetailPage() {
             </div>
          </section>
           </div>
+        </div>
 
-        {/* RIGHT COLUMN: Persistent Squad Management Panel */}
-        {mission?.metadata?.type === 'squad' && (
-          <div className="w-full md:w-[260px] shrink-0 space-y-6 font-space text-white">
-            <div className="bg-[#050505]/60 border border-white/10 p-5 rounded-xl backdrop-blur-xl relative space-y-6">
-              <div className="absolute top-0 inset-x-0 h-[1.5px]" style={{ background: 'linear-gradient(90deg, transparent, #14b8a6, transparent)' }} />
-              
-              {/* Panel Title */}
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#14b8a6] flex items-center gap-2 border-b border-white/10 pb-3">
-                <span className="material-symbols-outlined text-sm">shield</span>
-                {isRTL ? 'إدارة الفريق // ⚔' : '⚔ SQUAD MANAGEMENT'}
-              </h3>
 
-              {/* SECTION 1: MEMBERS */}
-              <div className="space-y-3">
-                <h4 className="text-[9px] font-black tracking-[0.2em] uppercase text-zinc-500">
-                  {isRTL ? 'أعضاء الفريق' : 'SQUAD MEMBERS'} ({squadMembers.length})
-                </h4>
-                <div className="space-y-2">
-                  {squadMembers.map((member: any) => {
-                    const isMemberOwner = member.role === 'owner' || mission?.user_id === member.id || mission?.user_id === member.user_id
-                    const isMemberCoAdmin = member.role === 'co-admin'
-                    const isCurrentUserOwner = mission?.user_id === profile?.id
-                    const onlinePresence = onlineUsers.find((ou: any) => ou.user_id === member.id)
-                    
-                    return (
-                      <div key={member.id} className="flex flex-col gap-2 p-2.5 border border-white/5 bg-white/[0.01] rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className="relative shrink-0">
-                              <div className={cn(
-                                "w-7 h-7 rounded-full overflow-hidden flex items-center justify-center relative",
-                                getRankRingClass(member.rank)
-                              )}>
-                                {member.avatar_url ? (
-                                  <img src={member.avatar_url} alt={member.full_name} className="w-full h-full object-cover" />
-                                ) : (
-                                  <span className="text-[10px] font-bold text-white">
-                                    {member.full_name?.charAt(0) || '?'}
-                                  </span>
-                                )}
-                              </div>
-                              {/* Status dot */}
-                              <div 
-                                className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border border-black shadow-sm"
-                                style={{ backgroundColor: onlinePresence ? onlinePresence.session_color : '#4b5563' }}
-                              />
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-xs font-bold truncate text-white">{member.full_name}</span>
-                              <span className="text-[8px] font-black text-white/40 tracking-wider">
-                                {member.rank || 'ROOKIE'}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          {/* Role Badge / Remove Button */}
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {isMemberOwner ? (
-                              <span className="px-1 py-0.5 text-[7px] font-black tracking-widest bg-amber-950/30 border border-amber-500/30 text-amber-400 rounded-sm">
-                                👑 OWNER
-                              </span>
-                            ) : (
-                              <>
-                                {isMemberCoAdmin ? (
-                                  <span className="px-1 py-0.5 text-[7px] font-black tracking-widest bg-teal-950/30 border border-teal-500/30 text-teal-400 rounded-sm">
-                                    CO-ADMIN
-                                  </span>
-                                ) : (
-                                  <span className="px-1 py-0.5 text-[7px] font-black tracking-widest bg-zinc-900 border border-white/10 text-zinc-400 rounded-sm">
-                                    MEMBER
-                                  </span>
-                                )}
-                                
-                                {isCurrentUserOwner && (
-                                  <button
-                                    onClick={async () => {
-                                      if (confirm(isRTL ? `هل أنت متأكد من إزالة ${member.full_name} من الفريق؟` : `Are you sure you want to remove ${member.full_name} from the squad?`)) {
-                                        playBlip()
-                                        const { error } = await supabase
-                                          .from('goal_members')
-                                          .delete()
-                                          .eq('id', member.member_row_id)
-                                        
-                                        if (error) {
-                                          showToast(isRTL ? 'فشل إزالة العضو' : 'FAILED TO REMOVE MEMBER', 'warning')
-                                          playError()
-                                        } else {
-                                          showToast(isRTL ? 'تم إزالة العضو من الفريق' : 'MEMBER REMOVED FROM SQUAD', 'success')
-                                          playSuccess()
-                                          await fetchMission() // Reload members
-                                        }
-                                      }
-                                    }}
-                                    className="w-5 h-5 rounded border border-red-500/20 hover:border-red-500/50 bg-red-500/5 hover:bg-red-500/15 flex items-center justify-center text-red-400 hover:text-red-300 transition-all cursor-pointer"
-                                    title={isRTL ? "إزالة العضو" : "REMOVE_MEMBER"}
-                                  >
-                                    <span className="material-symbols-outlined text-[10px] font-black">close</span>
-                                  </button>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Role Switcher for Owner only */}
-                        {isCurrentUserOwner && !isMemberOwner && (
-                          <div className="flex gap-1 bg-black/40 border border-white/10 p-0.5 rounded-sm">
-                            <button
-                              onClick={async () => {
-                                if (member.role === 'member') return
-                                playBlip()
-                                const { error } = await supabase
-                                  .from('goal_members')
-                                  .update({ role: 'member' })
-                                  .eq('id', member.member_row_id)
-                                if (error) {
-                                  showToast(isRTL ? 'فشل تحديث الدور' : 'FAILED TO UPDATE ROLE', 'warning')
-                                  playError()
-                                } else {
-                                  showToast(isRTL ? 'تم تحديث الدور إلى عضو!' : 'ROLE UPDATED TO MEMBER', 'success')
-                                  playSuccess()
-                                  await fetchMission()
-                                }
-                              }}
-                              className={cn(
-                                "flex-1 py-0.5 text-[7px] font-black tracking-widest uppercase text-center rounded-sm transition-all cursor-pointer",
-                                member.role === 'member'
-                                  ? "bg-zinc-800 text-zinc-300 border border-white/10 font-bold"
-                                  : "text-zinc-600 hover:text-zinc-400"
-                              )}
-                            >
-                              MEMBER
-                            </button>
-                            <button
-                              onClick={async () => {
-                                if (member.role === 'co-admin') return
-                                playBlip()
-                                const { error } = await supabase
-                                  .from('goal_members')
-                                  .update({ role: 'co-admin' })
-                                  .eq('id', member.member_row_id)
-                                if (error) {
-                                  showToast(isRTL ? 'فشل تحديث الدور' : 'FAILED TO UPDATE ROLE', 'warning')
-                                  playError()
-                                } else {
-                                  showToast(isRTL ? 'تم تحديث الدور إلى مشرف!' : 'ROLE UPDATED TO CO-ADMIN', 'success')
-                                  playSuccess()
-                                  await fetchMission()
-                                }
-                              }}
-                              className={cn(
-                                "flex-1 py-0.5 text-[7px] font-black tracking-widest uppercase text-center rounded-sm transition-all cursor-pointer",
-                                member.role === 'co-admin'
-                                  ? "bg-teal-950/50 text-[#14b8a6] border border-[#14b8a6]/30 font-bold"
-                                  : "text-zinc-600 hover:text-zinc-400"
-                              )}
-                            >
-                              CO-ADMIN
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* SECTION 2: PENDING REQUESTS */}
-              {isCurrentUserOwner && (
-                <div className="space-y-3">
-                  <h4 className="text-[9px] font-black tracking-[0.2em] uppercase text-zinc-500">
-                    {isRTL ? 'طلبات معلقة' : 'PENDING REQUESTS'}
-                  </h4>
-                  {pendingRequests.length === 0 ? (
-                    <div className="text-center py-4 border border-dashed border-white/5 rounded-lg bg-white/[0.01]">
-                      <p className="text-[9px] font-black tracking-widest text-zinc-600 uppercase">
-                        {isRTL ? 'لا توجد طلبات' : 'NO REQUESTS'}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {pendingRequests.map((req: any) => {
-                        const reqProfile = req.profiles || {}
-                        return (
-                          <div key={req.id} className="flex flex-col gap-2 p-2.5 border border-amber-500/10 bg-amber-500/[0.02] rounded-lg">
-                            <div className="flex items-center gap-2">
-                              {reqProfile.avatar_url ? (
-                                <img src={reqProfile.avatar_url} className="w-6 h-6 rounded-full object-cover" />
-                              ) : (
-                                <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[9px] font-bold">
-                                  {reqProfile.full_name?.charAt(0) || '?'}
-                                </div>
-                              )}
-                              <span className="text-xs font-bold truncate flex-1">{reqProfile.full_name || 'Unknown'}</span>
-                            </div>
-                            
-                            {/* Action buttons with optimistic updates */}
-                            <div className="flex items-center gap-1.5 mt-1">
-                              <button
-                                disabled={isReviewing !== null}
-                                onClick={async () => {
-                                  setIsReviewing(req.id)
-                                  playBlip()
-                                  // Optimistic state update: remove request instantly from pendingRequests
-                                  setPendingRequests(prev => prev.filter(r => r.id !== req.id))
-                                  const { error } = await supabase.rpc('review_squad_join_request', { p_request_id: req.id, p_action: 'approve' })
-                                  if (error) {
-                                    showToast(isRTL ? 'فشل قبول الطلب' : 'FAILED TO APPROVE', 'warning')
-                                    playError()
-                                    await fetchPendingRequests()
-                                  } else {
-                                    showToast(isRTL ? 'تم قبول العضو الجديد!' : 'MEMBER APPROVED', 'success')
-                                    playSuccess()
-                                    await fetchPendingRequests()
-                                    await fetchMission() // Reload members list
-                                  }
-                                  setIsReviewing(null)
-                                }}
-                                className="flex-1 py-1 border border-teal-500/40 hover:border-teal-400 text-teal-400 text-[8px] font-black uppercase tracking-widest bg-teal-500/5 rounded transition-colors text-center cursor-pointer"
-                              >
-                                {isRTL ? 'قبول' : 'APPROVE'}
-                              </button>
-                              <button
-                                disabled={isReviewing !== null}
-                                onClick={async () => {
-                                  setIsReviewing(req.id)
-                                  playBlip()
-                                  setPendingRequests(prev => prev.filter(r => r.id !== req.id))
-                                  const { error } = await supabase.rpc('review_squad_join_request', { p_request_id: req.id, p_action: 'reject' })
-                                  if (error) {
-                                    showToast(isRTL ? 'فشل رفض الطلب' : 'FAILED TO REJECT', 'warning')
-                                    playError()
-                                    await fetchPendingRequests()
-                                  } else {
-                                    showToast(isRTL ? 'تم رفض طلب الانضمام' : 'MEMBER REJECTED', 'success')
-                                    playSuccess()
-                                    await fetchPendingRequests()
-                                  }
-                                  setIsReviewing(null)
-                                }}
-                                className="flex-1 py-1 border border-red-500/40 hover:border-red-400 text-red-400 text-[8px] font-black uppercase tracking-widest bg-red-500/5 rounded transition-colors text-center cursor-pointer"
-                              >
-                                {isRTL ? 'رفض' : 'REJECT'}
-                              </button>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ── INTEL MODAL: Notes linked to this mission ── */}
+            {/* ── INTEL MODAL: Notes linked to this mission ── */}
       <AnimatePresence>
         {showIntelModal && (
           <motion.div
@@ -2135,7 +1878,7 @@ export default function MissionDetailPage() {
               <div className="p-6 md:p-10 space-y-6">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h2 className="text-xl md:text-2xl font-black font-space uppercase italic" style={{ color: missionColor }}>
+                    <h2 className="text-xl md:text-2xl font-black font-space uppercase" style={{ color: missionColor }}>
                       {isRTL ? 'الملاحظات' : 'NOTES'}
                     </h2>
                     <p className="text-[12px] font-space text-[var(--text-secondary)] tracking-widest uppercase font-black mt-1">
@@ -2608,7 +2351,7 @@ export default function MissionDetailPage() {
               {/* Header */}
               <div className="flex justify-between items-center pb-3 border-b border-zinc-200 dark:border-white/5">
                 <div>
-                  <h3 className="font-space text-lg font-black tracking-widest uppercase italic text-white flex items-center gap-2">
+                  <h3 className="font-space text-lg font-black tracking-widest uppercase text-white flex items-center gap-2">
                     <span className="material-symbols-outlined text-lg" style={{ color: missionColor }}>share</span>
                     {isRTL ? 'SHARE_GOAL // مشاركة الهدف' : 'SHARE_GOAL'}
                   </h3>

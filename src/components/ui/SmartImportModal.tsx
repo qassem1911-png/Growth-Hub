@@ -151,7 +151,7 @@ export default function SmartImportModal({ isOpen, onClose, missionId, themeColo
               content_paste
             </span>
             <h2
-              className="font-space font-black uppercase italic tracking-widest text-sm"
+              className="font-space font-black uppercase tracking-widest text-sm"
               style={{ color: themeColor }}
             >
               {isRTL ? 'الاستيراد الذكي' : 'SMART_IMPORT'}

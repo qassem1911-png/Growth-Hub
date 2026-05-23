@@ -79,7 +79,7 @@ export default function PomodoroHUD() {
                  >
                    {sessionType === 'FOCUS' ? '⚡' : '☕'}
                  </motion.span>
-                 <span className="text-sm font-black italic text-orange-500 transition-colors">
+                 <span className="text-sm font-black text-orange-500 transition-colors">
                    {formatTime(timeRemaining)}
                  </span>
               </div>
@@ -97,7 +97,7 @@ export default function PomodoroHUD() {
                       className="w-1.5 h-1.5 rounded-full"
                       style={{ backgroundColor: sessionType === 'FOCUS' ? '#F97316' : '#00E5FF' }}
                     />
-                    <span className="text-[10px] font-black tracking-[0.2em] uppercase italic" style={{ color: sessionType === 'FOCUS' ? '#F97316' : '#00E5FF' }}>
+                    <span className="text-[10px] font-black tracking-[0.2em] uppercase" style={{ color: sessionType === 'FOCUS' ? '#F97316' : '#00E5FF' }}>
                       {sessionType === 'FOCUS' ? (isRTL ? '⚡ وضع التركيز نشط' : '⚡ FOCUS_ACTIVE') : (isRTL ? '☕ فترة الاستراحة' : '☕ RECOVERY')}
                     </span>
                   </div>

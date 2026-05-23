@@ -106,7 +106,7 @@ export default function AdminDashboard() {
           <div>
             <div className="flex items-center gap-3 text-red-500 mb-1">
               <span className="material-symbols-outlined text-3xl">security</span>
-              <h1 className="text-3xl md:text-4xl font-black italic tracking-tighter uppercase">ADMIN_CONTROL_CENTER</h1>
+              <h1 className="text-3xl md:text-4xl font-black tracking-tighter uppercase">ADMIN_CONTROL_CENTER</h1>
             </div>
             <p className="text-[10px] md:text-xs font-black tracking-[0.5em] text-red-500/40 uppercase">SYSTEM_OVERSIGHT // CLASSIFIED // LEVEL_BLACK</p>
           </div>
@@ -273,11 +273,11 @@ export default function AdminDashboard() {
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 bg-black/40 border border-white/5 text-center">
-                      <p className="text-2xl font-black text-white italic">75%</p>
+                      <p className="text-2xl font-black text-white">75%</p>
                       <p className="text-[9px] text-white/30 font-black uppercase mt-1">AVG_COMPLETION</p>
                     </div>
                     <div className="p-4 bg-black/40 border border-white/5 text-center">
-                      <p className="text-2xl font-black text-white italic">4.2</p>
+                      <p className="text-2xl font-black text-white">4.2</p>
                       <p className="text-[9px] text-white/30 font-black uppercase mt-1">TASKS_PER_MISSION</p>
                     </div>
                   </div>
@@ -303,7 +303,7 @@ export default function AdminDashboard() {
                       </div>
                       <div>
                         <p className="text-sm text-white/80">
-                          <span className="font-black text-red-500 uppercase italic">{act.name}</span>
+                          <span className="font-black text-red-500 uppercase">{act.name}</span>
                           {" "}
                           {act.type === 'mission_complete' ? 'completed mission' : act.type === 'task_complete' ? 'completed task' : 'joined the system'}
                           {" "}
@@ -339,7 +339,7 @@ function StatsCard({ title, value, icon, trend, isOnline, color = 'white' }: any
         </div>
         <div>
           <h4 className="text-[10px] font-black tracking-[0.3em] text-white/40 uppercase mb-1">{title}</h4>
-          <p className="text-2xl font-black italic text-white leading-none">
+          <p className="text-2xl font-black text-white leading-none">
             {value ?? '---'}
           </p>
           {trend && <p className="text-[8px] text-red-500 font-black uppercase mt-2 tracking-widest">{trend}</p>}

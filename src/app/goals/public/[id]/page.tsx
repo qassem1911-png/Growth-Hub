@@ -138,7 +138,7 @@ export default function PublicGoalPage() {
           <div className="flex flex-col items-center gap-6">
             <span className="material-symbols-outlined text-5xl text-[#FF0055] animate-pulse">lock</span>
             <div className="space-y-2">
-              <h2 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-[#FF0055]">
+              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-[#FF0055]">
                 CLASSIFIED_GOAL // ACCESS DENIED
               </h2>
               <p className="text-xs md:text-sm font-bold text-zinc-400 max-w-sm leading-relaxed">
@@ -175,7 +175,7 @@ export default function PublicGoalPage() {
 
         {/* Goal Hero Section */}
         <div className="flex flex-col items-center text-center space-y-6">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black uppercase italic tracking-tighter leading-tight break-words max-w-full drop-shadow-2xl">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-tight break-words max-w-full drop-shadow-2xl">
             {goal.title}
           </h1>
           

@@ -643,7 +643,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
           <div className="space-y-4 text-center md:text-start">
             <div className="flex items-center gap-4 justify-center md:justify-start">
               <span className="material-symbols-outlined text-3xl md:text-4xl" style={{ color: currentTheme.color }}>layers</span>
-              <h1 className="text-4xl md:text-6xl font-black font-space tracking-wider uppercase not-italic text-black dark:text-white leading-none">
+              <h1 className="text-4xl md:text-6xl font-black font-space tracking-wider uppercase not- text-black dark:text-white leading-none">
                 {typeFilter === 'solo' ? (
                   <>{isRTL ? 'مهمات' : 'SOLO'}<span style={{ color: currentTheme.color }}>{isRTL ? ' فردية' : '_MISSIONS'}</span></>
                 ) : typeFilter === 'squad' ? (
@@ -758,7 +758,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                     </div>
                   ) : (
                     <div className="space-y-2 border-l-4 pl-4 rtl:pl-0 rtl:pr-4 rtl:border-l-0 rtl:border-r-4 text-left" style={{ borderColor: currentTheme.color }}>
-                      <p className="text-lg md:text-xl lg:text-2xl font-black font-space text-[var(--text-primary)] uppercase italic tracking-tighter mb-3">
+                      <p className="text-lg md:text-xl lg:text-2xl font-black font-space text-[var(--text-primary)] uppercase tracking-tighter mb-3">
                         "Welcome, Soldier. This is your Tactical Life OS."
                       </p>
                       <ol className="list-decimal list-inside space-y-2 text-sm md:text-base text-[var(--text-primary)]/80 font-bold font-space">
@@ -791,7 +791,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                 className="w-[calc(100%-2rem)] mx-auto md:max-w-xl bg-zinc-950/90 border border-white/10 backdrop-blur-md p-5 md:p-8 space-y-6 rounded-2xl shadow-2xl my-auto max-h-[90vh] overflow-y-auto"
               >
                 <div className="flex flex-col gap-1.5">
-                  <h2 className="text-xl md:text-2xl font-space font-black uppercase italic text-black dark:text-white tracking-tighter">
+                  <h2 className="text-xl md:text-2xl font-space font-black uppercase text-black dark:text-white tracking-tighter">
                     {typeFilter === 'squad'
                       ? (isRTL ? 'إنشاء هدف فريق' : 'CREATE SQUAD GOAL')
                       : (isRTL ? 'إنشاء هدف جديد' : 'Create New Goal')}
@@ -812,7 +812,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                     value={newTitle}
                     placeholder={isRTL ? 'اسم هدفك...' : 'Name your goal...'}
                     onChange={e => setNewTitle(e.target.value)}
-                    className="w-full bg-zinc-900/50 border border-white/10 py-2.5 px-4 rounded-xl font-space text-base font-black text-white italic outline-none transition-all placeholder:text-zinc-500"
+                    className="w-full bg-zinc-900/50 border border-white/10 py-2.5 px-4 rounded-xl font-space text-base font-black text-white outline-none transition-all placeholder:text-zinc-500"
                     onFocus={e => e.currentTarget.style.borderColor = currentTheme.color}
                     onBlur={e => e.currentTarget.style.borderColor = ''}
                   />
@@ -1163,13 +1163,13 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                           )
                         )}
                       </div>
-                      <h3 className="text-lg md:text-xl font-space font-black uppercase not-italic text-[var(--text-primary)] truncate mt-1">
+                      <h3 className="text-lg md:text-xl font-space font-black uppercase not- text-[var(--text-primary)] truncate mt-1">
                          {mission.title}
                       </h3>
                     </div>
                     
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xl md:text-2xl font-black font-space italic shrink-0" style={{ color: isInRedZone ? '#FF0055' : (mission.color || color) }}>{percentage}%</span>
+                      <span className="text-xl md:text-2xl font-black font-space shrink-0" style={{ color: isInRedZone ? '#FF0055' : (mission.color || color) }}>{percentage}%</span>
                       {typeFilter === 'squad' && mission.user_id === profile?.id && (
                         <div className="relative">
                           <button

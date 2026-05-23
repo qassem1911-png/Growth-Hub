@@ -70,7 +70,7 @@ export default function LevelUpModal() {
               initial={{ scale: 0.7, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
-              className="text-4xl md:text-5xl font-black italic tracking-tighter text-[#00CED1] uppercase font-space"
+              className="text-4xl md:text-5xl font-black tracking-tighter text-[#00CED1] uppercase font-space"
               style={{
                 textShadow: `0 0 15px ${currentTheme.color}88`
               }}

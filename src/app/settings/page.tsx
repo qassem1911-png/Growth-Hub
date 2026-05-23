@@ -225,7 +225,7 @@ export default function SettingsPage() {
           
           {/* Symmetrical Settings Header */}
           <header className="space-y-3">
-            <h1 className="text-4xl md:text-6xl font-black font-space tracking-wider uppercase not-italic text-black dark:text-white leading-none">
+            <h1 className="text-4xl md:text-6xl font-black font-space tracking-wider uppercase not- text-black dark:text-white leading-none">
               {t('settings')}
             </h1>
             <p className="text-[10px] md:text-xs font-space tracking-[0.5em] uppercase font-black opacity-50" style={{ color: currentTheme.color }}>
@@ -777,7 +777,7 @@ export default function SettingsPage() {
           {userEmail === 'm@gmail.com' && (
             <section className="w-full pt-12 border-t border-red-500/10 space-y-6">
               <header className="space-y-1">
-                <h2 className="text-xl font-space font-black tracking-tight text-red-500 uppercase italic">
+                <h2 className="text-xl font-space font-black tracking-tight text-red-500 uppercase">
                   ADMIN<span className="text-white">_CALIBRATION</span>
                 </h2>
                 <p className="text-[9px] font-space text-red-500/40 tracking-[0.4em] uppercase font-black">
@@ -789,7 +789,7 @@ export default function SettingsPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-end">
                     <label className="text-[10px] font-space text-red-500/60 tracking-widest uppercase font-black">XP_CALIBRATION_SLIDER</label>
-                    <span className="text-lg font-space font-black text-red-500 italic">{profile?.xp || 0} XP</span>
+                    <span className="text-lg font-space font-black text-red-500">{profile?.xp || 0} XP</span>
                   </div>
                   <input 
                     type="range"

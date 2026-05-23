@@ -132,7 +132,7 @@ export default function WinsPage() {
                 <span className="material-symbols-outlined text-3xl md:text-4xl" style={{ color: currentTheme.color }}>military_tech</span>
                 <div className="w-20 h-[1px] opacity-30" style={{ background: `linear-gradient(to left, transparent, ${currentTheme.color})` }} />
               </div>
-              <h1 className="text-4xl md:text-7xl font-black font-space tracking-wider uppercase not-italic text-[var(--text-primary)] leading-none">
+              <h1 className="text-4xl md:text-7xl font-black font-space tracking-wider uppercase not- text-[var(--text-primary)] leading-none">
                 {isRTL ? (
                   <span className="font-black">إنجازاتي</span>
                 ) : (
@@ -246,7 +246,7 @@ export default function WinsPage() {
                       <span className="material-symbols-outlined text-sm" style={{ color: currentTheme.color }}>military_tech</span>
                       <span className="text-[10px] md:text-xs font-space tracking-widest uppercase font-black" style={{ color: currentTheme.color }}>{isRTL ? 'إنجاز مكتمل' : 'COMPLETED WIN'}</span>
                     </div>
-                    <h2 className="text-2xl md:text-4xl font-space font-black uppercase italic text-[var(--text-primary)] tracking-tighter">
+                    <h2 className="text-2xl md:text-4xl font-space font-black uppercase text-[var(--text-primary)] tracking-tighter">
                       {selectedMission.title}
                     </h2>
                   </div>

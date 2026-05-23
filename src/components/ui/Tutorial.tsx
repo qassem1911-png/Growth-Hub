@@ -119,14 +119,14 @@ export default function Tutorial() {
             <header className="flex justify-between items-center mb-6">
                <div className="flex items-center gap-3">
                  <span className="material-symbols-outlined text-neon-green animate-pulse">emergency</span>
-                 <h3 className="text-2xl font-black font-space tracking-tighter italic text-primary uppercase">
+                 <h3 className="text-2xl font-black font-space tracking-tighter text-primary uppercase">
                    {STEPS[currentStep].title}
                  </h3>
                </div>
                <span className="text-[10px] font-space text-foreground/40 font-black">STEP_0{currentStep + 1}</span>
             </header>
 
-            <p className="text-xl font-space italic font-bold mb-10 text-foreground/80 leading-snug">
+            <p className="text-xl font-space font-bold mb-10 text-foreground/80 leading-snug">
                "{STEPS[currentStep].text}"
             </p>
 
