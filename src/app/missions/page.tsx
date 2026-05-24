@@ -1414,56 +1414,52 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <AnimatePresence mode='popLayout'>
-            {typeFilter === 'squad' ? (
-              <>
-                {/* COMMANDING SECTION */}
-                <div className="col-span-full flex items-center gap-3 border-b border-white/5 pb-2 mt-2">
-                  <span className="material-symbols-outlined text-lg text-amber-500" style={{ color: currentTheme.color }}>shield</span>
-                  <h3 className="text-xs font-black font-space tracking-[0.2em] uppercase text-white/95">
-                    {isRTL ? 'إدارة العمليات // COMMANDING' : 'COMMANDING'}
-                  </h3>
-                  <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-space font-black text-zinc-400">
-                    {commandingMissions.length}
-                  </span>
-                </div>
-                
+        <div className="w-full">
+          {typeFilter === 'squad' ? (
+            <div className="space-y-10 w-full">
+              {/* COMMANDING SECTION */}
+              <div>
+                <h2 className="text-xl font-bold text-teal-400 mb-4">COMMANDING</h2>
                 {commandingMissions.length === 0 ? (
-                  <div className="col-span-full py-12 text-center border border-dashed border-white/5 rounded-xl bg-white/[0.01]">
+                  <div className="py-12 text-center border border-dashed border-white/5 rounded-xl bg-white/[0.01]">
                     <p className="text-[10px] font-space font-black tracking-widest text-zinc-500 uppercase">
                       {isRTL ? 'لا توجد أهداف تقودها حالياً' : 'NO COMMANDING SQUAD GOALS'}
                     </p>
                   </div>
                 ) : (
-                  commandingMissions.map((m, idx) => renderMissionCard(m, idx))
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <AnimatePresence mode='popLayout'>
+                      {commandingMissions.map((m, idx) => renderMissionCard(m, idx))}
+                    </AnimatePresence>
+                  </div>
                 )}
+              </div>
 
-                {/* ASSIGNED SECTION */}
-                <div className="col-span-full flex items-center gap-3 border-b border-white/5 pb-2 mt-8">
-                  <span className="material-symbols-outlined text-lg text-teal-400">group</span>
-                  <h3 className="text-xs font-black font-space tracking-[0.2em] uppercase text-white/95">
-                    {isRTL ? 'المهام المعينة // ASSIGNED' : 'ASSIGNED'}
-                  </h3>
-                  <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-space font-black text-teal-400">
-                    {assignedMissions.length}
-                  </span>
-                </div>
-                
+              {/* ASSIGNED SECTION */}
+              <div>
+                <h2 className="text-xl font-bold text-zinc-400 mb-4 mt-8">ASSIGNED</h2>
                 {assignedMissions.length === 0 ? (
-                  <div className="col-span-full py-12 text-center border border-dashed border-white/5 rounded-xl bg-white/[0.01]">
+                  <div className="py-12 text-center border border-dashed border-white/5 rounded-xl bg-white/[0.01]">
                     <p className="text-[10px] font-space font-black tracking-widest text-zinc-500 uppercase">
                       {isRTL ? 'لا توجد أهداف معينة لك حالياً' : 'NO ASSIGNED SQUAD GOALS'}
                     </p>
                   </div>
                 ) : (
-                  assignedMissions.map((m, idx) => renderMissionCard(m, idx))
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <AnimatePresence mode='popLayout'>
+                      {assignedMissions.map((m, idx) => renderMissionCard(m, idx))}
+                    </AnimatePresence>
+                  </div>
                 )}
-              </>
-            ) : (
-              missions.map((mission, idx) => renderMissionCard(mission, idx))
-            )}
-          </AnimatePresence>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <AnimatePresence mode='popLayout'>
+                {missions.map((mission, idx) => renderMissionCard(mission, idx))}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* ── ATTACHMENTS MODAL (rendered once, outside cards) ── */}
           {attachmentMissionId && (
