@@ -1613,6 +1613,34 @@ const { progress, isInRedZone } = useMemo(() => {
 
                            {/* LEFT SIDE: Assignee, XP, and Utility Actions */}
                            <div className="flex items-center gap-3 shrink-0 relative">
+                             {/* Task Viewers Overlapping Avatar Pile */}
+                             {taskViewers.length > 0 && (
+                               <div className="flex items-center -space-x-1.5 shrink-0 select-none mr-1">
+                                 {taskViewers.map((viewer: any) => (
+                                   <div
+                                     key={viewer.user_id}
+                                     className="w-6 h-6 rounded-full border bg-zinc-950 flex items-center justify-center text-[8px] font-space font-black uppercase text-white shadow-md relative overflow-hidden shrink-0 animate-pulse"
+                                     style={{ borderColor: viewer.session_color || 'cyan', boxShadow: `0 0 8px ${viewer.session_color || 'cyan'}55` }}
+                                     title={`${viewer.full_name || 'CO-OPERATIVE'} is viewing this task`}
+                                   >
+                                     {viewer.avatar_url ? (
+                                        <img
+                                          src={viewer.avatar_url}
+                                          alt={viewer.full_name}
+                                          className="w-full h-full object-cover animate-none"
+                                        />
+                                     ) : (
+                                       <span>{viewer.full_name?.substring(0, 2) || 'OP'}</span>
+                                     )}
+                                     <span 
+                                       className="absolute bottom-0 right-0 w-1.5 h-1.5 rounded-full border border-black" 
+                                       style={{ backgroundColor: viewer.session_color || 'cyan' }} 
+                                     />
+                                   </div>
+                                 ))}
+                                </div>
+                             )}
+
                              {/* Assignee Area (Squad only) */}
                              {mission?.metadata?.type === 'squad' && (
                                <div className="relative">

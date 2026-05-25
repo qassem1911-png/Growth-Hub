@@ -10,7 +10,8 @@ import { createClient } from '@/lib/supabase'
 import { useSound } from '@/context/SoundContext'
 import { 
   LayoutGrid, Target, FileText, Trophy, User, Settings, Zap,
-  Laptop, GraduationCap, Briefcase, Rocket, Video, TrendingUp, CloudLightning
+  Laptop, GraduationCap, Briefcase, Rocket, Video, TrendingUp, CloudLightning,
+  Crosshair, Shield
 } from 'lucide-react'
 
 export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolean, onOpenCoach?: () => void }) {
@@ -248,11 +249,12 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
                       className="overflow-hidden flex flex-col gap-1.5 mt-1.5 pl-4"
                     >
                       {[
-                        { label: mounted ? (isRTL ? 'فردي' : 'Solo') : 'Solo', icon: '◆', href: '/goals/solo' },
-                        { label: mounted ? (isRTL ? 'فريق' : 'Squad') : 'Squad', icon: '⚔', href: '/goals/squad' }
+                        { label: mounted ? (isRTL ? 'فردي' : 'Solo') : 'Solo', icon: Crosshair, href: '/goals/solo' },
+                        { label: mounted ? (isRTL ? 'فريق' : 'Squad') : 'Squad', icon: Shield, href: '/goals/squad' }
                       ].map((subItem, subIdx) => {
                         const isSubActive = pathname === subItem.href
                         const isSubHovered = hoveredIndex === (100 + subIdx)
+                        const IconComponent = subItem.icon
                         return (
                           <Link
                             key={subItem.href}
@@ -278,9 +280,9 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
                               />
                             )}
 
-                            <span 
+                            <IconComponent 
                               className={cn(
-                                "font-space text-base transition-all duration-300 flex items-center justify-center w-[18px]",
+                                "w-4 h-4 transition-all duration-300",
                                 isRTL ? "ml-4" : "mr-4"
                               )}
                               style={{ 
@@ -288,9 +290,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
                                   ? currentTheme.color 
                                   : (isSubHovered ? `${currentTheme.color}cc` : undefined)
                               }}
-                            >
-                              {subItem.icon}
-                            </span>
+                            />
 
                             <span className={cn(
                               "font-space tracking-[0.2em] font-black flex-grow transition-colors duration-300 text-[12px]"
