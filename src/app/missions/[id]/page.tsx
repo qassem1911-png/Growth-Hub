@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, Check, CheckCircle2, CheckSquare, Download, Eye, HelpCircle, Link, ListPlus, Lock, Medal, Paperclip, Pin, Share2, Shield, Timer, Trash2, Users2, X } from 'lucide-react'
+import { Calendar, Check, CheckCircle2, CheckSquare, Download, Eye, HelpCircle, Link, ListPlus, Lock, Medal, Paperclip, Pin, Share2, Shield, Timer, Trash2, Users2, X, ChevronDown, Clipboard as ClipboardIcon } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Shell from '@/components/layout/Shell'
@@ -107,6 +107,7 @@ export default function MissionDetailPage() {
   const [linkedNotes, setLinkedNotes] = useState<any[]>([])
   const [showIntelModal, setShowIntelModal] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [showImportDropdown, setShowImportDropdown] = useState(false)
   const [copiedRow, setCopiedRow] = useState<'invite' | 'public' | null>(null)
   const [isGeneratingCard, setIsGeneratingCard] = useState(false)
   const [showPlaylistModal, setShowPlaylistModal] = useState(false)
@@ -1328,76 +1329,88 @@ const { progress, isInRedZone } = useMemo(() => {
          <div className="space-y-4">
            {/* Row 1: Main Tabs */}
            <div className="flex flex-wrap gap-4 items-center">
-             <button 
-                onClick={() => updateMission({ sync_to_dashboard: !mission.sync_to_dashboard })}
-                className={cn(
-                   "px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-sm uppercase flex items-center gap-3",
-                   mission.sync_to_dashboard 
-                      ? "bg-white/10 border-white text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]" 
-                      : "border-[var(--card-border)] text-[var(--text-secondary)] hover:opacity-85"
+              {/* PIN ICON TOGGLE */}
+              <button 
+                 onClick={() => { playBlip(); updateMission({ sync_to_dashboard: !mission.sync_to_dashboard }); }}
+                 className={cn(
+                    "p-3 border transition-all rounded-lg flex items-center justify-center cursor-pointer",
+                    mission.sync_to_dashboard 
+                       ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]" 
+                       : "border-[var(--card-border)] text-[var(--text-secondary)] hover:opacity-85 hover:border-white/20"
+                 )}
+                 style={mission.sync_to_dashboard ? { 
+                    borderColor: missionColor, color: missionColor,
+                    backgroundColor: `${missionColor}11`,
+                    boxShadow: `0 0 15px ${missionColor}44`
+                 } : {}}
+                 title={mission.sync_to_dashboard ? (isRTL ? 'إلغاء التثبيت من الواجهة' : 'UNPIN FROM DASHBOARD') : (isRTL ? 'تثبيت في الواجهة' : 'PIN TO DASHBOARD')}
+              >
+                 <Pin className={cn("w-4.5 h-4.5", mission.sync_to_dashboard ? "rotate-45 fill-current" : "")} />
+              </button>
+
+              {/* GROUPED IMPORT DATA DROPDOWN */}
+              <div className="relative">
+                <button
+                   onClick={() => { playBlip(); setShowImportDropdown(!showImportDropdown); }}
+                   className="px-4 md:px-5 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-lg uppercase flex items-center gap-2 border-[var(--card-border)] text-white hover:bg-white/5 hover:border-white/20 cursor-pointer"
+                >
+                   <span>[ IMPORT DATA ]</span>
+                   <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", showImportDropdown && "rotate-180")} />
+                </button>
+
+                <AnimatePresence>
+                  {showImportDropdown && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowImportDropdown(false)} />
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute left-0 mt-2 w-56 bg-zinc-950 border border-white/10 rounded-xl shadow-2xl z-50 p-1.5 space-y-1 font-space"
+                      >
+                        <button
+                          onClick={() => { playBlip(); setShowPlaylistModal(true); setShowImportDropdown(false); }}
+                          className="w-full text-left px-3.5 py-2.5 text-[9px] font-black tracking-wider uppercase text-zinc-400 hover:text-white hover:bg-white/[0.03] rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          <ListPlus className="w-3.5 h-3.5" />
+                          {isRTL ? 'استيراد قائمة تشغيل' : 'IMPORT PLAYLIST'}
+                        </button>
+                        <button
+                          onClick={() => { playBlip(); setShowSmartImportModal(true); setShowImportDropdown(false); }}
+                          className="w-full text-left px-3.5 py-2.5 text-[9px] font-black tracking-wider uppercase text-zinc-400 hover:text-white hover:bg-white/[0.03] rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          <ClipboardIcon className="w-3.5 h-3.5" />
+                          {isRTL ? 'استيراد ذكي' : 'SMART IMPORT'}
+                        </button>
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* INTEL/NOTES button */}
+              <button
+                onClick={() => { playBlip(); setShowIntelModal(true); }}
+                className="px-4 md:px-5 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-lg uppercase flex items-center gap-2.5 relative border-[var(--card-border)] text-[var(--text-secondary)] hover:opacity-85 hover:border-white/20 cursor-pointer"
+              >
+                <HelpCircle className="w-4 h-4" />
+                {isRTL ? 'الملاحظات' : 'NOTES'}
+                {linkedNotes.length > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center text-black" style={{ backgroundColor: missionColor }}>
+                    {linkedNotes.length}
+                  </span>
                 )}
-                style={mission.sync_to_dashboard ? { 
-                   borderColor: missionColor, color: missionColor,
-                   backgroundColor: `${missionColor}11`,
-                   boxShadow: `0 0 20px ${missionColor}22`
-                } : {}}
-             >
-                <span className="material-symbols-outlined text-base">
-                   {mission.sync_to_dashboard ? 'grid_view' : 'visibility_off'}
-                </span>
-                {mission.sync_to_dashboard ? (isRTL ? 'في الواجهة' : 'PINNED TO DASHBOARD') : (isRTL ? 'مخفي' : 'UNPINNED')}
-             </button>
-             
-             {/* PLAYLIST_IMPORT button */}
-             <button
-                onClick={() => { playBlip(); setShowPlaylistModal(true); }}
-                className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-sm uppercase flex items-center gap-3 border-[var(--card-border)] text-[var(--text-secondary)] hover:opacity-85"
-             >
-                <ListPlus className="text-base w-4 h-4" />
-                {isRTL ? 'استيراد قائمة تشغيل' : 'IMPORT PLAYLIST'}
-             </button>
+              </button>
 
-             {/* SMART_IMPORT button */}
-             <button
-                onClick={() => { playBlip(); setShowSmartImportModal(true); }}
-                className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-sm uppercase flex items-center gap-3 hover:opacity-85"
-                style={{
-                  borderColor: `${missionColor}55`,
-                  color: missionColor,
-                  backgroundColor: `${missionColor}10`,
-                }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = `${missionColor}20` }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = `${missionColor}10` }}
-             >
-                <HelpCircle />
-                {isRTL ? 'استيراد ذكي' : 'SMART IMPORT'}
-             </button>
-
-             {/* INTEL button */}
-             <button
-               onClick={() => { playBlip(); setShowIntelModal(true); }}
-               className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-sm uppercase flex items-center gap-3 relative border-[var(--card-border)] text-[var(--text-secondary)] hover:opacity-85"
-             >
-               <HelpCircle />
-               {isRTL ? 'الملاحظات' : 'NOTES'}
-               {linkedNotes.length > 0 && (
-                 <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center text-black" style={{ backgroundColor: missionColor }}>
-                   {linkedNotes.length}
-                 </span>
-               )}
-             </button>
-
-
-             {/* SHARE button */}
-             <button
-                onClick={handleShare}
-                className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-sm uppercase flex items-center gap-3 border-[var(--card-border)] text-[var(--text-secondary)] hover:opacity-85"
-             >
-                <Share2 className="text-base w-4 h-4" />
-                {isRTL ? 'مشاركة' : 'SHARE'}
-             </button>
-           </div>
-
+              {/* TACTICAL SHARE button */}
+              <button
+                 onClick={handleShare}
+                 className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-lg uppercase flex items-center gap-2.5 bg-cyan-500 border-cyan-500 hover:bg-cyan-400 hover:border-cyan-400 text-zinc-950 font-black shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_22px_rgba(6,182,212,0.6)] cursor-pointer"
+              >
+                 <Share2 className="w-4 h-4 stroke-[3px] text-zinc-950" />
+                 {isRTL ? 'مشاركة' : 'SHARE'}
+              </button>
+            </div>
            {/* Row 2: Secondary Action Icons (Right Aligned) */}
            <div className="flex justify-end items-center gap-3">
              <button
@@ -1547,7 +1560,7 @@ const { progress, isInRedZone } = useMemo(() => {
                          exit={{ opacity: 0, scale: 0.95 }}
                          onClick={() => setSelectedTask(task)}
                          className={cn(
-                           "group flex flex-col p-4 md:p-5 border border-[var(--card-border)] rounded-xl cursor-pointer hover:bg-white/5 transition-all shadow-sm space-y-3 relative",
+                           "group flex flex-col p-4 md:p-5 border border-[var(--card-border)] rounded-xl cursor-pointer hover:border-cyan-500/50 hover:bg-white/5 hover:scale-[1.01] transition-all duration-300 shadow-sm space-y-3 relative",
                            task.is_completed ? "opacity-40" : "opacity-100"
                          )}
                        >
@@ -1632,6 +1645,9 @@ const { progress, isInRedZone } = useMemo(() => {
                                  </span>
                                ) : null}
                                <ComplexityDashes weight={task.weight} color={currentTheme.color} />
+                                <div className="px-2 py-0.5 font-mono text-[9px] rounded border bg-cyan-500/10 border-cyan-500/20 text-cyan-400 font-bold shadow-[0_0_8px_rgba(34,211,238,0.2)] tracking-wider shrink-0">
+                                  +{ (task.weight || 1) * 10 } XP
+                                </div>
                              </div>
                            </div>
 
@@ -2457,13 +2473,14 @@ const { progress, isInRedZone } = useMemo(() => {
       </AnimatePresence>
 
       {/* Premium Centered Glassmorphic Share Modal */}
+            {/* Premium Centered Glassmorphic Share Modal */}
       <AnimatePresence>
         {showShareModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-white/80 dark:bg-black/85 backdrop-blur-md"
+            className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-md"
             onClick={() => { playBlip(); setShowShareModal(false); }}
           >
             <motion.div
@@ -2471,38 +2488,35 @@ const { progress, isInRedZone } = useMemo(() => {
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-white/95 dark:bg-zinc-950/80 border border-zinc-200 dark:border-white/10 rounded-2xl p-6 max-w-md w-full relative overflow-hidden shadow-2xl space-y-6"
-              style={{
-                boxShadow: `0 0 45px ${missionColor}15`
-              }}
+              className="bg-zinc-950 border border-cyan-500/30 rounded-2xl p-6 max-w-md w-full relative overflow-hidden shadow-[0_0_40px_rgba(6,182,212,0.15)] space-y-6"
             >
               {/* Decorative top neon bar */}
-              <div className="absolute top-0 inset-x-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, ${missionColor}, transparent)` }} />
+              <div className="absolute top-0 inset-x-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, #22d3ee, transparent)` }} />
 
               {/* Header */}
-              <div className="flex justify-between items-center pb-3 border-b border-zinc-200 dark:border-white/5">
+              <div className="flex justify-between items-center pb-3 border-b border-white/5">
                 <div>
-                  <h3 className="font-space text-lg font-black tracking-widest uppercase text-white flex items-center gap-2">
-                    <Share2 className="text-lg w-[18px] h-[18px]" style={{ color: missionColor }} />
-                    {isRTL ? 'SHARE_GOAL // مشاركة الهدف' : 'SHARE_GOAL'}
+                  <h3 className="font-space text-base font-black tracking-widest uppercase text-white flex items-center gap-2">
+                    <Share2 className="w-[16px] h-[16px] text-cyan-400" />
+                    {isRTL ? 'ACCESS_KEY_GENERATOR // مشاركة الهدف' : 'ACCESS_KEY_GENERATOR'}
                   </h3>
-                  <p className="text-[10px] text-[var(--text-secondary)] font-space tracking-widest uppercase mt-1">
-                    {isRTL ? 'اختر طريقة مشاركة هذه المهمة' : 'Choose how to share this mission'}
+                  <p className="text-[10px] text-zinc-500 font-mono tracking-widest uppercase mt-1">
+                    {isRTL ? 'اختر طريقة مشاركة هذه المهمة' : 'Choose secure channel to export access'}
                   </p>
                 </div>
                 <button
                   onClick={() => { playBlip(); setShowShareModal(false); }}
-                  className="text-[var(--text-secondary)] hover:text-white transition-all cursor-pointer bg-transparent border-0"
+                  className="text-zinc-500 hover:text-white transition-all cursor-pointer bg-transparent border-0"
                 >
-                  <X className="text-xl w-5 h-5" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Share Options Rows */}
-              <div className="space-y-4 relative">
+              <div className="space-y-5 relative">
                 {/* Generating Overlay for Achievement Card */}
                 {isGeneratingCard && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-white/95 dark:bg-black/80 backdrop-blur-md rounded-xl border border-white/5">
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-zinc-950/90 backdrop-blur-md rounded-xl border border-white/5">
                     <div className="relative w-12 h-12">
                       <div className="absolute inset-0 rounded-full border-t-2 border-l-2 border-transparent animate-spin" style={{ borderTopColor: missionColor, borderLeftColor: missionColor, filter: `drop-shadow(0 0 6px ${missionColor})` }} />
                       <div className="absolute inset-2 rounded-full border-b-2 border-r-2 border-transparent animate-spin" style={{ borderBottomColor: missionColor, borderRightColor: missionColor, opacity: 0.5, animationDirection: 'reverse' }} />
@@ -2513,189 +2527,120 @@ const { progress, isInRedZone } = useMemo(() => {
                   </div>
                 )}
 
-                {/* Row 1: Invite to Squad (Only Squad Goals) */}
+                {/* Invite to Squad (Only Squad Goals) */}
                 {mission?.metadata?.type === 'squad' && (
-                  <button
-                    onClick={() => {
-                      playBlip()
-                      const inviteUrl = `${window.location.origin}/goals/squad?join=${mission.metadata?.invite_code || ''}`
-                      navigator.clipboard.writeText(inviteUrl)
-                      setCopiedRow('invite')
-                      setTimeout(() => setCopiedRow(null), 2000)
-                      showToast(isRTL ? 'تم نسخ رابط الدعوة!' : 'SQUAD INVITE URL COPIED', 'success')
-                      playSuccess()
-                    }}
-                    className="w-full flex items-center justify-between p-4 border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02] hover:bg-zinc-100 dark:hover:bg-white/5 rounded-xl transition-all duration-300 group text-left cursor-pointer relative overflow-hidden"
-                    style={copiedRow === 'invite' ? {
-                      backgroundColor: 'rgba(20, 184, 166, 0.25)',
-                      borderColor: '#14b8a6',
-                      boxShadow: '0 0 20px rgba(20, 184, 166, 0.4)'
-                    } : {}}
-                    onMouseEnter={e => {
-                      if (copiedRow !== 'invite') {
-                        e.currentTarget.style.borderColor = `${missionColor}40`
-                        e.currentTarget.style.boxShadow = `0 0 15px ${missionColor}10`
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (copiedRow !== 'invite') {
-                        e.currentTarget.style.borderColor = ''
-                        e.currentTarget.style.boxShadow = ''
-                      }
-                    }}
-                  >
-                    <div className="flex items-center gap-4">
-                      <Users2 className="text-2xl transition-all duration-300 w-6 h-6" style={{
-                        color: copiedRow === 'invite' ? '#14b8a6' : missionColor,
-                        textShadow: copiedRow === 'invite' ? '0 0 10px #14b8a6' : 'none'
-                      }} />
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-space text-xs font-black text-white uppercase tracking-wider">
-                            {isRTL ? 'دعوة للانضمام للفريق' : 'INVITE TO SQUAD'}
-                          </span>
-                          <span className="px-1.5 py-0.5 text-[8px] font-space font-black tracking-widest bg-zinc-800 border border-zinc-700 text-zinc-400 rounded-sm">
-                            PRIVATE
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-[var(--text-secondary)] font-space tracking-wide">
-                          {isRTL ? 'دعوة شخص للانضمام والتعاون معك' : 'Invite someone to join and collaborate'}
-                        </p>
-                      </div>
+                  <div className="border border-white/5 bg-zinc-900/20 p-4 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[9px] text-zinc-500 tracking-widest uppercase">INVITATION_KEY // SECURE_CHANNEL</span>
+                      <span className="font-mono text-[8px] bg-red-950/20 border border-red-500/20 text-red-400 px-1.5 py-0.5 rounded-sm tracking-wider">PRIVATE</span>
                     </div>
-                    <span className={cn(
-                      "font-space font-black text-xs tracking-widest shrink-0 select-none flex items-center gap-1.5 transition-all duration-300",
-                      copiedRow === 'invite' ? "text-[#14b8a6] scale-110 drop-shadow-[0_0_8px_#14b8a6]" : "text-zinc-500 hover:text-white"
-                    )}>
-                      {copiedRow === 'invite' ? (
-                        <>
-                          <span className="text-sm font-black">✓</span>
-                          <span>{isRTL ? 'تم النسخ' : 'COPIED'}</span>
-                        </>
-                      ) : (
-                        isRTL ? 'نسخ ➔' : 'COPY ➔'
-                      )}
-                    </span>
-                  </button>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        readOnly
+                        value={`${window.location.origin}/goals/squad?join=${mission.metadata?.invite_code || ''}`}
+                        className="flex-grow bg-zinc-900/60 border border-white/5 py-2 px-3 rounded-lg text-[10px] font-mono text-zinc-400 outline-none select-all focus:border-cyan-500/30"
+                      />
+                      <button
+                        onClick={() => {
+                          playBlip()
+                          const inviteUrl = `${window.location.origin}/goals/squad?join=${mission.metadata?.invite_code || ''}`
+                          navigator.clipboard.writeText(inviteUrl)
+                          setCopiedRow('invite')
+                          setTimeout(() => setCopiedRow(null), 2000)
+                          showToast(isRTL ? 'تم نسخ رابط الدعوة!' : 'SQUAD INVITE URL COPIED', 'success')
+                          playSuccess()
+                        }}
+                        className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-[10px] font-mono font-black rounded-lg transition-all shrink-0 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.2)] hover:scale-105"
+                      >
+                        {copiedRow === 'invite' ? 'COPIED' : 'COPY'}
+                      </button>
+                    </div>
+                  </div>
                 )}
 
-                {/* Row 2: Public View Link (Solo & Squad Goals) */}
-                <button
-                  onClick={async () => {
-                    playBlip()
-                    const publicUrl = `${window.location.origin}/goals/public/${id}`
-                    navigator.clipboard.writeText(publicUrl)
-                    setCopiedRow('public')
-                    setTimeout(() => setCopiedRow(null), 2000)
-                    showToast(isRTL ? 'تم نسخ الرابط العام!' : 'PUBLIC VIEW LINK COPIED', 'success')
-                    playSuccess()
+                {/* Public View Link (Solo & Squad Goals) */}
+                <div className="border border-white/5 bg-zinc-900/20 p-4 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[9px] text-zinc-500 tracking-widest uppercase">PUBLIC_VIEW_LINK // INTEL_ACCESS</span>
+                    <span className="font-mono text-[8px] bg-cyan-950/20 border border-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded-sm tracking-wider">PUBLIC</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${window.location.origin}/goals/public/${id}`}
+                      className="flex-grow bg-zinc-900/60 border border-white/5 py-2 px-3 rounded-lg text-[10px] font-mono text-zinc-400 outline-none select-all focus:border-cyan-500/30"
+                    />
+                    <button
+                      onClick={async () => {
+                        playBlip()
+                        const publicUrl = `${window.location.origin}/goals/public/${id}`
+                        navigator.clipboard.writeText(publicUrl)
+                        setCopiedRow('public')
+                        setTimeout(() => setCopiedRow(null), 2000)
+                        showToast(isRTL ? 'تم نسخ الرابط العام!' : 'PUBLIC VIEW LINK COPIED', 'success')
+                        playSuccess()
 
-                    // Database public_share update
-                    const currentMetadata = mission?.metadata || {}
-                    if (currentMetadata.public_share !== 'true' && currentMetadata.public_share !== true) {
-                      const newMetadata = { ...currentMetadata, public_share: true }
-                      setMission((prev: any) => {
-                        if (!prev) return prev
-                        return { ...prev, metadata: newMetadata }
-                      })
-                      const { error } = await supabase
-                        .from('cups')
-                        .update({ metadata: newMetadata })
-                        .eq('id', id)
-                      if (error) {
-                        console.error("Error enabling public share:", error)
-                      }
-                    }
-                  }}
-                  className="w-full flex items-center justify-between p-4 border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02] hover:bg-zinc-100 dark:hover:bg-white/5 rounded-xl transition-all duration-300 group text-left cursor-pointer relative overflow-hidden"
-                  style={copiedRow === 'public' ? {
-                    backgroundColor: 'rgba(20, 184, 166, 0.25)',
-                    borderColor: '#14b8a6',
-                    boxShadow: '0 0 20px rgba(20, 184, 166, 0.4)'
-                  } : {}}
-                  onMouseEnter={e => {
-                    if (copiedRow !== 'public') {
-                      e.currentTarget.style.borderColor = 'rgba(6,182,212,0.4)'
-                      e.currentTarget.style.boxShadow = '0 0 15px rgba(6,182,212,0.1)'
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (copiedRow !== 'public') {
-                      e.currentTarget.style.borderColor = ''
-                      e.currentTarget.style.boxShadow = ''
-                    }
-                  }}
-                >
-                  <div className="flex items-center gap-4">
-                    <Eye className="text-2xl transition-all duration-300 w-6 h-6" style={{
-                      color: copiedRow === 'public' ? '#14b8a6' : '#22d3ee',
-                      textShadow: copiedRow === 'public' ? '0 0 10px #14b8a6' : 'none'
-                    }} />
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                        // Database public_share update
+                        const currentMetadata = mission?.metadata || {}
+                        if (currentMetadata.public_share !== 'true' && currentMetadata.public_share !== true) {
+                          const newMetadata = { ...currentMetadata, public_share: true }
+                          setMission((prev: any) => {
+                            if (!prev) return prev
+                            return { ...prev, metadata: newMetadata }
+                          })
+                          const { error } = await supabase
+                            .from('cups')
+                            .update({ metadata: newMetadata })
+                            .eq('id', id)
+                          if (error) {
+                            console.error("Error enabling public share:", error)
+                          }
+                        }
+                      }}
+                      className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-[10px] font-mono font-black rounded-lg transition-all shrink-0 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.2)] hover:scale-105"
+                    >
+                      {copiedRow === 'public' ? 'COPIED' : 'COPY'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Share Achievement Flex Card */}
+                <div className="border border-white/5 bg-zinc-900/20 p-4 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[9px] text-zinc-500 tracking-widest uppercase">ACHIEVEMENT_STORY_CARD // STORY_EXPORT</span>
+                    <span className="font-mono text-[8px] bg-amber-950/20 border border-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-sm tracking-wider">FLEX</span>
+                  </div>
+                  <button
+                    onClick={downloadCardImage}
+                    disabled={isGeneratingCard}
+                    className="w-full flex items-center justify-between p-3.5 border border-white/10 hover:border-cyan-500/50 bg-white/[0.02] hover:bg-white/5 rounded-xl transition-all duration-300 group cursor-pointer text-left disabled:opacity-50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Medal className="w-5 h-5 text-amber-500 animate-pulse" />
+                      <div className="flex flex-col">
                         <span className="font-space text-xs font-black text-white uppercase tracking-wider">
-                          {isRTL ? 'رابط عرض عام' : 'PUBLIC VIEW LINK'}
+                          {isRTL ? 'تحميل كارت الإنجاز' : 'DOWNLOAD ACHIEVEMENT STORY'}
                         </span>
-                        <span className="px-1.5 py-0.5 text-[8px] font-space font-black tracking-widest bg-cyan-950/30 border border-cyan-800/40 text-cyan-400 rounded-sm">
-                          PUBLIC
+                        <span className="font-space text-[8px] uppercase tracking-widest text-zinc-500 mt-0.5">
+                          {isRTL ? 'تصدير تقدمك كصورة لمشاركتها' : 'Export progress metrics as custom image'}
                         </span>
                       </div>
-                      <p className="text-[10px] text-[var(--text-secondary)] font-space tracking-wide">
-                        {isRTL ? 'أي شخص لديه الرابط يمكنه رؤية تقدمك (للقراءة فقط)' : 'Anyone with this link can view progress (read-only)'}
-                      </p>
                     </div>
-                  </div>
-                  <span className={cn(
-                    "font-space font-black text-xs tracking-widest shrink-0 select-none flex items-center gap-1.5 transition-all duration-300",
-                    copiedRow === 'public' ? "text-[#14b8a6] scale-110 drop-shadow-[0_0_8px_#14b8a6]" : "text-zinc-500 hover:text-white"
-                  )}>
-                    {copiedRow === 'public' ? (
-                      <>
-                        <span className="text-sm font-black">✓</span>
-                        <span>{isRTL ? 'تم النسخ' : 'COPIED'}</span>
-                      </>
-                    ) : (
-                      isRTL ? 'نسخ ➔' : 'COPY ➔'
-                    )}
-                  </span>
-                </button>
-
-                {/* Row 3: Share Achievement (Solo & Squad Goals) */}
-                <button
-                  onClick={downloadCardImage}
-                  disabled={isGeneratingCard}
-                  className="w-full flex items-center justify-between p-4 border border-zinc-200 dark:border-white/5 bg-zinc-50 dark:bg-white/[0.02] hover:bg-zinc-100 dark:hover:bg-white/5 rounded-xl transition-all group text-left cursor-pointer disabled:opacity-50 relative overflow-hidden"
-                  onMouseEnter={e => { if(!isGeneratingCard) { e.currentTarget.style.borderColor = 'rgba(245,158,11,0.4)'; e.currentTarget.style.boxShadow = '0 0 15px rgba(245,158,11,0.1)' } }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = ''; e.currentTarget.style.boxShadow = '' }}
-                >
-                  <div className="flex items-center gap-4">
-                    <Medal className="text-2xl text-amber-500 w-6 h-6" />
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-space text-xs font-black text-white uppercase tracking-wider">
-                          {isRTL ? 'تحميل كارت الإنجاز' : 'SHARE ACHIEVEMENT'}
-                        </span>
-                        <span className="px-1.5 py-0.5 text-[8px] font-space font-black tracking-widest bg-amber-950/30 border border-amber-800/40 text-amber-500 rounded-sm">
-                          FLEX
-                        </span>
-                      </div>
-                      <p className="text-[10px] text-[var(--text-secondary)] font-space tracking-wide">
-                        {isRTL ? 'شارك تقدمك في العمل ككارت استوري مميز' : 'Share your progress as a story card'}
-                      </p>
-                    </div>
-                  </div>
-                  <Download className="text-zinc-500 shrink-0" />
-                </button>
+                    <Download className="w-4 h-4 text-zinc-400 group-hover:text-cyan-400 transition-colors shrink-0" />
+                  </button>
+                </div>
               </div>
 
               {/* Status Footer */}
-              <div className="p-3 bg-zinc-50 dark:bg-white/[0.02] rounded-xl border border-zinc-200 dark:border-white/5 text-center flex items-center justify-center gap-2">
+              <div className="p-3 bg-zinc-900/20 rounded-xl border border-white/5 text-center flex items-center justify-center gap-2">
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: missionColor }}></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ backgroundColor: missionColor }}></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-500"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
                 </span>
-                <span className="font-space text-[8px] tracking-[0.25em] text-zinc-600 dark:text-zinc-400 uppercase">
-                  {isRTL ? 'جاهز للمشاركة' : 'READY TO SHARE'}
+                <span className="font-mono text-[8px] tracking-[0.25em] text-emerald-400 uppercase">
+                  SYSTEMS_ACTIVE // SHARE_READY
                 </span>
               </div>
             </motion.div>

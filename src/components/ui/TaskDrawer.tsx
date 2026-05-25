@@ -9,7 +9,7 @@ import SmartTaskPlayer from './SmartTaskPlayer'
 import { 
   X, ChevronDown, ChevronUp, Check, Calendar, Lock, Zap, Plus, 
   Trash2, Loader2, RefreshCw, FolderOpen, Paperclip, ExternalLink, 
-  StickyNote, Link as LinkIcon, Smile, AtSign, Send, MessageSquare
+  StickyNote, Link as LinkIcon, Smile, AtSign, Send, MessageSquare, Play
 } from 'lucide-react'
 
 interface TaskDrawerProps {
@@ -499,13 +499,50 @@ export default function TaskDrawer({
             />
           </div>
           
-          <button
-            onClick={onClose}
-            className="w-10 h-10 rounded-full flex items-center justify-center border border-white/10 hover:border-white/20 bg-white/[0.02] text-[var(--text-secondary)] hover:text-white transition-all shrink-0 ml-4 cursor-pointer"
-            title="CLOSE"
-          >
-            <X className="w-4.5 h-4.5" />
-          </button>
+          <div className="flex items-center gap-3 ml-4 shrink-0">
+            {/* Start Focus Button */}
+            {!task.is_completed && (
+              <button
+                type="button"
+                onClick={() => {
+                  startFocus(task.title, task.id, cupId)
+                  onClose()
+                }}
+                className="px-3.5 py-2 rounded-lg text-[9px] font-space font-black tracking-widest cursor-pointer transition-all border flex items-center gap-1.5 hover:scale-105 bg-orange-500/10 border-orange-500/30 text-orange-500 hover:bg-orange-500/20"
+                title="START FOCUS"
+              >
+                <Play className="w-3 h-3 fill-current" />
+                <span className="hidden sm:inline">{isRTL ? 'تركيز' : 'FOCUS'}</span>
+              </button>
+            )}
+
+            {/* Complete Button */}
+            <button
+              type="button"
+              onClick={() => {
+                onComplete()
+                onClose()
+              }}
+              className="px-3.5 py-2 rounded-lg text-[9px] font-space font-black tracking-widest cursor-pointer transition-all border flex items-center gap-1.5 hover:scale-105"
+              style={{
+                backgroundColor: task.is_completed ? 'transparent' : themeColor,
+                borderColor: themeColor,
+                color: task.is_completed ? themeColor : '#000000',
+                boxShadow: task.is_completed ? 'none' : `0 0 10px ${themeColor}40`
+              }}
+            >
+              {task.is_completed ? <RefreshCw className="w-3 h-3" /> : <Check className="w-3 h-3 stroke-[3px]" />}
+              <span className="hidden sm:inline">{task.is_completed ? t('markIncomplete') : t('markCompleted')}</span>
+            </button>
+
+            <button
+              onClick={onClose}
+              className="w-10 h-10 rounded-full flex items-center justify-center border border-white/10 hover:border-white/20 bg-white/[0.02] text-[var(--text-secondary)] hover:text-white transition-all cursor-pointer"
+              title="CLOSE"
+            >
+              <X className="w-4.5 h-4.5" />
+            </button>
+          </div>
         </div>
 
         {/* Single Scrollable view content wrapper */}
@@ -640,17 +677,41 @@ export default function TaskDrawer({
             <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 font-mono">
               {isRTL ? 'الوصف التفصيلي // DESCRIPTION' : 'TASK DESCRIPTION // INTEL'}
             </h3>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              onBlur={() => {
-                if (description !== task.description) {
-                  onUpdateTask(task.id, { description })
-                }
-              }}
-              className="w-full min-h-[120px] bg-zinc-900/60 border border-white/5 p-4 font-space text-sm rounded-xl text-white outline-none focus:border-white/10 placeholder-white/30 resize-y"
-              placeholder={isRTL ? "أضف وصفاً تفصيلياً للمهمة هنا..." : "Add detailed task intelligence here..."}
-            />
+            <div className="border border-white/5 rounded-xl overflow-hidden bg-zinc-950/40">
+              {/* Fake Rich Text Editor Toolbar */}
+              <div className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.02] border-b border-white/5 text-zinc-400 select-none">
+                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default" title="Bold">
+                  <span className="font-bold text-xs">B</span>
+                </button>
+                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default" title="Italic">
+                  <span className="italic text-xs font-serif">I</span>
+                </button>
+                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default" title="Underline">
+                  <span className="underline text-xs">U</span>
+                </button>
+                <div className="w-[1px] h-3.5 bg-white/10 mx-1" />
+                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default font-mono text-[10px]" title="Code Block">
+                  &lt;/&gt;
+                </button>
+                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default" title="Insert Link">
+                  <LinkIcon className="w-3.5 h-3.5" />
+                </button>
+                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default" title="Insert Image">
+                  <Paperclip className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                onBlur={() => {
+                  if (description !== task.description) {
+                    onUpdateTask(task.id, { description })
+                  }
+                }}
+                className="w-full min-h-[120px] bg-transparent border-none p-4 font-space text-sm text-white outline-none focus:ring-0 placeholder-white/20 resize-y"
+                placeholder={isRTL ? "أضف وصفاً تفصيلياً للمهمة هنا..." : "Add detailed task intelligence here..."}
+              />
+            </div>
           </div>
 
           {/* D. CHECKLIST / SUBTASKS SECTION */}
@@ -875,7 +936,7 @@ export default function TaskDrawer({
 
               {notes.length === 0 && (
                 <div className="text-center py-6 text-white/25 text-[10px] font-space tracking-widest uppercase">
-                  {isRTL ? 'لا توجد مناقشات بعد' : 'NO DEBATES RECORDE // SECURE CHANNEL'}
+                  {isRTL ? 'لا توجد مناقشات بعد' : 'NO DEBATES RECORDED // SECURE CHANNEL'}
                 </div>
               )}
             </div>
@@ -926,24 +987,6 @@ export default function TaskDrawer({
               <span className="text-[9px] font-mono text-zinc-500">
                 {isRTL ? 'اضغط Enter للإرسال' : 'PRESS ENTER TO SEND // SHIFT+ENTER FOR NEW LINE'}
               </span>
-              
-              <button
-                type="button"
-                onClick={() => {
-                  onComplete()
-                  onClose()
-                }}
-                className="px-4 py-2 rounded-lg text-[10px] font-space font-black tracking-wide cursor-pointer transition-all border flex items-center gap-1.5 hover:scale-105"
-                style={{
-                  backgroundColor: task.is_completed ? 'transparent' : themeColor,
-                  borderColor: themeColor,
-                  color: task.is_completed ? themeColor : '#000000',
-                  boxShadow: task.is_completed ? 'none' : `0 0 10px ${themeColor}40`
-                }}
-              >
-                {task.is_completed ? <RefreshCw className="w-3.5 h-3.5" /> : <Check className="w-3.5 h-3.5 stroke-[3px]" />}
-                {task.is_completed ? t('markIncomplete') : t('markCompleted')}
-              </button>
             </div>
           </form>
         </div>
