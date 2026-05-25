@@ -760,7 +760,6 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
           { label: isRTL ? 'الرئيسية' : 'Home', icon: Home, href: '/' },
           { label: isRTL ? 'فردي' : 'Solo', icon: Crosshair, href: '/goals/solo' },
           { label: isRTL ? 'فريق' : 'Squad', icon: Shield, href: '/goals/squad' },
-          { label: isRTL ? 'الأهداف' : 'Goals', icon: Target, href: '/missions' },
           { label: isRTL ? 'الملاحظات' : 'Notes', icon: FileText, href: '/notes' },
           { label: isRTL ? 'الإنجازات' : 'Wins', icon: Trophy, href: '/achievements' },
         ].map(item => {

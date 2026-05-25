@@ -24,6 +24,7 @@ interface TaskDrawerProps {
   cupId?: string
   squadMembers?: any[]
   isSquad?: boolean
+  missionOwnerId?: string | null
 }
 
 const getYouTubeId = (urlOrId: string) => {
@@ -46,7 +47,8 @@ export default function TaskDrawer({
   onUpdateTask,
   cupId,
   squadMembers = [],
-  isSquad = false
+  isSquad = false,
+  missionOwnerId = null
 }: TaskDrawerProps) {
   const { isRTL, t, addXp, profile } = useGrowth()
   const { startFocus } = usePomodoro()
@@ -95,6 +97,7 @@ export default function TaskDrawer({
   const [mentionsSearch, setMentionsSearch] = useState('')
   const [filteredMembers, setFilteredMembers] = useState<any[]>([])
   const [selectedMentions, setSelectedMentions] = useState<Set<string>>(new Set())
+  const [activeReactionPicker, setActiveReactionPicker] = useState<string | number | null>(null)
   const [mentionPickerMode, setMentionPickerMode] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -126,7 +129,7 @@ export default function TaskDrawer({
     }
   }, [currentUserId, profile?.full_name, task?.id, task?.title])
 
-  // Click outside to dismiss Emoji Picker and Mentions Dropdown
+  // Click outside to dismiss Emoji Picker, Mentions Dropdown, and Reaction Picker
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       const target = e.target as HTMLElement
@@ -141,6 +144,14 @@ export default function TaskDrawer({
           setShowMentionsDropdown(false)
         }
       }
+      // Close reaction picker when clicking outside
+      if (activeReactionPicker !== null) {
+        const clickedInsideReaction = target.closest('.reaction-picker-panel')
+        const clickedReactBtn = target.closest('.react-trigger-btn')
+        if (!clickedInsideReaction && !clickedReactBtn) {
+          setActiveReactionPicker(null)
+        }
+      }
     }
     document.addEventListener('mousedown', handleClickOutside)
     document.addEventListener('touchstart', handleClickOutside)
@@ -148,7 +159,7 @@ export default function TaskDrawer({
       document.removeEventListener('mousedown', handleClickOutside)
       document.removeEventListener('touchstart', handleClickOutside)
     }
-  }, [showEmojiPicker, showMentionsDropdown])
+  }, [showEmojiPicker, showMentionsDropdown, activeReactionPicker])
 
   const insertEmoji = (emoji: string) => {
     const textarea = textareaRef.current
@@ -812,7 +823,7 @@ export default function TaskDrawer({
           {isSquad && squadMembers && squadMembers.length > 0 && (
             <div className="p-5 border border-white/5 bg-zinc-900/40 rounded-xl space-y-4">
               <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 font-mono">
-                {isRTL ? 'المسؤول // ASSIGNEE' : 'OPERATOR ASSIGNMENT // ASSIGNEE'}
+                {isRTL ? 'المسؤول' : 'ASSIGNED TO'}
               </h3>
               
               <div className="space-y-4">
@@ -832,6 +843,8 @@ export default function TaskDrawer({
                       </div>
                     </div>
                     
+                    {/* Only owner can unassign */}
+                    {(currentUserId === missionOwnerId) && (
                     <button
                       type="button"
                       onClick={() => onUpdateTask(task.id, { assigned_to: null, assignee: null })}
@@ -839,16 +852,19 @@ export default function TaskDrawer({
                     >
                       {isRTL ? 'إلغاء التعيين' : 'UNASSIGN'}
                     </button>
+                    )}
                   </div>
                 ) : (
                   <div className="flex items-center justify-between bg-white/[0.01] border border-dashed border-white/10 p-4 rounded-xl w-full text-center text-white/40 text-xs font-space">
-                    <span>{isRTL ? 'المهمة غير معينة لأي عضو' : 'NO OPERATOR ASSIGNED TO THIS TASK'}</span>
+                    <span>{isRTL ? 'المهمة غير معينة لأي عضو' : 'No one assigned yet'}</span>
                   </div>
                 )}
                 
+                {/* Only owner can assign */}
+                {(currentUserId === missionOwnerId) && (
                 <div className="space-y-2">
                   <label className="text-[9px] font-black uppercase tracking-widest font-mono text-zinc-500">
-                    {isRTL ? 'تعيين عضو:' : 'ASSIGN OPERATOR:'}
+                    {isRTL ? 'تعيين عضو:' : 'Assign to:'}
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
                     {squadMembers.map((member: any) => {
@@ -891,6 +907,7 @@ export default function TaskDrawer({
                     })}
                   </div>
                 </div>
+                )}
               </div>
             </div>
           )}
@@ -898,31 +915,9 @@ export default function TaskDrawer({
           {/* C. TASK DESCRIPTION SECTION */}
           <div className="space-y-3">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 font-mono">
-              {isRTL ? 'الوصف التفصيلي // DESCRIPTION' : 'TASK DESCRIPTION // INTEL'}
+              {isRTL ? 'وصف المهمة' : 'TASK DESCRIPTION'}
             </h3>
             <div className="border border-white/5 rounded-xl overflow-hidden bg-zinc-950/40">
-              {/* Fake Rich Text Editor Toolbar */}
-              <div className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.02] border-b border-white/5 text-zinc-400 select-none">
-                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default" title="Bold">
-                  <span className="font-bold text-xs">B</span>
-                </button>
-                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default" title="Italic">
-                  <span className="italic text-xs font-serif">I</span>
-                </button>
-                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default" title="Underline">
-                  <span className="underline text-xs">U</span>
-                </button>
-                <div className="w-[1px] h-3.5 bg-white/10 mx-1" />
-                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default font-mono text-[10px]" title="Code Block">
-                  &lt;/&gt;
-                </button>
-                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default" title="Insert Link">
-                  <LinkIcon className="w-3.5 h-3.5" />
-                </button>
-                <button type="button" className="p-1 hover:text-white hover:bg-white/5 rounded transition-all cursor-default" title="Insert Image">
-                  <Paperclip className="w-3.5 h-3.5" />
-                </button>
-              </div>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -932,7 +927,7 @@ export default function TaskDrawer({
                   }
                 }}
                 className="w-full min-h-[120px] bg-transparent border-none p-4 font-space text-sm text-white outline-none focus:ring-0 placeholder-white/20 resize-y"
-                placeholder={isRTL ? "أضف وصفاً تفصيلياً للمهمة هنا..." : "Add detailed task intelligence here..."}
+                placeholder={isRTL ? "أضف وصفاً..." : "Add a description..."}
               />
             </div>
           </div>
@@ -1104,7 +1099,7 @@ export default function TaskDrawer({
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4" style={{ color: themeColor }} />
               <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 font-mono">
-                {isRTL ? 'النشاط والمحادثات // DISCUSSIONS' : 'COLLABORATIVE DISCUSSIONS & ACTIVITY'}
+                {isRTL ? 'التعليقات' : 'COMMENTS'}
               </h3>
             </div>
 
@@ -1114,10 +1109,11 @@ export default function TaskDrawer({
                   const noteContent = typeof note === 'string' ? note : note.content
                   const noteUser = typeof note === 'string' ? null : note
                   const noteTime = noteUser?.created_at ? new Date(noteUser.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+                  const noteKey = noteUser?.id || index
                   
                   return (
                     <motion.div
-                      key={noteUser?.id || index}
+                      key={noteKey}
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, height: 0 }}
@@ -1135,7 +1131,7 @@ export default function TaskDrawer({
                       {/* Chat Bubble Layout */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-baseline gap-2">
-                          <span className="text-xs font-black text-white/95">{noteUser?.user_name || 'Operator'}</span>
+                          <span className="text-xs font-black text-white/95">{noteUser?.user_name || 'User'}</span>
                           <span className="text-[9px] font-mono text-zinc-500">{noteTime}</span>
                         </div>
                         
@@ -1175,29 +1171,43 @@ export default function TaskDrawer({
                             )
                           })}
 
-                          {/* Add Reaction Button */}
-                          <div className="relative group/react">
+                          {/* Add Reaction Button - Click based */}
+                          <div className="relative">
                             <button
                               type="button"
-                              className="flex items-center justify-center p-1 rounded-full text-white/30 hover:text-white/70 hover:bg-white/5 transition-all text-[10px] cursor-pointer"
+                              onClick={() => setActiveReactionPicker(activeReactionPicker === noteKey ? null : noteKey)}
+                              className="react-trigger-btn flex items-center justify-center p-1 rounded-full text-white/30 hover:text-white/70 hover:bg-white/5 transition-all text-[10px] cursor-pointer"
                               title="React"
                             >
                               <Smile className="w-3 h-3" />
                             </button>
                             
-                            {/* Hover Reaction Panel */}
-                            <div className="absolute bottom-full left-0 mb-1 hidden group-hover/react:flex items-center gap-1.5 p-1.5 bg-zinc-950/95 border border-white/10 rounded-full shadow-2xl z-30 animate-in fade-in slide-in-from-bottom-1 duration-200 backdrop-blur-md">
-                              {['👍', '❤️', '😂', '🎉', '😢', '🔥'].map((emoji) => (
-                                <button
-                                  key={emoji}
-                                  type="button"
-                                  onClick={() => handleToggleReaction(noteUser?.id || index, emoji)}
-                                  className="w-6 h-6 flex items-center justify-center text-xs hover:bg-white/10 active:scale-75 transition-all rounded-full cursor-pointer"
+                            {/* Click-based Reaction Panel */}
+                            <AnimatePresence>
+                              {activeReactionPicker === noteKey && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.9 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.9 }}
+                                  transition={{ duration: 0.12 }}
+                                  className="reaction-picker-panel absolute bottom-full left-0 mb-1 flex items-center gap-1.5 p-1.5 bg-zinc-950/95 border border-white/10 rounded-full shadow-2xl z-30 backdrop-blur-md"
                                 >
-                                  {emoji}
-                                </button>
-                              ))}
-                            </div>
+                                  {['👍', '❤️', '😂', '🎉', '😢', '🔥'].map((emoji) => (
+                                    <button
+                                      key={emoji}
+                                      type="button"
+                                      onClick={() => {
+                                        handleToggleReaction(noteUser?.id || index, emoji)
+                                        setActiveReactionPicker(null)
+                                      }}
+                                      className="w-7 h-7 flex items-center justify-center text-sm hover:bg-white/10 active:scale-75 transition-all rounded-full cursor-pointer"
+                                    >
+                                      {emoji}
+                                    </button>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                           </div>
                         </div>
                       </div>
@@ -1208,7 +1218,7 @@ export default function TaskDrawer({
 
               {notes.length === 0 && (
                 <div className="text-center py-6 text-white/25 text-[10px] font-space tracking-widest uppercase">
-                  {isRTL ? 'لا توجد مناقشات بعد' : 'NO DEBATES RECORDED // SECURE CHANNEL'}
+                  {isRTL ? 'لا توجد تعليقات بعد' : 'No comments yet'}
                 </div>
               )}
             </div>
@@ -1224,7 +1234,7 @@ export default function TaskDrawer({
                 value={noteInput}
                 onChange={e => handleNoteInputChange(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={isRTL ? 'اكتب تعليقاً أو فكرة...' : 'Secure transmission / enter message...'}
+                placeholder={isRTL ? 'اكتب تعليقاً...' : 'Write a comment...'}
                 className="flex-grow bg-transparent border-none outline-none focus:ring-0 text-xs text-white placeholder-white/20 resize-none max-h-16 font-space pr-12"
                 rows={1}
               />
@@ -1455,7 +1465,7 @@ export default function TaskDrawer({
 
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-mono text-zinc-500">
-                {isRTL ? 'اضغط Enter للإرسال' : 'PRESS ENTER TO SEND // SHIFT+ENTER FOR NEW LINE'}
+                {isRTL ? 'Enter للإرسال · Shift+Enter لسطر جديد' : 'Enter to send · Shift+Enter for new line'}
               </span>
             </div>
           </form>

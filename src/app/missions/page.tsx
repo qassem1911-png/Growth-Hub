@@ -960,9 +960,6 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                   <>{isRTL ? 'لوحة' : 'GOAL'}<span style={{ color: currentTheme.color }}>{isRTL ? ' الأهداف' : '_CANVAS'}</span></>
                 )}
               </h1>
-              <button onClick={() => setShowGuide(true)} className="text-[var(--text-secondary)]/40 hover:text-[var(--text-secondary)] transition-colors duration-300 flex items-center justify-center shrink-0" title="Guide">
-                <Info className="w-5 h-5" />
-              </button>
             </div>
             <p className={cn("text-[11px] font-space tracking-[0.35em] uppercase font-bold", isRTL ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]")}>
                {typeFilter === 'solo' ? (
@@ -1015,17 +1012,6 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                 {profile?.rank || 'SILVER'} • {profile?.xp || 0} XP
               </span>
             </div>
-            
-            {/* Right side: JOIN SQUAD button only for solo goal view */}
-            {typeFilter === 'solo' && (
-              <button
-                onClick={() => { playBlip(); setShowJoinGoal(true); }}
-                className="flex items-center gap-1.5 px-3 h-8 border border-teal-500/40 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 rounded-lg font-space text-[10px] font-black uppercase tracking-widest transition-all duration-300 active:scale-95 cursor-pointer"
-              >
-                <Link className="text-sm w-3.5 h-3.5" />
-                {isRTL ? 'الانضمام للفريق' : 'JOIN A SQUAD GOAL'}
-              </button>
-            )}
           </div>
         )}
 

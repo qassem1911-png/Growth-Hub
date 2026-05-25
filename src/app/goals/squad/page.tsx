@@ -1055,9 +1055,6 @@ export default function SquadGoalsPage() {
                   <>{isRTL ? 'لوحة' : 'GOAL'}<span style={{ color: currentTheme.color }}>{isRTL ? ' الأهداف' : '_CANVAS'}</span></>
                 )}
               </h1>
-              <button onClick={() => setShowGuide(true)} className="text-[var(--text-secondary)]/40 hover:text-[var(--text-secondary)] transition-colors duration-300 flex items-center justify-center cursor-pointer" title="Guide">
-                <Info className="w-5 h-5" />
-              </button>
             </div>
             <p className={cn("text-[11px] font-space tracking-[0.35em] uppercase font-bold", isRTL ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]")}>
                {typeFilter === 'solo' ? (

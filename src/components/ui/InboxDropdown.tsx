@@ -1,6 +1,6 @@
 'use client'
 
-import { Inbox } from 'lucide-react'
+import { Inbox, X } from 'lucide-react'
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
@@ -42,8 +42,8 @@ export default function InboxDropdown({ isOpen, reports, onClose, onRead, themeC
       exit={{ opacity: 0, y: -10, scale: 0.95 }}
       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
       className={cn(
-        "absolute top-full mt-4 w-[90vw] max-w-[360px] bg-white/95 dark:bg-[#050505]/95 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_15px_50px_rgba(0,0,0,0.5)] z-[250] rounded-sm flex flex-col overflow-hidden",
-        isRTL ? "left-0" : "right-0"
+        "fixed inset-0 w-full h-full max-w-full bg-white/95 dark:bg-[#050505]/95 backdrop-blur-2xl z-[250] flex flex-col overflow-hidden md:absolute md:inset-auto md:top-full md:mt-4 md:w-[90vw] md:max-w-[360px] md:h-auto md:rounded-sm border border-black/10 dark:border-white/10 shadow-[0_15px_50px_rgba(0,0,0,0.5)]",
+        isRTL ? "md:left-0 md:right-auto" : "md:right-0 md:left-auto"
       )}
       style={{ 
         boxShadow: `0 0 30px ${themeColor}15, 0 15px 50px rgba(0,0,0,0.5)`
@@ -61,9 +61,14 @@ export default function InboxDropdown({ isOpen, reports, onClose, onRead, themeC
               {isRTL ? 'صندوق الوارد // الإشعارات' : 'NOTIFICATION INBOX'}
             </span>
           </div>
-          <span className="text-[9px] font-space font-black bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded-full" style={{ color: themeColor }}>
-            {reports.filter(r => !r.is_read).length} {isRTL ? 'غير مقروء' : 'UNREAD'}
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="text-[9px] font-space font-black bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded-full shrink-0" style={{ color: themeColor }}>
+              {reports.filter(r => !r.is_read).length} {isRTL ? 'غير مقروء' : 'UNREAD'}
+            </span>
+            <button onClick={onClose} className="p-1 -mr-1 text-black/40 dark:text-white/30 hover:text-black dark:hover:text-white transition-colors cursor-pointer" title={isRTL ? 'إغلاق' : 'Close'}>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Filter Tabs */}
@@ -90,7 +95,7 @@ export default function InboxDropdown({ isOpen, reports, onClose, onRead, themeC
         </div>
       </div>
 
-      <div className="max-h-[350px] overflow-y-auto scrollbar-thin divide-y divide-black/5 dark:divide-white/5">
+      <div className="flex-1 md:max-h-[350px] overflow-y-auto scrollbar-thin divide-y divide-black/5 dark:divide-white/5">
         <AnimatePresence initial={false}>
           {filteredReports.length === 0 ? (
             <motion.div 
@@ -180,7 +185,7 @@ export default function InboxDropdown({ isOpen, reports, onClose, onRead, themeC
       <div className="px-5 py-3 border-t border-black/5 dark:border-white/5 bg-black/[0.02] dark:bg-white/[0.02] flex justify-center">
         <button 
           onClick={onClose} 
-          className="text-[9px] font-space font-black uppercase tracking-widest text-black/30 dark:text-white/20 hover:text-black dark:hover:text-white transition-colors"
+          className="text-[9px] font-space font-black uppercase tracking-widest text-black/30 dark:text-white/20 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
         >
           {isRTL ? 'إغلاق صندوق الإشعارات' : 'CLOSE NOTIFICATIONS'}
         </button>

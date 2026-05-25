@@ -2659,6 +2659,7 @@ const { progress, isInRedZone } = useMemo(() => {
           onComplete={() => toggleTask(selectedTask.id, selectedTask.is_completed)}
           onProgressUpdate={(currentTime, duration) => updateTaskProgress(selectedTask.id, currentTime, duration)}
           onUpdateTask={onUpdateTask}
+          missionOwnerId={mission?.user_id}
         />
       )}
       </div>

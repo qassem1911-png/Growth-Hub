@@ -2710,6 +2710,7 @@ const { progress, isInRedZone } = useMemo(() => {
           cupId={typeof id === 'string' ? id : undefined}
           squadMembers={squadMembers}
           isSquad={mission?.metadata?.type === 'squad'}
+          missionOwnerId={mission?.user_id}
         />
       )}
       </div>
