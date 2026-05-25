@@ -98,7 +98,7 @@ export function useInbox() {
       let totalProgress = 0
       if (missions && missions.length > 0) {
         let sumPct = 0
-        missions.forEach(m => {
+        missions.forEach((m: any) => {
           const total = m.tasks?.length || 0
           const done = m.tasks?.filter((t: any) => t.is_completed).length || 0
           sumPct += total > 0 ? (done / total) * 100 : 0

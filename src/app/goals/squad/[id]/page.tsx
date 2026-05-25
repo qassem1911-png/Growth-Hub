@@ -565,65 +565,86 @@ export default function MissionDetailPage() {
 
     console.log('SUBSCRIBING TO REALTIME EVENTS FOR WORKSPACE:', id)
 
-    const channel = supabase
-      .channel(`squad-tasks-workspace-${id}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'tasks', filter: `cup_id=eq.${id}` },
-        async (payload) => {
-          console.log('REALTIME PAYLOAD:', payload)
-          
-          // Re-fetch the fully joined tasks list to guarantee assignee profiles are correct
-          const { data: updatedTasks } = await supabase
-            .from('tasks')
-            .select('*, assignee:profiles!assigned_to(*)')
-            .eq('cup_id', id)
-          
-          if (updatedTasks) {
-            setMission((prev: any) => {
-              if (!prev) return prev
-              const sortedTasks = [...updatedTasks].sort((a: any, b: any) => {
-                const diff = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-                if (diff !== 0) return diff
-                return a.id.localeCompare(b.id)
+    let active = true;
+    let channel: any = null;
+
+    const initRealtime = async () => {
+      // Ensure the client has loaded its session and JWT token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!active) return
+
+      if (session?.access_token) {
+        console.log('🔐 REALTIME JWT LOADED, SETTING AUTH ON CLIENT');
+        supabase.realtime.setAuth(session.access_token)
+      } else {
+        console.log('⚠️ REALTIME WARNING: NO ACTIVE SESSION JWT FOUND');
+      }
+
+      channel = supabase
+        .channel(`squad-tasks-workspace-${id}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'tasks', filter: `cup_id=eq.${id}` },
+          async (payload: any) => {
+            console.log('REALTIME PAYLOAD:', payload)
+            
+            // Re-fetch the fully joined tasks list to guarantee assignee profiles are correct
+            const { data: updatedTasks } = await supabase
+              .from('tasks')
+              .select('*, assignee:profiles!assigned_to(*)')
+              .eq('cup_id', id)
+            
+            if (updatedTasks) {
+              setMission((prev: any) => {
+                if (!prev) return prev
+                const sortedTasks = [...updatedTasks].sort((a: any, b: any) => {
+                  const diff = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+                  if (diff !== 0) return diff
+                  return a.id.localeCompare(b.id)
+                })
+                // Return new cloned state object to trigger 100% clean re-render
+                return { ...prev, tasks: sortedTasks }
               })
-              // Return new cloned state object to trigger 100% clean re-render
-              return { ...prev, tasks: sortedTasks }
-            })
+            }
           }
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'goal_members', filter: `goal_id=eq.${id}` },
-        (payload) => {
-          console.log('REALTIME GOAL MEMBERS PAYLOAD:', payload)
-          refetchSquadMembers()
-          fetchPendingRequests()
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'squad_join_requests', filter: `goal_id=eq.${id}` },
-        (payload) => {
-          console.log('REALTIME JOIN REQUESTS PAYLOAD:', payload)
-          fetchPendingRequests()
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: '*' },
-        (payload) => {
-          console.log('🔥 GLOBAL CATCH-ALL PAYLOAD:', payload)
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 CHANNEL STATUS:', status)
-      })
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'goal_members', filter: `goal_id=eq.${id}` },
+          (payload: any) => {
+            console.log('REALTIME GOAL MEMBERS PAYLOAD:', payload)
+            refetchSquadMembers()
+            fetchPendingRequests()
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'squad_join_requests', filter: `goal_id=eq.${id}` },
+          (payload: any) => {
+            console.log('REALTIME JOIN REQUESTS PAYLOAD:', payload)
+            fetchPendingRequests()
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: '*' },
+          (payload: any) => {
+            console.log('🔥 GLOBAL CATCH-ALL PAYLOAD:', payload)
+          }
+        )
+        .subscribe((status: string) => {
+          console.log('📡 CHANNEL STATUS:', status)
+        })
+    };
+
+    initRealtime();
 
     return () => {
+      active = false;
       console.log('UNSUBSCRIBING FROM REALTIME EVENTS FOR WORKSPACE:', id)
-      supabase.removeChannel(channel)
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
     }
   }, [id, supabase, fetchPendingRequests, profile?.id])
 

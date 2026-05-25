@@ -561,7 +561,7 @@ export default function MissionDetailPage() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'tasks', filter: `cup_id=eq.${id}` },
-        (payload) => {
+        (payload: any) => {
           if (payload.eventType === 'INSERT') {
             setMission((prev: any) => {
               if (!prev) return prev
@@ -576,6 +576,7 @@ export default function MissionDetailPage() {
               if (!prev) return prev
               return {
                 ...prev,
+                shadow: undefined,
                 tasks: (prev.tasks || []).map((t: any) =>
                   t.id === payload.new.id ? { ...t, ...payload.new } : t
                 ),

@@ -478,7 +478,7 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
           table: 'profiles',
           filter: `id=eq.${profile.id}`
         },
-        (payload) => {
+        (payload: any) => {
           const nextData = payload.new as Profile
           const prevData = payload.old as Profile
 
@@ -497,7 +497,7 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
 
   // Handle Authentication Changes (Logout / Ghost State Fix)
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: any, session: any) => {
       if (event === 'SIGNED_OUT') {
         setProfile(null)
         if (typeof window !== 'undefined') {

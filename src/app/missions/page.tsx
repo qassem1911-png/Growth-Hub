@@ -561,7 +561,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
       .from('goal_members')
       .select('goal_id')
       .eq('user_id', user.id)
-    const memberGoalIds = memberRows ? memberRows.map(r => r.goal_id) : []
+    const memberGoalIds = memberRows ? memberRows.map((r: any) => r.goal_id) : []
 
     let query = supabase
       .from('cups')
@@ -584,9 +584,9 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
       setMissions(data)
       fetchAllAttachmentCounts(user.id, data.map((m: any) => m.id))
       
-      const squadGoals = data.filter(m => m.metadata?.type === 'squad')
+      const squadGoals = data.filter((m: any) => m.metadata?.type === 'squad')
       if (squadGoals.length > 0) {
-        const squadGoalIds = squadGoals.map(m => m.id)
+        const squadGoalIds = squadGoals.map((m: any) => m.id)
         
         // Fetch squad members and map them (exclude blocked)
         const { data: members } = await supabase
@@ -596,7 +596,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
         
         if (members) {
           const map: Record<string, any[]> = {}
-          members.forEach(m => {
+          members.forEach((m: any) => {
             if (m.profiles && !m.profiles.blocked) {
               if (!map[m.goal_id]) map[m.goal_id] = []
               map[m.goal_id].push({ ...m.profiles, role: m.role })
@@ -616,7 +616,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
 
         if (activeLogs) {
           const activeMap: Record<string, Set<string>> = {}
-          activeLogs.forEach(log => {
+          activeLogs.forEach((log: any) => {
             if (!activeMap[log.cup_id]) activeMap[log.cup_id] = new Set()
             activeMap[log.cup_id].add(log.user_id)
           })

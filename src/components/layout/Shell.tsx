@@ -220,9 +220,9 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
 
       if (!data || data.length === 0) return
 
-      const days = [...new Set(data.map(r =>
+      const days = [...new Set(data.map((r: any) =>
         new Date(r.completed_at).toISOString().split('T')[0]
-      ))].sort((a, b) => b.localeCompare(a))
+      ))].sort((a: any, b: any) => b.localeCompare(a))
 
       let count = 0
       const today = new Date().toISOString().split('T')[0]
@@ -418,7 +418,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
   }, [inboxOpen])
 
   const hasRedZoneMission = useMemo(() => {
-    return (syncedMissions || []).some(m => calculateAccountability(m).isInRedZone)
+    return (syncedMissions || []).some((m: any) => calculateAccountability(m).isInRedZone)
   }, [syncedMissions, calculateAccountability])
 
   useEffect(() => {
@@ -433,7 +433,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
   const systemProgress = useMemo(() => {
     if (!syncedMissions || syncedMissions.length === 0) return 0
     let totalPct = 0
-    syncedMissions.forEach(m => {
+    syncedMissions.forEach((m: any) => {
       totalPct += calculateAccountability(m).progress
     })
     return Math.round(totalPct / syncedMissions.length)

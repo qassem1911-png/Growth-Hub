@@ -406,42 +406,70 @@ export default function SquadGoalsPage() {
       return;
     }
 
-    const channel = supabase
-      .channel('squad-goals-canvas-realtime')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'cups' },
-        () => {
-          fetchMissions()
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'tasks' },
-        () => {
-          fetchMissions()
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'goal_members' },
-        () => {
-          fetchMissions()
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: '*' },
-        (payload) => {
-          console.log('🔥 GLOBAL CATCH-ALL PAYLOAD:', payload)
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 CHANNEL STATUS:', status)
-      })
+    let active = true;
+    let channel: any = null;
+
+    const initRealtime = async () => {
+      // Ensure the client has loaded its session and JWT token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!active) return
+
+      if (session?.access_token) {
+        console.log('🔐 REALTIME JWT LOADED, SETTING AUTH ON CLIENT');
+        supabase.realtime.setAuth(session.access_token)
+      } else {
+        console.log('⚠️ REALTIME WARNING: NO ACTIVE SESSION JWT FOUND');
+      }
+
+      channel = supabase
+        .channel('squad-goals-canvas-realtime')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'cups' },
+          () => {
+            fetchMissions()
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'tasks' },
+          () => {
+            fetchMissions()
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'goal_members' },
+          () => {
+            fetchMissions()
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'squad_join_requests' },
+          () => {
+            fetchMissions()
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: '*' },
+          (payload: any) => {
+            console.log('🔥 GLOBAL CATCH-ALL PAYLOAD:', payload)
+          }
+        )
+        .subscribe((status: string) => {
+          console.log('📡 CHANNEL STATUS:', status)
+        })
+    };
+
+    initRealtime();
 
     return () => {
-      supabase.removeChannel(channel)
+      active = false;
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
     }
   }, [mounted, profile?.id])
 
@@ -613,7 +641,7 @@ export default function SquadGoalsPage() {
       .from('goal_members')
       .select('goal_id')
       .eq('user_id', user.id)
-    const memberGoalIds = memberRows ? memberRows.map(r => r.goal_id) : []
+    const memberGoalIds = memberRows ? memberRows.map((r: any) => r.goal_id) : []
 
     let query = supabase
       .from('cups')
@@ -636,9 +664,9 @@ export default function SquadGoalsPage() {
       setMissions(data)
       fetchAllAttachmentCounts(user.id, data.map((m: any) => m.id))
       
-      const squadGoals = data.filter(m => m.metadata?.type === 'squad')
+      const squadGoals = data.filter((m: any) => m.metadata?.type === 'squad')
       if (squadGoals.length > 0) {
-        const squadGoalIds = squadGoals.map(m => m.id)
+        const squadGoalIds = squadGoals.map((m: any) => m.id)
         
         // Fetch squad members and map them (exclude blocked)
         const { data: members } = await supabase
@@ -648,7 +676,7 @@ export default function SquadGoalsPage() {
         
         if (members) {
           const map: Record<string, any[]> = {}
-          members.forEach(m => {
+          members.forEach((m: any) => {
             if (m.profiles && !m.profiles.blocked) {
               if (!map[m.goal_id]) map[m.goal_id] = []
               map[m.goal_id].push({ ...m.profiles, role: m.role })
@@ -668,7 +696,7 @@ export default function SquadGoalsPage() {
 
         if (activeLogs) {
           const activeMap: Record<string, Set<string>> = {}
-          activeLogs.forEach(log => {
+          activeLogs.forEach((log: any) => {
             if (!activeMap[log.cup_id]) activeMap[log.cup_id] = new Set()
             activeMap[log.cup_id].add(log.user_id)
           })

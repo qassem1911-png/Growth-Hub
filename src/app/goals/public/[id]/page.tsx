@@ -83,7 +83,7 @@ export default function PublicGoalPage() {
             .eq('goal_id', id)
           
           if (squadMembers) {
-            setMembers(squadMembers.map(m => ({ ...m.profiles, role: m.role })))
+            setMembers(squadMembers.map((m: any) => ({ ...m.profiles, role: m.role })))
           }
         }
 
@@ -94,7 +94,7 @@ export default function PublicGoalPage() {
           .eq('cup_id', id)
 
         if (logs) {
-          const totalMins = logs.reduce((sum, log) => sum + (log.duration_minutes || 0), 0)
+          const totalMins = logs.reduce((sum: number, log: any) => sum + (log.duration_minutes || 0), 0)
           setTimeInvested(totalMins)
         }
 
