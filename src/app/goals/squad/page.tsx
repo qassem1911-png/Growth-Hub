@@ -394,6 +394,40 @@ export default function SquadGoalsPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted])
 
+  // --- REAL-TIME SUBSCRIPTION FOR SQUAD CANVAS UPDATES ---
+  useEffect(() => {
+    if (!mounted) return
+
+    const channel = supabase
+      .channel('squad-goals-canvas-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'cups' },
+        () => {
+          fetchMissions()
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tasks' },
+        () => {
+          fetchMissions()
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'goal_members' },
+        () => {
+          fetchMissions()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [mounted])
+
   const extractCode = (input: string) => {
     let clean = input.trim().toUpperCase()
     try {
