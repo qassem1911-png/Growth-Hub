@@ -34,6 +34,7 @@ interface RankCardProps {
 }
 
 function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCardProps) {
+  const { getRankNeonClass } = useGrowth()
   const isLocked = status === 'LOCKED'
   const [isHovered, setIsHovered] = React.useState(false)
 
@@ -92,9 +93,11 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
         <div className={cn(
           "absolute inset-1 rounded-[14px] border pointer-events-none",
           rank.id === 'SILVER' ? 'border-slate-500/10' :
+          rank.id === 'GOLD' ? 'border-yellow-500/10' :
           rank.id === 'PLATINUM' ? 'border-sky-500/10' :
-          rank.id === 'CROWN' ? 'border-yellow-500/10' :
-          rank.id === 'ACE' ? 'border-orange-500/10' : 'border-red-500/10'
+          rank.id === 'DIAMOND' ? 'border-purple-500/10' :
+          rank.id === 'CROWN' ? 'border-orange-500/10' :
+          rank.id === 'ACE' ? 'border-red-500/10' : 'border-yellow-500/20'
         )} />
 
         {/* 1. Radial Spot Light Tracking Pointer */}
@@ -106,16 +109,15 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
         {/* Rank Title */}
         <h2 className={cn(
           "text-4xl md:text-5xl font-black font-space mb-2 uppercase tracking-wider transition-transform duration-300 group-hover:scale-105",
-          rank.id === 'SILVER' ? 'text-slate-400' :
-          rank.id === 'PLATINUM' ? 'text-sky-400' :
-          rank.id === 'CROWN' ? 'text-yellow-400' :
-          rank.id === 'ACE' ? 'text-orange-500' : 'text-red-500'
-        )} style={{ color: rank.color }}>
+          getRankNeonClass(rank.id)
+        )}>
           {isRTL ? (
-          rank.id === 'SILVER' ? 'سيلفر' :
-          rank.id === 'PLATINUM' ? 'بلاتينوم' :
-          rank.id === 'CROWN' ? 'كراون' :
-          rank.id === 'ACE' ? 'ايس' : 'كونكر'
+            rank.id === 'SILVER' ? 'سيلفر' :
+            rank.id === 'GOLD' ? 'جولد' :
+            rank.id === 'PLATINUM' ? 'بلاتينوم' :
+            rank.id === 'DIAMOND' ? 'دايموند' :
+            rank.id === 'CROWN' ? 'كراون' :
+            rank.id === 'ACE' ? 'ايس' : 'كونكر'
           ) : rank.name}
         </h2>
         
@@ -161,7 +163,11 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
                   {isRTL ? 'الخبرة المطلوبة' : 'XP REQUIRED'}
                 </p>
                 <p className="text-xl font-black font-space tracking-tight text-zinc-900 dark:text-white">
-                  {rank.threshold.toLocaleString()} <span className="text-xs opacity-50 font-bold">XP</span>
+                  {rank.id === 'CONQUEROR' ? (
+                    isRTL ? 'المتصدر #1' : 'TOP #1 LEAD'
+                  ) : (
+                    `${rank.threshold.toLocaleString()} XP`
+                  )}
                 </p>
               </motion.div>
 
@@ -177,9 +183,11 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
                 <p className="text-[11px] font-bold font-space uppercase tracking-widest text-zinc-800 dark:text-white/80">
                   {isRTL ? (
                     rank.id === 'SILVER' ? 'الميزات القياسية مفتوحة' :
-                    rank.id === 'PLATINUM' ? 'تخطيط لوحة التحكم المتقدمة' :
-                    rank.id === 'CROWN' ? 'مساعد ذكاء اصطناعي نشط' :
-                    rank.id === 'ACE' ? 'رؤى الأداء المتقدمة' : 'مظاهر واجهة مستخدم متميزة'
+                    rank.id === 'GOLD' ? 'لقب تحت الاسم (hasTitle)' :
+                    rank.id === 'PLATINUM' ? 'إطار حول الصورة (hasAvatarBorder)' :
+                    rank.id === 'DIAMOND' ? 'تفاعلات شات حصرية (hasExclusiveEmojis)' :
+                    rank.id === 'CROWN' ? 'توهج الاسم بالكامل (hasNameGlow)' :
+                    rank.id === 'ACE' ? 'بطاقة هوية بالهوفر (hasCallingCard)' : 'اللقب المتصدر الأول + كافة الميزات الحصرية'
                   ) : rank.perk}
                 </p>
               </motion.div>
@@ -196,9 +204,11 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
                 <p className="text-[10px] font-space text-zinc-600 dark:text-white/60 tracking-wider">
                   {isRTL ? (
                     rank.id === 'SILVER' ? 'الوصول لصفحة الملاحظات والإعدادات' :
-                    rank.id === 'PLATINUM' ? 'إمكانية اختيار لون مظهر النظام' :
-                    rank.id === 'CROWN' ? 'استشارات ورؤى فورية من المساعد الذكي' :
-                    rank.id === 'ACE' ? 'لوحة تحليلات تفصيلية للوقت والتركيز' : 'الحصول على كافة ترقيات المظهر المميزة'
+                    rank.id === 'GOLD' ? 'لقب خاص يظهر أسفل اسمك كعضو مميز' :
+                    rank.id === 'PLATINUM' ? 'إطار نيون مضيء يحيط بصورتك الشخصية' :
+                    rank.id === 'DIAMOND' ? 'صلاحية استخدام تفاعلات حصرية وملصقات نيون في الشات' :
+                    rank.id === 'CROWN' ? 'تأثير توهج لوني مضيء لاسمك أينما يظهر' :
+                    rank.id === 'ACE' ? 'بطاقة تعريفية مخصصة تظهر عند تمرير الماوس على صورتك' : 'الحصول على لقب بطل المنصة باللون المتدرج المتحرك وكامل الصلاحيات'
                   ) : rank.unlocks}
                 </p>
               </motion.div>
@@ -245,10 +255,14 @@ function RankCard({ rank, status, xp, isRTL, currentTheme, changeTheme }: RankCa
               transition={{ duration: 0.3 }}
               className="w-full mt-4 space-y-1"
             >
-              <p className="font-space text-[11px] tracking-[0.2em] font-black uppercase" style={{ color: rank.color }}>
-                {rank.threshold - xp} {isRTL ? 'نقطة خبرة مطلوبة للتفعيل' : 'XP REQUIRED TO UNLOCK'}
+              <p className="font-space text-[11px] tracking-[0.2em] font-black uppercase text-center" style={{ color: rank.color }}>
+                {rank.id === 'CONQUEROR' ? (
+                  isRTL ? 'يتطلب الصدارة #1 في المنصة' : 'REQUIRES TOP #1 IN THE PLATFORM'
+                ) : (
+                  `${rank.threshold - xp} ${isRTL ? 'نقطة خبرة مطلوبة للتفعيل' : 'XP REQUIRED TO UNLOCK'}`
+                )}
               </p>
-              <p className="text-[9px] font-space text-zinc-500 dark:text-white/40 tracking-wider uppercase">
+              <p className="text-[9px] font-space text-zinc-500 dark:text-white/40 tracking-wider uppercase text-center">
                 {isRTL ? 'استمر في إنجاز أهدافك' : 'CONTINUE ACHIEVING GOALS'}
               </p>
             </motion.div>
@@ -283,7 +297,13 @@ export function VaultContent() {
   }, [])
 
   // Helper to determine rank status
-  const getRankStatus = (threshold: number, themeId: string) => {
+  const getRankStatus = (threshold: number, themeId: string, rankId: string) => {
+    if (rankId === 'CONQUEROR') {
+      if (profile?.rank === 'CONQUEROR') {
+        return profile?.active_theme === 'CONQUEROR' ? 'EQUIPPED' : 'AVAILABLE'
+      }
+      return 'LOCKED'
+    }
     if (profile?.active_theme === themeId) return 'EQUIPPED'
     if (xp >= threshold) return 'AVAILABLE'
     return 'LOCKED'
@@ -302,58 +322,69 @@ export function VaultContent() {
       vessel: 'Cylinder'
     },
     {
+      id: 'GOLD',
+      name: 'GOLD',
+      threshold: 400,
+      themeId: 'GOLD',
+      color: '#FACC15',
+      neonClass: 'neon-gold',
+      perk: 'Exclusive Title Badge',
+      unlocks: 'Special title showing below username',
+      vessel: 'Cylinder'
+    },
+    {
       id: 'PLATINUM',
       name: 'PLATINUM',
-      threshold: 800,
+      threshold: 1000,
       themeId: 'PLATINUM',
       color: '#38bdf8',
       neonClass: 'neon-platinum',
-      perk: 'Advanced Dashboard Layout',
-      unlocks: 'Dynamic theme color selector access',
+      perk: 'Premium Avatar Border',
+      unlocks: 'Glow border framing profile picture',
       vessel: 'Hex'
     },
     {
       id: 'DIAMOND',
       name: 'DIAMOND',
-      threshold: 1800,
+      threshold: 2000,
       themeId: 'DIAMOND',
       color: '#d500f9',
       neonClass: 'neon-diamond',
-      perk: 'Quantum Sync Protocols',
-      unlocks: 'Access to custom quantum themes',
+      perk: 'Exclusive Chat Emojis',
+      unlocks: 'Special reactive emojis in squad threads',
       vessel: 'Crystal'
     },
     {
       id: 'CROWN',
       name: 'CROWN',
-      threshold: 3500,
+      threshold: 4000,
       themeId: 'CROWN',
-      color: '#FACC15',
+      color: '#F97316',
       neonClass: 'neon-crown',
-      perk: 'AI Coach Active Assistance',
-      unlocks: 'Personalized AI Coach insights',
+      perk: 'Name Neon Glow effect',
+      unlocks: 'Vibrant custom neon glow around username',
       vessel: 'Crystal'
     },
     {
       id: 'ACE',
       name: 'ACE',
-      threshold: 6000,
+      threshold: 7000,
       themeId: 'ACE',
-      color: '#F97316',
+      color: '#EF4444',
       neonClass: 'neon-ace',
-      perk: 'Advanced Performance Insights',
-      unlocks: 'Detailed time analytics dashboard',
+      perk: 'Player Calling Card',
+      unlocks: 'Interactive profile card on user hover',
       vessel: 'Shard'
     },
     {
       id: 'CONQUEROR',
       name: 'CONQUEROR',
-      threshold: 10000,
+      threshold: 12000,
       themeId: 'CONQUEROR',
-      color: '#EF4444',
+      color: '#FACC15',
       neonClass: 'neon-conqueror',
-      perk: 'Prestige UI Themes',
-      unlocks: 'All prestige status awards',
+      perk: 'Top #1 Champion Dominance',
+      unlocks: 'Exclusive animated dynamic gradient badge (Top XP Leader)',
       vessel: 'Sphere'
     }
   ]
@@ -388,7 +419,7 @@ export function VaultContent() {
         className="flex flex-row overflow-x-auto snap-x snap-mandatory scrollbar-none pb-8 gap-6 w-full px-6"
       >
         {RANKS_DATA.map((rank) => {
-          const status = getRankStatus(rank.threshold, rank.themeId)
+          const status = getRankStatus(rank.threshold, rank.themeId, rank.id)
 
           return (
             <RankCard

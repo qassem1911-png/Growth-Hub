@@ -177,12 +177,13 @@ export const THEME_PACKAGES = {
 }
 
 export const RANK_THRESHOLDS = [
-  { rank: 'SILVER', xp: 0, theme: 'SILVER', perk: 'Basic Protocol' },
-  { rank: 'PLATINUM', xp: 800, theme: 'PLATINUM', perk: 'Energy Streams' },
-  { rank: 'DIAMOND', xp: 1800, theme: 'DIAMOND', perk: 'Quantum Sync' },
-  { rank: 'CROWN', xp: 3500, theme: 'CROWN', perk: 'Savage AI Coach' },
-  { rank: 'ACE', xp: 6000, theme: 'ACE', perk: 'Tactical HUD' },
-  { rank: 'CONQUEROR', xp: 10000, theme: 'CONQUEROR', perk: 'Glitch FX' }
+  { rank: 'SILVER', xp: 0, theme: 'SILVER', perk: 'Standard Features' },
+  { rank: 'GOLD', xp: 400, theme: 'GOLD', perk: 'Title Badge' },
+  { rank: 'PLATINUM', xp: 1000, theme: 'PLATINUM', perk: 'Avatar Border' },
+  { rank: 'DIAMOND', xp: 2000, theme: 'DIAMOND', perk: 'Exclusive Emojis' },
+  { rank: 'CROWN', xp: 4000, theme: 'CROWN', perk: 'Glowing Name' },
+  { rank: 'ACE', xp: 7000, theme: 'ACE', perk: 'Calling Card' },
+  { rank: 'CONQUEROR', xp: 12000, theme: 'CONQUEROR', perk: 'Top #1 Lead Title' }
 ]
 
 export interface MissionTask {
@@ -378,9 +379,38 @@ interface GrowthContextType {
   }
   showAuthModal: boolean
   setShowAuthModal: (open: boolean) => void
+  perks: {
+    hasTitle: boolean
+    hasAvatarBorder: boolean
+    hasExclusiveEmojis: boolean
+    hasNameGlow: boolean
+    hasCallingCard: boolean
+  }
+  getRankNeonClass: (rank: string) => string
 }
 
 const GrowthContext = createContext<GrowthContextType | undefined>(undefined)
+
+export function getRankNeonClass(rank: string): string {
+  switch (rank?.toUpperCase()) {
+    case 'SILVER':
+      return 'text-slate-200'
+    case 'GOLD':
+      return 'text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.6)] font-bold'
+    case 'PLATINUM':
+      return 'text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.6)] font-bold'
+    case 'DIAMOND':
+      return 'text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)] font-bold'
+    case 'CROWN':
+      return 'text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,0.6)] font-bold'
+    case 'ACE':
+      return 'text-red-600 drop-shadow-[0_0_10px_rgba(220,38,38,0.8)] font-bold'
+    case 'CONQUEROR':
+      return 'bg-gradient-to-r from-yellow-400 via-red-500 to-yellow-400 text-transparent bg-clip-text animate-pulse font-black'
+    default:
+      return 'text-slate-200'
+  }
+}
 
 export function GrowthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(() => {
@@ -414,6 +444,7 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
   const [oldRank, setOldRank] = useState('SILVER')
   const [newRank, setNewRank] = useState('SILVER')
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [topXpUserId, setTopXpUserId] = useState<string | null>(null)
   
   const supabase = createClient()
   const router = useRouter()
@@ -421,15 +452,64 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
 
   const isRTL = useMemo(() => profile?.language?.startsWith('ar') || false, [profile?.language])
 
+  // Poll for top XP user to dynamically award CONQUEROR
+  const fetchTopXpUser = async () => {
+    try {
+      const res = await fetch('/api/top-xp')
+      const data = await res.json()
+      if (data && data.success && data.topUser) {
+        setTopXpUserId(data.topUser.id)
+      }
+    } catch (e) {
+      console.error('Failed to fetch top XP user:', e)
+    }
+  }
+
+  useEffect(() => {
+    fetchTopXpUser()
+    const interval = setInterval(fetchTopXpUser, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
   const calculatedRank = useMemo(() => {
+    if (profile?.id && topXpUserId && profile.id === topXpUserId) {
+      return 'CONQUEROR'
+    }
     const xp = profile?.xp || 0
-    if (xp >= 10000) return 'CONQUEROR'
-    if (xp >= 6000) return 'ACE'
-    if (xp >= 3500) return 'CROWN'
-    if (xp >= 1800) return 'DIAMOND'
-    if (xp >= 800) return 'PLATINUM'
+    if (xp >= 7000) return 'ACE'
+    if (xp >= 4000) return 'CROWN'
+    if (xp >= 2000) return 'DIAMOND'
+    if (xp >= 1000) return 'PLATINUM'
+    if (xp >= 400) return 'GOLD'
     return 'SILVER'
-  }, [profile?.xp])
+  }, [profile?.xp, profile?.id, topXpUserId])
+
+  const profileWithCalculatedRank = useMemo(() => {
+    if (!profile) return null
+    return {
+      ...profile,
+      rank: calculatedRank
+    }
+  }, [profile, calculatedRank])
+
+  // Rank-based capabilities (Perks) logic
+  const perks = useMemo(() => {
+    const r = calculatedRank
+    const rankOrder = ['SILVER', 'GOLD', 'PLATINUM', 'DIAMOND', 'CROWN', 'ACE', 'CONQUEROR']
+    const hasRankOrHigher = (target: string) => {
+      const currentIdx = rankOrder.indexOf(r)
+      const targetIdx = rankOrder.indexOf(target)
+      return currentIdx >= targetIdx && currentIdx !== -1
+    }
+
+    return {
+      hasTitle: hasRankOrHigher('GOLD'),
+      hasAvatarBorder: hasRankOrHigher('PLATINUM'),
+      hasExclusiveEmojis: hasRankOrHigher('DIAMOND'),
+      hasNameGlow: hasRankOrHigher('CROWN'),
+      hasCallingCard: hasRankOrHigher('ACE')
+    }
+  }, [calculatedRank])
 
   const currentTheme = useMemo(() => {
     const activeThemeKey = profile?.active_theme || calculatedRank
@@ -838,7 +918,7 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <GrowthContext.Provider value={{ 
-      profile, setProfile, 
+      profile: profileWithCalculatedRank, setProfile, 
       isLoading,
       isRTL,
       tutorialActive, setTutorialActive,
@@ -888,7 +968,9 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
         }
       },
       showAuthModal,
-      setShowAuthModal
+      setShowAuthModal,
+      perks,
+      getRankNeonClass
     }}>
       {children}
     </GrowthContext.Provider>

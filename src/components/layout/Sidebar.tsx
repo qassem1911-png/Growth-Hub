@@ -17,7 +17,7 @@ import {
 export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolean, onOpenCoach?: () => void }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { profile, t, currentTheme } = useGrowth()
+  const { profile, t, currentTheme, perks, getRankNeonClass } = useGrowth()
   const [cachedName, setCachedName] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const supabase = createClient()
@@ -89,7 +89,10 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
       {/* ── ULTRA-PREMIUM IDENTITY LAYER ── */}
       <div className="pt-12 px-8 flex flex-col items-center text-center relative overflow-hidden group border-b border-[var(--card-border)] pb-8 bg-[var(--sidebar-bg)]/50">
         {/* Avatar Component with Instagram-style neon ring */}
-        <div className="relative p-1.5 rounded-full bg-gradient-to-tr shadow-2xl group-hover:scale-105 transition-transform duration-500 cursor-pointer" onClick={() => router.push('/settings')} style={{ backgroundImage: `linear-gradient(to top right, ${currentTheme.color}, ${currentTheme.color}88, transparent, ${currentTheme.color})`, boxShadow: `0 0 30px ${currentTheme.color}50` }}>
+        <div className={cn(
+          "relative p-1.5 rounded-full bg-gradient-to-tr shadow-2xl group-hover:scale-105 transition-transform duration-500 cursor-pointer",
+          mounted && perks.hasAvatarBorder ? "ring-4 ring-offset-2 ring-[var(--theme-color)] ring-offset-[var(--sidebar-bg)] animate-pulse" : ""
+        )} onClick={() => router.push('/settings')} style={{ backgroundImage: `linear-gradient(to top right, ${currentTheme.color}, ${currentTheme.color}88, transparent, ${currentTheme.color})`, boxShadow: `0 0 30px ${currentTheme.color}50` }}>
           <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-zinc-100/80 dark:bg-white/10 backdrop-blur-md p-1 overflow-hidden flex items-center justify-center border border-black/20 dark:border-white/10 shadow-inner">
             {mounted && profile?.avatar_url ? (
               <img src={profile.avatar_url} alt="User" className="w-[90%] h-[90%] mx-auto object-contain p-1 rounded-full shadow-md" />
@@ -117,14 +120,36 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
         </div>
 
         {/* User Full Name */}
-        <span className="text-base font-space font-black text-zinc-900 dark:text-zinc-100 truncate max-w-[220px] transition-colors tracking-wide mt-4">
+        <span className={cn(
+          "text-base font-space font-black truncate max-w-[220px] transition-all tracking-wide mt-4 text-center",
+          mounted && perks.hasNameGlow ? getRankNeonClass(profile?.rank || '') : "text-zinc-900 dark:text-zinc-100"
+        )}>
           {mounted ? (profile?.full_name || cachedName || (t ? t('operator') : 'USER')) : 'USER'}
         </span>
 
+        {/* Dynamic Title (hasTitle Perk) */}
+        {mounted && perks.hasTitle && (
+          <span className="text-[10px] font-space font-black uppercase tracking-[0.2em] opacity-80 mt-1" style={{ color: currentTheme.color }}>
+            [ {isRTL ? (
+              profile?.rank === 'GOLD' ? 'المشغل الذهبي' :
+              profile?.rank === 'PLATINUM' ? 'النخبة البلاتينية' :
+              profile?.rank === 'DIAMOND' ? 'الماستر الماسي' :
+              profile?.rank === 'CROWN' ? 'الملك المتوج' :
+              profile?.rank === 'ACE' ? 'البطل القرمزي' : 'الفاتح الأعظم'
+            ) : (
+              profile?.rank === 'GOLD' ? 'Gold Operator' :
+              profile?.rank === 'PLATINUM' ? 'Platinum Elite' :
+              profile?.rank === 'DIAMOND' ? 'Diamond Master' :
+              profile?.rank === 'CROWN' ? 'Crown Monarch' :
+              profile?.rank === 'ACE' ? 'Ace Champion' : 'Conqueror Supreme'
+            )} ]
+          </span>
+        )}
+
         {/* Current Rank Text */}
-        <div className="flex items-center gap-1.5 mt-1">
-          <span className="text-xs font-space font-black tracking-widest uppercase" style={{ color: currentTheme.color }}>
-            ◆ {mounted ? (profile?.rank || 'SILVER I') : 'SILVER I'}
+        <div className="flex items-center gap-1.5 mt-2">
+          <span className={cn("text-xs font-space font-black tracking-widest uppercase text-center", mounted ? getRankNeonClass(profile?.rank || '') : '')}>
+            ◆ {mounted ? (profile?.rank || 'SILVER') : 'SILVER'}
           </span>
         </div>
 
