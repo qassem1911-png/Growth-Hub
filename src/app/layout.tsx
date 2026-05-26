@@ -11,10 +11,10 @@ import GlobalCursor from "@/components/ui/GlobalCursor";
 
 import Script from "next/script";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space" });
-const tajawal = Tajawal({ weight: ["400", "500", "700", "800", "900"], subsets: ["arabic"], variable: "--font-tajawal" });
-const exo2 = Exo_2({ subsets: ["latin"], weight: ["700", "800", "900"], variable: "--font-exo2" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", preload: false });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space", preload: false });
+const tajawal = Tajawal({ weight: ["400", "500", "700", "800", "900"], subsets: ["arabic"], variable: "--font-tajawal", preload: false });
+const exo2 = Exo_2({ subsets: ["latin"], weight: ["700", "800", "900"], variable: "--font-exo2", preload: false });
 
 export const metadata: Metadata = {
   title: "Growth Hub | Life Optimization Interface",

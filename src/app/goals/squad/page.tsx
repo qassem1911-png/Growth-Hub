@@ -17,10 +17,10 @@ import { validateContent } from '@/lib/profanityFilter'
 import { aiProfanityCheck } from '@/app/actions/profanityCheck'
 import { 
   Trophy, Medal, Award, Layers, Settings, Link as LinkIcon, Calendar, Paperclip, 
-  ArrowRight, Search, Shield, Users, CheckCircle2, XCircle, Plus, Zap, Crosshair,
+  ArrowRight, Search, Shield, Users, CheckCircle2, XCircle, Plus,
   HelpCircle, Eye, Info, List, Kanban, Loader2, Sparkles, Check, 
   AlertTriangle, FolderClosed, UserPlus, Users2, Network, X, BookOpen, 
-  Settings2, Flame, SignalHigh, SignalMedium, SignalLow, LayoutDashboard
+  Settings2, Flame, SignalHigh, SignalMedium, SignalLow, LayoutDashboard, Circle, Zap
 } from 'lucide-react'
 
 
@@ -1465,9 +1465,9 @@ export default function SquadGoalsPage() {
                       className="shrink-0 cursor-pointer flex items-center justify-center"
                     >
                       {task.is_completed ? (
-                        <NeonIcon icon={Zap} interactive size={18} style={{ color: task.missionColor }} />
+                        <NeonIcon icon={CheckCircle2} interactive size={18} style={{ color: task.missionColor }} />
                       ) : (
-                        <NeonIcon icon={Crosshair} interactive size={18} className="text-zinc-400 hover:text-white" />
+                        <NeonIcon icon={Circle} interactive size={18} className="opacity-40 hover:opacity-80 text-zinc-400 hover:text-white transition-opacity" />
                       )}
                     </button>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { Calendar, Check, CheckCircle2, CheckSquare, Download, Eye, HelpCircle, Link, ListPlus, Lock, Medal, Paperclip, Pin, Share2, Shield, Timer, Trash2, Users2, X, ChevronDown, Clipboard as ClipboardIcon, Play, Tv, Zap, Crosshair } from 'lucide-react'
+import { Calendar, Check, CheckCircle2, CheckSquare, Download, Eye, HelpCircle, Link, ListPlus, Lock, Medal, Paperclip, Pin, Share2, Shield, Timer, Trash2, Users2, X, ChevronDown, Clipboard as ClipboardIcon, Play, Tv, Circle } from 'lucide-react'
 import { NeonIcon } from '@/components/ui/NeonIcon'
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -1682,9 +1682,9 @@ const { progress, isInRedZone } = useMemo(() => {
                                 className="shrink-0 cursor-pointer flex items-center justify-center"
                               >
                                 {task.is_completed ? (
-                                  <NeonIcon icon={Zap} interactive size={22} style={{ color: currentTheme.color }} />
+                                  <NeonIcon icon={CheckCircle2} interactive size={22} style={{ color: currentTheme.color }} />
                                 ) : (
-                                  <NeonIcon icon={Crosshair} interactive size={22} className="text-white/30 hover:text-white" />
+                                  <NeonIcon icon={Circle} interactive size={22} className="opacity-40 hover:opacity-80 text-white/60 hover:text-white transition-opacity" />
                                 )}
                               </button>
                            </div>

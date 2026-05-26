@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { usePomodoro } from '@/context/PomodoroContext'
-import { Check, Play, Clock, FolderOpen, Zap, Crosshair } from 'lucide-react'
+import { Play, Clock, FolderOpen, Circle, CheckCircle2 } from 'lucide-react'
 import { NeonIcon } from './NeonIcon'
 
 interface KanbanBoardProps {
@@ -227,9 +227,9 @@ export default function KanbanBoard({
                               className="shrink-0 cursor-pointer flex items-center justify-center"
                             >
                               {task.is_completed ? (
-                                <NeonIcon icon={Zap} interactive size={18} style={{ color: themeColor }} />
+                                <NeonIcon icon={CheckCircle2} interactive size={18} style={{ color: themeColor }} />
                               ) : (
-                                <NeonIcon icon={Crosshair} interactive size={18} className="text-white/30 hover:text-white" />
+                                <NeonIcon icon={Circle} interactive size={18} className="opacity-40 hover:opacity-80 text-white/60 hover:text-white transition-opacity" />
                               )}
                             </button>
                             

@@ -25,7 +25,7 @@ import {
   Lock, Link as LinkIcon, Trash2, Clock, Radio, CheckSquare, 
   Plus, List, Kanban, Check, Timer, HelpCircle, X, Pin, 
   Shield, CheckCircle2, Award, Download, Clipboard as ClipboardIcon, FileText, 
-  Share2, Calendar, Paperclip, Users2, Medal, EyeOff, ListPlus, LayoutGrid, Eye, ChevronDown, Play, Tv, Zap, Crosshair
+  Share2, Calendar, Paperclip, Users2, Medal, EyeOff, ListPlus, LayoutGrid, Eye, ChevronDown, Play, Tv, Circle
 } from 'lucide-react'
 
 
@@ -1728,9 +1728,9 @@ const { progress, isInRedZone } = useMemo(() => {
                                 className="shrink-0 cursor-pointer flex items-center justify-center"
                               >
                                 {task.is_completed ? (
-                                  <NeonIcon icon={Zap} interactive size={22} style={{ color: currentTheme.color }} />
+                                  <NeonIcon icon={CheckCircle2} interactive size={22} style={{ color: currentTheme.color }} />
                                 ) : (
-                                  <NeonIcon icon={Crosshair} interactive size={22} className="text-white/30 hover:text-white" />
+                                  <NeonIcon icon={Circle} interactive size={22} className="opacity-40 hover:opacity-80 text-white/60 hover:text-white transition-opacity" />
                                 )}
                               </button>
                            </div>

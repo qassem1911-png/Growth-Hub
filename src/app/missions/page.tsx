@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertTriangle, ArrowRight, Calendar, Check, CheckCircle2, HelpCircle, Info, Kanban, Layers, Link, List, Plus, RefreshCw, Users2, Zap, Trophy, Award, Shield, Settings, Star, X, Flame, SignalHigh, SignalMedium, SignalLow, LayoutDashboard, Crosshair } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Calendar, Check, CheckCircle2, HelpCircle, Info, Kanban, Layers, Link, List, Plus, RefreshCw, Users2, Zap, Trophy, Award, Shield, Settings, Star, X, Flame, SignalHigh, SignalMedium, SignalLow, LayoutDashboard, Circle } from 'lucide-react'
 import { NeonIcon } from '@/components/ui/NeonIcon'
 import Shell from '@/components/layout/Shell'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -1362,9 +1362,9 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                       className="shrink-0 cursor-pointer flex items-center justify-center"
                     >
                       {task.is_completed ? (
-                        <NeonIcon icon={Zap} interactive size={18} style={{ color: task.missionColor }} />
+                        <NeonIcon icon={CheckCircle2} interactive size={18} style={{ color: task.missionColor }} />
                       ) : (
-                        <NeonIcon icon={Crosshair} interactive size={18} className="text-zinc-400 hover:text-white" />
+                        <NeonIcon icon={Circle} interactive size={18} className="opacity-40 hover:opacity-80 text-zinc-400 hover:text-white transition-opacity" />
                       )}
                     </button>
 

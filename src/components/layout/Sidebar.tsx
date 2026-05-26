@@ -9,9 +9,9 @@ import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase'
 import { useSound } from '@/context/SoundContext'
 import { 
-  LayoutGrid, Target, FileText, Trophy, UserCircle2, Sliders, Zap,
+  LayoutGrid, Target, FileText, Trophy, UserCircle2, Sliders, Bot,
   Laptop, GraduationCap, Briefcase, Rocket, Video, TrendingUp, CloudLightning,
-  Crosshair, Shield
+  Shield, Home
 } from 'lucide-react'
 import { NeonIcon } from '../ui/NeonIcon'
 
@@ -75,7 +75,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
   }
 
   const MENU_ITEMS = [
-    { icon: LayoutGrid, label: mounted ? (isRTL ? 'الرئيسية' : "Home") : "Home", href: '/', shortcut: '01', exact: true },
+    { icon: Home, label: mounted ? (isRTL ? 'الرئيسية' : "Home") : "Home", href: '/', shortcut: '01', exact: true },
     { icon: Target, label: mounted ? (isRTL ? 'أهدافي' : 'Goals') : 'Goals', href: '/missions', shortcut: '02', exact: false },
     { icon: FileText, label: mounted ? (isRTL ? 'ملاحظاتي' : 'Notes') : 'Notes', href: '/notes', shortcut: '03', exact: false },
     { icon: Trophy, label: mounted ? (isRTL ? 'إنجازاتي' : 'Wins') : 'Wins', href: '/achievements', shortcut: '04', exact: false },
@@ -262,7 +262,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
                       className="overflow-hidden flex flex-col gap-1.5 mt-1.5 pl-4"
                     >
                       {[
-                        { label: mounted ? (isRTL ? 'شخصي' : 'Personal Goals') : 'Personal Goals', icon: Crosshair, href: '/goals/solo' },
+                        { label: mounted ? (isRTL ? 'شخصي' : 'Personal Goals') : 'Personal Goals', icon: Target, href: '/goals/solo' },
                         { label: mounted ? (isRTL ? 'فريق' : 'Team Goals') : 'Team Goals', icon: Shield, href: '/goals/squad' }
                       ].map((subItem, subIdx) => {
                         const isSubActive = pathname === subItem.href
@@ -412,7 +412,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
                 animate={{ opacity: [1, 0.4, 1], scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <NeonIcon icon={Zap} className="w-5 h-5" style={{ color: currentTheme.color, filter: `drop-shadow(0 0 8px ${currentTheme.color})` }} />
+                <NeonIcon icon={Bot} className="w-5 h-5" style={{ color: currentTheme.color, filter: `drop-shadow(0 0 8px ${currentTheme.color})` }} />
               </motion.span>
               <span className="font-space font-black text-xs tracking-[0.3em] uppercase text-zinc-900 dark:text-zinc-100 group-hover:text-white transition-colors font-space">
                 {mounted ? (isRTL ? 'المدرب الذكي' : 'COACH') : 'COACH'}
