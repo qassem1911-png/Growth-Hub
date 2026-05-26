@@ -117,7 +117,7 @@ function WeatherWidget({ isRTL }: { isRTL: boolean }) {
 }
 
 export default function Dashboard() {
-  const { profile, calculateAccountability, mounted, t, isRTL, currentTheme } = useGrowth()
+  const { profile, calculateAccountability, mounted, t, isRTL, currentTheme, tasksCompletedToday } = useGrowth()
   const router = useRouter()
   const [missions, setMissions] = useState<any[]>([])
   const [weeklyMinutes, setWeeklyMinutes] = useState<number>(0)
@@ -281,10 +281,8 @@ export default function Dashboard() {
         {/* ██  FOCUS CAPACITY — BOLD, GLOWING 9-SLOT TANK   ██ */}
         {/* ═══════════════════════════════════════════════════ */}
         {(() => {
-          const SIZE_SLOTS: Record<string, number> = { sm: 1, md: 1.5, lg: 3, s: 1, m: 1.5, l: 3 }
-          const usedSlots = missions.reduce((acc: number, m: any) => acc + (SIZE_SLOTS[m.size?.toLowerCase()] ?? 1), 0)
-          const isFull = usedSlots >= 9
-          const isOverCap = usedSlots > 9
+          const isFull = tasksCompletedToday >= 9
+          const isOverCap = tasksCompletedToday > 9
 
           return (
             <div className="w-full max-w-5xl mx-auto bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 md:p-8 space-y-6 shadow-xl relative overflow-hidden">
@@ -297,20 +295,15 @@ export default function Dashboard() {
                     <h2 className="text-xs md:text-sm font-space text-[var(--text-secondary)] uppercase tracking-wider font-bold">
                       {isRTL ? 'سعة التركيز' : 'FOCUS CAPACITY'}
                     </h2>
-                    {isOverCap && (
-                      <span className="px-2 py-0.5 rounded-sm bg-[#FF0055]/20 border border-[#FF0055] text-[#FF0055] text-[10px] font-space font-black uppercase animate-pulse ml-2">
-                        {isRTL ? 'تجاوز الحد الأقصى!' : 'OVERCAPACITY'}
-                      </span>
-                    )}
                   </div>
                   <p className="text-xs font-space text-zinc-500 dark:text-zinc-400 mt-1">
-                    {isRTL ? 'الحد الأقصى 9 خانات لضمان أعلى جودة تركيز.' : 'Constrained to 9 slots maximum to ensure elite execution focus.'}
+                    {isRTL ? 'الحد الأقصى 9 خانات يومياً لضمان أعلى جودة تركيز.' : 'Constrained to 9 slots daily maximum to ensure elite execution focus.'}
                   </p>
                 </div>
 
                 <div className="flex items-baseline gap-1 bg-[var(--input-bg)] px-6 py-4 rounded-xl border border-[var(--card-border)] shadow-inner">
                   <span className="text-5xl md:text-6xl font-space font-black tracking-tighter" style={{ color: isOverCap ? '#FF0055' : currentTheme.color }}>
-                    {usedSlots.toFixed(1).replace('.0', '')}
+                    {tasksCompletedToday}
                   </span>
                   <span className="text-xl font-space font-bold text-zinc-400 dark:text-zinc-600">/9</span>
                 </div>
@@ -322,7 +315,7 @@ export default function Dashboard() {
                 style={{ borderColor: `${currentTheme.color}40` }}
               >
                 {Array.from({ length: 9 }).map((_, i) => {
-                  const isActive = i < usedSlots
+                  const isActive = i < tasksCompletedToday
                   return (
                     <div
                       key={i}
@@ -343,17 +336,6 @@ export default function Dashboard() {
                   )
                 })}
               </div>
-
-              {isOverCap && (
-                <div className="p-4 rounded-xl bg-[#FF0055]/10 border border-[#FF0055]/30 flex items-center gap-3 text-[#FF0055] text-xs font-space font-bold">
-                  <AlertTriangle className="text-lg shrink-0 animate-bounce w-[18px] h-[18px]" />
-                  <p>
-                    {isRTL 
-                      ? 'تحذير: لقد تجاوزت سعة التركيز القصوى (9 خانات). يوصى بأرشفة أو إنهاء بعض الأهداف لتجنب تشتت الجهد.' 
-                      : 'WARNING: You have exceeded the elite focus constraint (9 slots). Archiving or completing active goals is strongly recommended.'}
-                  </p>
-                </div>
-              )}
             </div>
           )
         })()}

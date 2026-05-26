@@ -362,7 +362,7 @@ interface GrowthContextType {
   t: (key: keyof typeof TRANSLATIONS['en']) => string
   mounted: boolean
   currentTheme: typeof THEME_PACKAGES['SILVER']
-  addXp: (amount: number) => Promise<void>
+  addXp: (amount: number, taskTitle?: string) => Promise<void>
   lastAiMessage: string
   setLastAiMessage: (msg: string) => void
   changeTheme: (themeId: string) => Promise<void>
@@ -387,6 +387,7 @@ interface GrowthContextType {
     hasCallingCard: boolean
   }
   getRankNeonClass: (rank: string) => string
+  tasksCompletedToday: number
 }
 
 const GrowthContext = createContext<GrowthContextType | undefined>(undefined)
@@ -445,6 +446,51 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
   const [newRank, setNewRank] = useState('SILVER')
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [topXpUserId, setTopXpUserId] = useState<string | null>(null)
+  
+  // Anti-cheat state variables
+  const [cooldownEnd, setCooldownEnd] = useState<string | null>(null)
+  const [completionTimestamps, setCompletionTimestamps] = useState<number[]>([])
+  const [tasksCompletedToday, setTasksCompletedTodayState] = useState<number>(0)
+
+  const getTasksCompletedToday = () => {
+    if (typeof window === 'undefined') return 0
+    const todayStr = new Date().toISOString().split('T')[0]
+    const cachedDate = localStorage.getItem('tasks_completed_date')
+    if (cachedDate !== todayStr) {
+      localStorage.setItem('tasks_completed_date', todayStr)
+      localStorage.setItem('tasks_completed_today_count', '0')
+      return 0
+    }
+    const count = localStorage.getItem('tasks_completed_today_count')
+    return count ? parseInt(count, 10) : 0
+  }
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setTasksCompletedTodayState(getTasksCompletedToday())
+      
+      const end = localStorage.getItem('xp_cooldown_end')
+      if (end && new Date(end).getTime() > Date.now()) {
+        setCooldownEnd(end)
+      }
+      const cachedTimestamps = localStorage.getItem('completion_timestamps')
+      if (cachedTimestamps) {
+        try {
+          setCompletionTimestamps(JSON.parse(cachedTimestamps))
+        } catch {}
+      }
+    }
+  }, [])
+
+  const incrementTasksCompletedToday = () => {
+    const todayStr = new Date().toISOString().split('T')[0]
+    const currentCount = getTasksCompletedToday()
+    const nextCount = currentCount + 1
+    localStorage.setItem('tasks_completed_date', todayStr)
+    localStorage.setItem('tasks_completed_today_count', String(nextCount))
+    setTasksCompletedTodayState(nextCount)
+    return nextCount
+  }
   
   const supabase = createClient()
   const router = useRouter()
@@ -608,9 +654,84 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [router, supabase])
 
-  const addXp = async (amount: number) => {
+  const checkXpAward = (amount: number, taskTitle?: string): { xpToAward: number, reason?: string, silent?: boolean } => {
+    // If it's a negative amount (XP deduction on un-completing), we don't apply filters
+    if (amount <= 0) return { xpToAward: amount }
+
+    // Layer 3: Focus Capacity (Max 9 XP-earning tasks daily)
+    const completedToday = getTasksCompletedToday()
+    if (completedToday >= 9) {
+      return { xpToAward: 0, silent: true }
+    }
+
+    // Layer 2: Velocity Trap (Cooldown)
+    const now = Date.now()
+    if (cooldownEnd && new Date(cooldownEnd).getTime() > now) {
+      return { xpToAward: 0, reason: 'velocity' }
+    }
+
+    // Layer 1: Regex Bouncer (Quality Filter)
+    if (taskTitle) {
+      const trimmed = taskTitle.trim()
+      const isTooShort = trimmed.length < 5
+      const isOnlyNumbers = /^\d+$/.test(trimmed)
+      const hasRepeatingChars = /([a-zA-Z\u0600-\u06FF])\1{3,}/.test(trimmed)
+      
+      const spamWords = ['test', 'asdf', 'asd', 'testing', 'تجر', 'تجربة', 'المه', 'المهمة']
+      const isSpamWord = spamWords.some(word => trimmed.toLowerCase() === word)
+
+      if (isTooShort || isOnlyNumbers || hasRepeatingChars || isSpamWord) {
+        return { xpToAward: 0, reason: 'quality' }
+      }
+    }
+
+    return { xpToAward: amount }
+  }
+
+  const triggerToast = (message: string, type: 'success' | 'warning' | 'info' = 'info') => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('growth-toast', { detail: { message, type } }))
+    }
+  }
+
+  const addXp = async (amount: number, taskTitle?: string) => {
     if (!profile) return
-    const newXp = (profile.xp || 0) + Math.round(amount)
+    
+    const { xpToAward, reason, silent } = checkXpAward(amount, taskTitle)
+    
+    // Update daily tasks count only on positive XP award attempts (which represent a task completion)
+    if (amount > 0) {
+      incrementTasksCompletedToday()
+      
+      // Handle velocity stamps if not already on cooldown
+      const now = Date.now()
+      const isOnCooldown = cooldownEnd && new Date(cooldownEnd).getTime() > now
+      if (!isOnCooldown) {
+        const nextTimestamps = [...completionTimestamps, now].filter(t => now - t < 60000)
+        setCompletionTimestamps(nextTimestamps)
+        localStorage.setItem('completion_timestamps', JSON.stringify(nextTimestamps))
+        if (nextTimestamps.length >= 3) {
+          const end = new Date(now + 15 * 60 * 1000).toISOString()
+          setCooldownEnd(end)
+          localStorage.setItem('xp_cooldown_end', end)
+        }
+      }
+    }
+
+    // Trigger toasts
+    if (reason === 'quality') {
+      triggerToast(
+        isRTL ? "اسم المهمة غير واضح. تم تشغيل فلتر الجودة. تم منح 0 XP." : "Task name too vague. Quality filter triggered. 0 XP awarded.",
+        'warning'
+      )
+    } else if (reason === 'velocity' || (amount > 0 && completionTimestamps.filter(t => Date.now() - t < 60000).length >= 2)) {
+      triggerToast(
+        isRTL ? "تم اكتشاف سبام. تم إيقاف كسب نقاط الـ XP مؤقتاً لمدة 15 دقيقة." : "Spam detected. XP gain is on cooldown for 15 minutes.",
+        'warning'
+      )
+    }
+
+    const newXp = Math.max(0, (profile.xp || 0) + Math.round(xpToAward))
 
     const { data, error } = await supabase
       .from('profiles')
@@ -970,7 +1091,8 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
       showAuthModal,
       setShowAuthModal,
       perks,
-      getRankNeonClass
+      getRankNeonClass,
+      tasksCompletedToday
     }}>
       {children}
     </GrowthContext.Provider>

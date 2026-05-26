@@ -30,6 +30,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     }, 4000)
   }
 
+  useEffect(() => {
+    const handleGrowthToast = (e: Event) => {
+      const customEvent = e as CustomEvent
+      if (customEvent.detail) {
+        showToast(customEvent.detail.message, customEvent.detail.type)
+      }
+    }
+    window.addEventListener('growth-toast', handleGrowthToast)
+    return () => window.removeEventListener('growth-toast', handleGrowthToast)
+  }, [])
+
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}

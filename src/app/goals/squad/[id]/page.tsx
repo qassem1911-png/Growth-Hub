@@ -870,7 +870,7 @@ export default function MissionDetailPage() {
             else if (sizeStr === 'lg' || sizeStr === 'l' || sizeStr === 'large') xpCeiling = 20
 
             if (taskIndex < xpCeiling) {
-              await addXp(task.weight * 10)
+              await addXp(task.weight * 10, task.title)
             } else {
               // Soft cap reached: 0 XP
             }
@@ -963,7 +963,7 @@ export default function MissionDetailPage() {
             else if (sizeStr === 'lg' || sizeStr === 'l' || sizeStr === 'large') xpCeiling = 20
 
             if (taskIndex < xpCeiling) {
-              await addXp(task.weight * 10)
+              await addXp(task.weight * 10, task.title)
             }
             playSuccess()
           }
