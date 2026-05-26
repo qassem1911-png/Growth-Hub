@@ -271,18 +271,33 @@ export default function KanbanBoard({
                           )}
                         </div>
 
-                         {/* Footer Row: Power, Timer or complexity metrics */}
-                         <div className="flex items-center justify-between gap-2 border-t border-white/5 pt-2.5">
-                           <div className="flex items-center gap-3">
-
-                             
-                             {timeFormatted && (
-                               <div className="flex items-center gap-1 text-[10px] font-mono text-white/45">
-                                 <Clock className="w-3 h-3" style={{ color: themeColor }} />
-                                 {timeFormatted}
-                               </div>
-                             )}
-                           </div>
+                          {/* Footer Row: Power, Timer or complexity metrics */}
+                          <div className="flex items-center justify-between gap-2 border-t border-white/5 pt-2.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {timeFormatted && (
+                                <div className="flex items-center gap-1 text-[10px] font-mono text-white/45">
+                                  <Clock className="w-3 h-3" style={{ color: themeColor }} />
+                                  {timeFormatted}
+                                </div>
+                              )}
+                              {task.metadata?.endDate && (() => {
+                                const tDate = new Date(task.metadata.endDate)
+                                tDate.setHours(0,0,0,0)
+                                const todayDate = new Date()
+                                todayDate.setHours(0,0,0,0)
+                                const isOverdue = !task.is_completed && tDate < todayDate
+                                return (
+                                  <span className={cn(
+                                    "font-mono text-[9px] px-1.5 py-0.5 rounded border leading-none tracking-wider",
+                                    isOverdue 
+                                      ? "text-red-500 border-red-500/30 bg-red-950/15 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse font-black" 
+                                      : "text-white/40 border-white/5 bg-white/[0.02]"
+                                  )}>
+                                    📅 {task.metadata.endDate}
+                                  </span>
+                                )
+                              })()}
+                            </div>
 
                            <div className="flex items-center gap-1.5">
                              <ComplexityDashes weight={task.weight} color={themeColor} />

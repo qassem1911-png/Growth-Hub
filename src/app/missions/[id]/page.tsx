@@ -89,6 +89,7 @@ export default function MissionDetailPage() {
   const [loading, setLoading] = useState(true)
   const [activeView, setActiveView] = useState<'list' | 'board'>('list')
   const [activeViewInitialized, setActiveViewInitialized] = useState(false)
+  const [timeFilter, setTimeFilter] = useState<'ALL' | 'WEEK' | 'OVERDUE'>('ALL')
   const [selectedTaskState, setSelectedTaskState] = useState<any | null>(null)
   const selectedTask = useMemo(() => {
     if (!selectedTaskState) return null
@@ -102,6 +103,36 @@ export default function MissionDetailPage() {
   const setSelectedTask = (task: any | null) => {
     setSelectedTaskState(task)
   }
+
+  const filteredTasks = useMemo(() => {
+    if (!mission?.tasks) return []
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    const sevenDaysFromNow = new Date()
+    sevenDaysFromNow.setDate(today.getDate() + 7)
+    sevenDaysFromNow.setHours(23, 59, 59, 999)
+
+    return mission.tasks.filter((task: any) => {
+      const isCompleted = task.is_completed || task.metadata?.status === 'done'
+      const dateStr = task.metadata?.endDate || task.metadata?.dueDate
+      
+      if (timeFilter === 'ALL') return true
+
+      if (!dateStr) return false
+
+      const taskDate = new Date(dateStr)
+      taskDate.setHours(0, 0, 0, 0)
+
+      if (timeFilter === 'WEEK') {
+        return !isCompleted && taskDate >= today && taskDate <= sevenDaysFromNow
+      }
+      if (timeFilter === 'OVERDUE') {
+        return !isCompleted && taskDate < today
+      }
+      return true
+    })
+  }, [mission?.tasks, timeFilter])
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskWeight, setNewTaskWeight] = useState(1)
   const [linkedNotes, setLinkedNotes] = useState<any[]>([])
@@ -1492,38 +1523,64 @@ const { progress, isInRedZone } = useMemo(() => {
                 <h2 className="text-[10px] font-black font-space text-[var(--text-secondary)] tracking-[0.5em] uppercase">{isRTL ? 'قائمة المهام' : 'TASKS'}</h2>
               </div>
               
-              {/* Premium Segmented Layout View Toggle switcher */}
-              <div className="flex items-center gap-1.5 p-1 bg-black/40 border border-white/5 backdrop-blur-md rounded-lg">
-                <button
-                  type="button"
-                  onClick={() => { playBlip(); setActiveView('list'); }}
-                  className={cn(
-                    "px-3 py-1.5 font-space text-[10px] font-black tracking-widest uppercase transition-all rounded-md flex items-center gap-1.5 cursor-pointer",
-                    activeView === 'list'
-                      ? "bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]"
-                      : "text-white/40 hover:text-white/70"
-                  )}
-                  style={activeView === 'list' ? { color: missionColor, backgroundColor: `${missionColor}15`, borderColor: `${missionColor}30` } : {}}
-                >
-                  <HelpCircle />
-                  {isRTL ? 'قائمة' : 'LIST VIEW'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { playBlip(); setActiveView('board'); }}
-                  className={cn(
-                    "px-3 py-1.5 font-space text-[10px] font-black tracking-widest uppercase transition-all rounded-md flex items-center gap-1.5 cursor-pointer",
-                    activeView === 'board'
-                      ? "bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]"
-                      : "text-white/40 hover:text-white/70"
-                  )}
-                  style={activeView === 'board' ? { color: missionColor, backgroundColor: `${missionColor}15`, borderColor: `${missionColor}30` } : {}}
-                >
-                  <HelpCircle />
-                  {isRTL ? 'كانبان' : 'BOARD VIEW'}
-                </button>
-               </div>
-           </div>
+              {/* Premium Segmented Layout View Toggle switcher with Smart Time Filters */}
+              <div className="flex flex-wrap items-center gap-4">
+                {/* Smart Time Filters */}
+                <div className="flex items-center gap-1.5 p-1 bg-black/40 border border-white/5 backdrop-blur-md rounded-lg">
+                  {[
+                    { key: 'ALL', label: isRTL ? 'الكل' : 'All Active' },
+                    { key: 'WEEK', label: isRTL ? 'هذا الأسبوع' : 'Upcoming This Week' },
+                    { key: 'OVERDUE', label: isRTL ? 'المتأخرة' : 'Overdue' }
+                  ].map(f => (
+                    <button
+                      key={f.key}
+                      type="button"
+                      onClick={() => { playBlip(); setTimeFilter(f.key as any); }}
+                      className={cn(
+                        "px-2.5 py-1 rounded font-space text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer",
+                        timeFilter === f.key
+                          ? "bg-white/10 text-white font-black"
+                          : "text-white/40 hover:text-white/70"
+                      )}
+                      style={timeFilter === f.key ? { color: missionColor, backgroundColor: `${missionColor}10` } : {}}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1.5 p-1 bg-black/40 border border-white/5 backdrop-blur-md rounded-lg">
+                  <button
+                    type="button"
+                    onClick={() => { playBlip(); setActiveView('list'); }}
+                    className={cn(
+                      "px-3 py-1.5 font-space text-[10px] font-black tracking-widest uppercase transition-all rounded-md flex items-center gap-1.5 cursor-pointer",
+                      activeView === 'list'
+                        ? "bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+                        : "text-white/40 hover:text-white/70"
+                    )}
+                    style={activeView === 'list' ? { color: missionColor, backgroundColor: `${missionColor}15`, borderColor: `${missionColor}30` } : {}}
+                  >
+                    <HelpCircle />
+                    {isRTL ? 'قائمة' : 'LIST VIEW'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { playBlip(); setActiveView('board'); }}
+                    className={cn(
+                      "px-3 py-1.5 font-space text-[10px] font-black tracking-widest uppercase transition-all rounded-md flex items-center gap-1.5 cursor-pointer",
+                      activeView === 'board'
+                        ? "bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+                        : "text-white/40 hover:text-white/70"
+                    )}
+                    style={activeView === 'board' ? { color: missionColor, backgroundColor: `${missionColor}15`, borderColor: `${missionColor}30` } : {}}
+                  >
+                    <HelpCircle />
+                    {isRTL ? 'كانبان' : 'BOARD VIEW'}
+                  </button>
+                </div>
+              </div>
+            </div>
 
            <InlineGuideTip hasTasks={(mission.tasks || []).length > 0} />
 
@@ -1531,7 +1588,7 @@ const { progress, isInRedZone } = useMemo(() => {
            {activeView === 'list' ? (
              <div className="space-y-4">
                 <AnimatePresence mode='popLayout'>
-                   {(mission.tasks || []).map((task: any, index: number) => {
+                   {(filteredTasks || []).map((task: any, index: number) => {
                      const taskMinutes = timeStatsMap[task.id] || 0
                      const timeFormatted = taskMinutes >= 60
                        ? `${Math.floor(taskMinutes / 60)}h ${taskMinutes % 60}m`
@@ -1657,8 +1714,24 @@ const { progress, isInRedZone } = useMemo(() => {
                                    {timeFormatted}
                                  </span>
                                ) : null}
+                                {task.metadata?.endDate && (() => {
+                                  const tDate = new Date(task.metadata.endDate)
+                                  tDate.setHours(0,0,0,0)
+                                  const todayDate = new Date()
+                                  todayDate.setHours(0,0,0,0)
+                                  const isOverdue = !task.is_completed && tDate < todayDate
+                                  return (
+                                    <span className={cn(
+                                      "font-mono text-[10px] px-2 py-0.5 rounded-md tracking-wider inline-flex items-center gap-1 border",
+                                      isOverdue 
+                                        ? "text-red-500 border-red-500/30 bg-red-950/15 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse font-black" 
+                                        : "text-white/40 border-white/5 bg-white/[0.02]"
+                                    )}>
+                                      📅 {task.metadata.endDate}
+                                    </span>
+                                  )
+                                })()}
                                <ComplexityDashes weight={task.weight} color={currentTheme.color} />
-                                
                              </div>
                            </div>
 
@@ -1851,7 +1924,7 @@ const { progress, isInRedZone } = useMemo(() => {
              </div>
            ) : (
              <KanbanBoard
-               tasks={mission.tasks || []}
+               tasks={filteredTasks}
                onMoveTask={onMoveTask}
                themeColor={missionColor}
                isRTL={isRTL}
