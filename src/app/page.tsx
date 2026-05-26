@@ -1,11 +1,10 @@
 'use client'
 
-import { Activity, AlertTriangle, BarChart3, Lightbulb, Target, Zap } from 'lucide-react'
+import { Activity, AlertTriangle, BarChart3, Lightbulb, Target, Zap, Check, Calendar, Users } from 'lucide-react'
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Shell from '@/components/layout/Shell'
 import EnergyCell from '@/components/ui/EnergyCell'
-import SmartImportModal from '@/components/ui/SmartImportModal'
 import { createClient } from '@/lib/supabase'
 import { useGrowth } from '@/context/GrowthContext'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -23,120 +22,15 @@ const SIZE_MAP: Record<string, 'sm' | 'md' | 'lg'> = {
   L: 'lg', LARGE: 'lg', large: 'lg',
 }
 
-function WeatherWidget({ isRTL }: { isRTL: boolean }) {
-  const [weather, setWeather] = useState<{ temp: number; emoji: string; messageAr: string; messageEn: string }>(() => {
-    if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem('cached_weather')
-      if (cached) {
-        try {
-          return JSON.parse(cached)
-        } catch {}
-      }
-    }
-    return {
-      temp: 24,
-      emoji: '☀️',
-      messageAr: 'الجو حلو النهاردة، فرصة ممتازة تخلص اللي وراك!',
-      messageEn: 'Nice weather today—perfect time to get things done!'
-    }
-  })
-
-  useEffect(() => {
-    let active = true
-    async function fetchWeather() {
-      try {
-        let lat = '31.2001'
-        let lon = '29.9187'
-        
-        if (typeof window !== 'undefined') {
-          const cachedLat = localStorage.getItem('cached_lat')
-          const cachedLon = localStorage.getItem('cached_lon')
-          if (cachedLat && cachedLon) {
-            lat = cachedLat
-            lon = cachedLon
-          }
-        }
-
-        const fetchAndStore = async (xLat: string, xLon: string) => {
-          try {
-            const res = await fetch(`/api/weather?lat=${xLat}&lon=${xLon}`)
-            if (!res.ok) return
-            const data = await res.json()
-            if (active && data) {
-              setWeather(data)
-              if (typeof window !== 'undefined') {
-                localStorage.setItem('cached_weather', JSON.stringify(data))
-              }
-            }
-          } catch (e) {
-            console.error('Weather background fetch error:', e)
-          }
-        }
-
-        fetchAndStore(lat, lon)
-
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              const freshLat = pos.coords.latitude.toString()
-              const freshLon = pos.coords.longitude.toString()
-              if (typeof window !== 'undefined') {
-                localStorage.setItem('cached_lat', freshLat)
-                localStorage.setItem('cached_lon', freshLon)
-              }
-              if (freshLat !== lat || freshLon !== lon) {
-                fetchAndStore(freshLat, freshLon)
-              }
-            },
-            () => {},
-            { timeout: 5000 }
-          )
-        }
-      } catch (err) {
-        console.error('Weather effect error:', err)
-      }
-    }
-    fetchWeather()
-    return () => {
-      active = false
-    }
-  }, [])
-
-  return (
-    <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-4 md:p-5 backdrop-blur-md mb-6 flex items-center justify-between w-full max-w-5xl mx-auto shadow-md relative overflow-hidden">
-      <div className="absolute top-0 inset-x-0 h-1" style={{ background: `linear-gradient(to right, var(--theme-color), var(--theme-color), transparent)` }} />
-      <div className="text-base md:text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2.5 font-space shrink-0">
-        <span className="text-xl md:text-2xl">{weather.emoji}</span>
-        <span className="font-black tracking-tight">{weather.temp}°C</span>
-      </div>
-      <div className="text-sm md:text-base text-zinc-800 dark:text-white/90 font-medium text-right max-w-[75%] leading-relaxed font-space">
-        {isRTL ? weather.messageAr : weather.messageEn}
-      </div>
-    </div>
-  )
-}
-
 export default function Dashboard() {
-  const { profile, calculateAccountability, mounted, t, isRTL, currentTheme, tasksCompletedToday } = useGrowth()
+  const { profile, calculateAccountability, mounted, t, isRTL, currentTheme, tasksCompletedToday, addXp } = useGrowth()
   const router = useRouter()
   const [missions, setMissions] = useState<any[]>([])
   const [weeklyMinutes, setWeeklyMinutes] = useState<number>(0)
   const [loading, setLoading] = useState(true)
-  const [importModalOpen, setImportModalOpen] = useState(false)
-  const [selectedImportMissionId, setSelectedImportMissionId] = useState<string>('')
+  const [rivalryText, setRivalryText] = useState<string>('')
 
   const supabase = createClient()
-
-  // Global Escape key listener to close active modals in Dashboard
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setImportModalOpen(false)
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
 
   useEffect(() => {
     if (mounted) {
@@ -159,8 +53,49 @@ export default function Dashboard() {
     
     if (data) {
       setMissions(data)
-      if (data.length > 0 && !selectedImportMissionId) {
-        setSelectedImportMissionId(data[0].id)
+      
+      const squadGoals = data.filter((m: any) => m.metadata?.type === 'squad')
+      if (squadGoals.length > 0) {
+        const squadGoalIds = squadGoals.map((m: any) => m.id)
+        
+        // Fetch squad members and map them (exclude blocked)
+        const { data: members } = await supabase
+          .from('goal_members')
+          .select('*, profiles(*)')
+          .in('goal_id', squadGoalIds)
+
+        if (members) {
+          const uniqueMembersMap: Record<string, any> = {}
+          members.forEach((m: any) => {
+            if (m.profiles && m.profiles.id !== user.id && !m.profiles.blocked) {
+              uniqueMembersMap[m.profiles.id] = m.profiles
+            }
+          })
+          const otherMembers = Object.values(uniqueMembersMap).sort((a: any, b: any) => b.xp - a.xp)
+          
+          if (otherMembers.length > 0) {
+            const topMember: any = otherMembers[0]
+            const myXp = profile?.xp || 0
+            
+            if (myXp >= topMember.xp) {
+              const diff = myXp - topMember.xp
+              setRivalryText(isRTL 
+                ? `أنت في الصدارة! يليك ${topMember.full_name || 'منافسك'} بفارق ${diff} XP.` 
+                : `You are leading! ${topMember.full_name || 'Rival'} is ${diff} XP behind you.`
+              )
+            } else {
+              const diff = topMember.xp - myXp
+              setRivalryText(isRTL 
+                ? `أنت متأخر بـ ${diff} XP عن ${topMember.full_name || 'المتصدر'}.` 
+                : `You are ${diff} XP behind ${topMember.full_name || 'Leader'}.`
+              )
+            }
+          } else {
+            setRivalryText(isRTL ? 'انضم إلى فريق لتتبع منافسيك.' : 'Join a squad to track your rivals.')
+          }
+        }
+      } else {
+        setRivalryText(isRTL ? 'انضم إلى فريق لتتبع منافسيك.' : 'Join a squad to track your rivals.')
       }
     }
     setLoading(false)
@@ -202,52 +137,92 @@ export default function Dashboard() {
         })
       }
     })
-    // Keep original insertion order — no resorting on completion
     return list
   }, [missions, currentTheme.color])
+
+  const actionInboxTasks = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    return allTasks.filter((task: any) => {
+      if (task.is_completed) return false
+      const dateStr = task.metadata?.endDate || task.metadata?.dueDate
+      if (!dateStr) return false
+      
+      const taskDate = new Date(dateStr)
+      taskDate.setHours(0, 0, 0, 0)
+      
+      return taskDate <= today
+    })
+  }, [allTasks])
 
   const completedTasksCount = useMemo(() => allTasks.filter(t => t.is_completed).length, [allTasks])
   const pendingTasksCount = useMemo(() => allTasks.filter(t => !t.is_completed).length, [allTasks])
 
-  const coachTip = useMemo(() => {
-    const redZoneMission = missions.find(m => calculateAccountability(m).isInRedZone)
-    if (redZoneMission) {
-      return isRTL
-        ? `لديك أهداف في المنطقة الحمراء! ركّز جهودك اليوم على "${redZoneMission.title}" لتفادي خسارة النقاط.`
-        : `You have goals in the Red Zone! Direct your energy to "${redZoneMission.title}" today to avoid XP penalties.`
+  async function toggleTask(task: any) {
+    const updatedStatus = !task.is_completed
+    setMissions(prev => prev.map(m => ({
+      ...m,
+      tasks: m.tasks?.map((t: any) => t.id === task.id ? { ...t, is_completed: updatedStatus } : t)
+    })))
+
+    // Support guest goals locally
+    if (task.cup_id?.startsWith('local_')) {
+      const guestGoals = JSON.parse(localStorage.getItem('guest_goals') || '[]')
+      const updatedGoals = guestGoals.map((m: any) => {
+        if (m.id === task.cup_id) {
+          return {
+            ...m,
+            tasks: m.tasks?.map((t: any) => t.id === task.id ? { ...t, is_completed: updatedStatus } : t)
+          }
+        }
+        return m
+      })
+      localStorage.setItem('guest_goals', JSON.stringify(updatedGoals))
+      return
     }
 
-    if (weeklyMinutes === 0 && completedTasksCount === 0) {
-      return isRTL
-        ? `أسبوعك يبدأ الآن. رتّب أولوياتك، ضع خطتك، وانطلق بكامل طاقتك لتفوز بالأسبوع!`
-        : `Your week begins now. Prioritize, map your tasks, and start executing to win the week!`
-    }
+    const { error } = await supabase.from('tasks').update({ is_completed: updatedStatus }).eq('id', task.id)
+    if (error) {
+      fetchDashboardMissions()
+    } else {
+      const mission = missions.find(m => m.id === task.cup_id)
+      if (mission && mission.tasks) {
+        const taskIndex = mission.tasks.findIndex((t: any) => t.id === task.id)
+        if (taskIndex !== -1) {
+          const sizeStr = mission.size?.toLowerCase() || 'md'
+          let xpCeiling = 8
+          if (sizeStr === 'sm' || sizeStr === 's' || sizeStr === 'small') xpCeiling = 4
+          else if (sizeStr === 'lg' || sizeStr === 'l' || sizeStr === 'large') xpCeiling = 20
 
-    if (pendingTasksCount > 4) {
-      return isRTL
-        ? `لديك ${pendingTasksCount} مهام معلّقة. قسّمها لمهام أصغر وأنجز الأهم أولاً.`
-        : `You have ${pendingTasksCount} pending tasks. Break them down and tackle the highest leverage item first.`
-    }
+          if (taskIndex < xpCeiling) {
+            await addXp(updatedStatus ? ((Number(task.weight) || 3) * 10) : -((Number(task.weight) || 3) * 10), updatedStatus ? task.title : undefined)
+          }
+        }
+      }
 
-    if (weeklyMinutes >= 1200) {
-      return isRTL
-        ? `عمل رائع! لقد تجاوزت هدف الـ 20 ساعة لهذا الأسبوع. استمر في هذا الأداء المتميز.`
-        : `Elite effort! You've crossed the 20-hour focus target for this week. Keep up the momentum.`
+      if (updatedStatus) {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          await supabase.from('task_completion_log').insert([{
+            user_id: user.id,
+            task_id: task.id,
+            cup_id: task.cup_id,
+            completed_at: new Date().toISOString()
+          }])
+        }
+      }
     }
-
-    return isRTL
-      ? `التزم بفترات العمل العميقة (Deep Work). ركّز على مهمة واحدة في كل مرة لتصل لأقصى إنتاجية.`
-      : `Protect your focus blocks. Multi-tasking dilutes energy; execute single tasks with deep concentration.`
-  }, [missions, weeklyMinutes, completedTasksCount, pendingTasksCount, isRTL, calculateAccountability])
+  }
 
   if (!mounted) return null
 
   return (
     <Shell syncedMissions={missions} onMissionsRefresh={fetchDashboardMissions}>
-      <div className="w-full min-h-[calc(100vh-64px)] flex flex-col py-8 md:py-12 px-4 md:px-12 space-y-8 max-w-7xl mx-auto">
+      <div className="w-full min-h-[calc(100vh-64px)] flex flex-col py-8 md:py-12 px-4 md:px-12 space-y-8 max-w-7xl mx-auto font-space">
         
-        {/* ── HEADER & WEATHER ── */}
-        <div className="w-full flex flex-col items-center text-center space-y-4">
+        {/* ── COMMAND CENTER TITLE ── */}
+        <div className="w-full flex flex-col items-center text-center space-y-3">
           <div className="flex items-center gap-6">
             <div className="h-[1px] w-20 md:w-32" style={{ background: `linear-gradient(to right, transparent, ${currentTheme.color}40)` }} />
             <motion.span
@@ -255,7 +230,7 @@ export default function Dashboard() {
               animate={{ opacity: [0.3, 1, 0.3] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <Zap className="w-5 h-5 md:w-6 md:h-6" />
+              <Zap className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
             </motion.span>
             <div className="h-[1px] w-20 md:w-32" style={{ background: `linear-gradient(to left, transparent, ${currentTheme.color}40)` }} />
           </div>
@@ -263,67 +238,52 @@ export default function Dashboard() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-2xl md:text-4xl lg:text-5xl font-black font-space tracking-tight uppercase leading-none text-zinc-900 dark:text-white"
+            className="text-2xl md:text-4xl lg:text-5xl font-black tracking-tight uppercase leading-none text-zinc-900 dark:text-white"
           >
-            {isRTL ? 'لوحة' : 'DASH'}<span style={{ color: currentTheme.color }}>{isRTL ? ' التحكم' : 'BOARD'}</span>
+            {isRTL ? 'منظومة' : 'COMMAND'} <span style={{ color: currentTheme.color }}>{isRTL ? 'التحكم' : 'CENTER'}</span>
           </motion.h1>
 
-          <p className="text-xs font-space text-zinc-500 dark:text-white/40 tracking-[0.5em] uppercase font-black">
-            {isRTL ? 'لوحة التحكم' : 'DASHBOARD'} // {profile?.rank || 'MEMBER'}
+          <p className="text-[10px] text-zinc-500 dark:text-white/40 tracking-[0.4em] uppercase font-black">
+            {isRTL ? 'لوحة القيادة التكتيكية' : 'TACTICAL DECISION PLATFORM'} // {profile?.rank || 'MEMBER'}
           </p>
         </div>
 
-        <WeatherWidget isRTL={isRTL} />
-
-        <InlineGuideTip hasTasks={allTasks.length > 0} />
-
-        {/* ═══════════════════════════════════════════════════ */}
-        {/* ██  FOCUS CAPACITY — BOLD, GLOWING 9-SLOT TANK   ██ */}
-        {/* ═══════════════════════════════════════════════════ */}
+        {/* ── THE FOCUS PIPELINE (Top Section - Full Width) ── */}
         {(() => {
-          const isFull = tasksCompletedToday >= 9
           const isOverCap = tasksCompletedToday > 9
-
           return (
-            <div className="w-full max-w-5xl mx-auto bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 md:p-8 space-y-6 shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 inset-x-0 h-1" style={{ background: `linear-gradient(to right, ${isOverCap ? '#FF0055' : currentTheme.color}, ${isOverCap ? '#FF0055' : currentTheme.color}88, transparent)` }} />
+            <div className="w-full bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 md:p-8 space-y-4 shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 inset-x-0 h-1" style={{ background: `linear-gradient(to right, ${isOverCap ? '#FF0055' : currentTheme.color}, transparent)` }} />
               
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Zap className="text-sm w-3.5 h-3.5" style={{ color: isOverCap ? '#FF0055' : currentTheme.color }} />
-                    <h2 className="text-xs md:text-sm font-space text-[var(--text-secondary)] uppercase tracking-wider font-bold">
-                      {isRTL ? 'سعة التركيز' : 'FOCUS CAPACITY'}
-                    </h2>
-                  </div>
-                  <p className="text-xs font-space text-zinc-500 dark:text-zinc-400 mt-1">
-                    {isRTL ? 'الحد الأقصى 9 خانات يومياً لضمان أعلى جودة تركيز.' : 'Constrained to 9 slots daily maximum to ensure elite execution focus.'}
-                  </p>
-                </div>
-
-                <div className="flex items-baseline gap-1 bg-[var(--input-bg)] px-6 py-4 rounded-xl border border-[var(--card-border)] shadow-inner">
-                  <span className="text-5xl md:text-6xl font-space font-black tracking-tighter" style={{ color: isOverCap ? '#FF0055' : currentTheme.color }}>
-                    {tasksCompletedToday}
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 shrink-0" style={{ color: isOverCap ? '#FF0055' : currentTheme.color }} />
+                  <span className="text-xs font-black tracking-widest text-[var(--text-secondary)] uppercase">
+                    {isRTL ? 'خط تدفق التركيز اليومي' : 'DAILY FOCUS PIPELINE'}
                   </span>
-                  <span className="text-xl font-space font-bold text-zinc-400 dark:text-zinc-600">/9</span>
+                </div>
+                <div className="text-lg font-black tracking-tight">
+                  <span style={{ color: isOverCap ? '#FF0055' : currentTheme.color }}>{tasksCompletedToday}</span>
+                  <span className="text-zinc-500"> / 9</span>
                 </div>
               </div>
 
-              {/* Segmented 9-slot bar */}
+              {/* Segmented 9-slot Energy Bar */}
               <div 
-                className="flex gap-1.5 h-6 p-1 rounded-xl border bg-zinc-100 dark:bg-[#050505] overflow-hidden shadow-inner"
-                style={{ borderColor: `${currentTheme.color}40` }}
+                className="flex gap-2 h-7 p-1 rounded-xl border bg-zinc-100 dark:bg-[#050505] overflow-hidden shadow-inner"
+                style={{ borderColor: `${currentTheme.color}30` }}
               >
                 {Array.from({ length: 9 }).map((_, i) => {
                   const isActive = i < tasksCompletedToday
                   return (
                     <div
                       key={i}
-                      className="flex-1 rounded-lg transition-all duration-500 relative overflow-hidden"
+                      className="flex-1 rounded transition-all duration-500 relative overflow-hidden"
                       style={{
                         backgroundColor: isActive
                           ? (isOverCap ? '#FF0055' : currentTheme.color)
-                          : `${currentTheme.color}10`,
+                          : 'transparent',
+                        border: isActive ? 'none' : '1px solid rgba(255, 255, 255, 0.05)',
                         boxShadow: isActive 
                           ? `0 0 15px ${isOverCap ? '#FF0055' : currentTheme.color}`
                           : 'none',
@@ -340,224 +300,187 @@ export default function Dashboard() {
           )
         })()}
 
-        {/* ═══════════════════════════════════════════════════ */}
-        {/* ██  ACTIVE MISSIONS GRID (CRYSTALS UNDER FOCUS)  ██ */}
-        {/* ═══════════════════════════════════════════════════ */}
-        <div className="w-full max-w-7xl mx-auto space-y-6 pt-4">
-          <div className="flex items-center gap-3 px-2">
-            <Target className="text-2xl w-6 h-6" style={{ color: currentTheme.color }} />
-            <h2 className="text-xl font-space font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
-              {isRTL ? 'الأهداف النشطة' : 'ACTIVE GOALS'}
-            </h2>
-          </div>
+        <InlineGuideTip hasTasks={allTasks.length > 0} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 cells-target">
-            {missions.map((mission, idx) => {
-              const { progress, isInRedZone } = calculateAccountability(mission)
-              const roundedProgress = Math.round(progress)
-              const customColor = mission.color || currentTheme.color
-              const fallbackColor = SLOT_COLORS[idx % SLOT_COLORS.length]
-              const topBorderColor = isInRedZone ? '#ef4444' : (customColor || fallbackColor)
+        {/* ── MIDDLE TWO-COLUMN GRID (Action Inbox & Rivalry Tracker) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 items-start">
+          
+          {/* Action Inbox (60%) */}
+          <div className="lg:col-span-6 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 md:p-8 space-y-6 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-500 to-transparent" />
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-red-500 shrink-0" />
+                <h2 className="text-sm font-black tracking-widest text-[var(--text-secondary)] uppercase">
+                  {isRTL ? 'الوارد التكتيكي العاجل' : 'ACTION INBOX // CRITICAL'}
+                </h2>
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 text-[10px] font-black border border-red-500/20">
+                {actionInboxTasks.length} {isRTL ? 'مهمة عاجلة' : 'IMMEDIATE'}
+              </span>
+            </div>
 
-              const kasaSize: 'sm' | 'md' | 'lg' = SIZE_MAP[mission.size?.toUpperCase?.()] ?? SIZE_MAP[mission.size] ?? 'sm'
-              const cardKasaSize = kasaSize === 'lg' ? 'md' : kasaSize
+            <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+              {actionInboxTasks.map((task) => {
+                const tDate = new Date(task.metadata.endDate || task.metadata.dueDate)
+                tDate.setHours(0,0,0,0)
+                const today = new Date()
+                today.setHours(0,0,0,0)
+                const isOverdue = tDate < today
 
-              const fmtDate = (d: string | null) => {
-                if (!d) return null
-                try { return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) } catch { return null }
-              }
-              const startStr = fmtDate(mission.start_date)
-              const endStr = fmtDate(mission.end_date)
-
-              return (
-                <motion.div
-                  key={mission.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  onClick={() => router.push(`/missions/${mission.id}`)}
-                  className={cn(
-                    'group relative cursor-pointer rounded-2xl border transition-all duration-300 overflow-hidden',
-                    'bg-[var(--card-bg)] border-[var(--card-border)] backdrop-blur-md w-full shadow-lg hover:shadow-xl',
-                    'min-h-[260px] p-6 flex flex-col',
-                    isInRedZone
-                      ? 'border-red-500/40 hover:border-red-500 shadow-[0_0_30px_rgba(255,0,0,0.15)]'
-                      : 'hover:border-zinc-400 dark:hover:border-white/30'
-                  )}
-                  style={{ borderColor: isInRedZone ? undefined : `${topBorderColor}33` }}
-                >
-                  <div className="absolute top-0 inset-x-0 h-1" style={{
-                    background: `linear-gradient(to right, ${topBorderColor}, ${topBorderColor}88, transparent)`
-                  }} />
-
-                  {/* Top Label + Title */}
-                  <div className="w-full text-center space-y-1.5 mb-auto">
-                    <p
-                      className={cn(
-                        'font-space font-black tracking-[0.3em] uppercase text-[10px]',
-                        isInRedZone ? 'text-red-500 animate-pulse' : 'text-[var(--text-secondary)]'
-                      )}
-                      style={(!isInRedZone && customColor) ? { color: customColor } : {}}
-                    >
-                      {isInRedZone ? (isRTL ? 'تنبيه خطير' : '⚠ RED_ZONE') : (isRTL ? 'هدف نشط' : 'ACTIVE GOAL')}
-                    </p>
-                    <h3 className="text-base font-space font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-wide truncate leading-tight">
-                      {mission.title}
-                    </h3>
-                  </div>
-
-                  {/* Crystal Trophy Kasa */}
-                  <div className="flex justify-center items-center py-4 group-hover:scale-105 transition-transform duration-500">
-                    <EnergyCell
-                      percentage={roundedProgress}
-                      color={isInRedZone ? '#FF0055' : (customColor || fallbackColor)}
-                      size={cardKasaSize}
-                      isInRedZone={isInRedZone}
-                    />
-                  </div>
-
-                  {/* Bottom Progress */}
-                  <div className="w-full mt-auto space-y-2.5 pt-2">
-                    <div className="flex justify-between items-center text-xs font-space font-black tracking-widest uppercase">
-                      <span className="text-[var(--text-secondary)]">{isRTL ? 'التقدم' : 'PROGRESS'}</span>
-                      <span
-                        className={cn('text-sm font-bold', isInRedZone ? 'text-red-500' : 'text-zinc-900 dark:text-zinc-100')}
-                        style={(!isInRedZone && customColor) ? { color: customColor } : {}}
+                return (
+                  <motion.div
+                    key={task.id}
+                    layout
+                    className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-zinc-950/20 hover:bg-white/5 hover:border-white/10 transition-all gap-4"
+                  >
+                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                      <button
+                        onClick={() => toggleTask(task)}
+                        className="w-6 h-6 rounded-full border flex items-center justify-center bg-transparent hover:bg-white/5 transition-all shrink-0 cursor-pointer"
+                        style={{ borderColor: task.missionColor || currentTheme.color }}
                       >
-                        {roundedProgress}%
+                        <Check className="w-3.5 h-3.5 opacity-0 hover:opacity-100 transition-opacity" style={{ color: task.missionColor || currentTheme.color }} />
+                      </button>
+
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="text-sm font-black text-white/95 uppercase truncate leading-tight">{task.title}</span>
+                        <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-wider mt-0.5 truncate">{task.missionTitle}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      {/* Overdue/Today Date indicator */}
+                      <span className={cn(
+                        "font-mono text-[9px] px-2 py-0.5 rounded border tracking-wider",
+                        isOverdue 
+                          ? "text-red-500 border-red-500/30 bg-red-950/15 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)] animate-pulse font-black" 
+                          : "text-zinc-400 border-white/5 bg-white/[0.02]"
+                      )}>
+                        📅 {task.metadata.endDate || task.metadata.dueDate}
+                      </span>
+
+                      {/* XP badge */}
+                      <span className="text-[10px] font-mono text-zinc-500 tracking-wider">
+                        +{task.weight * 10}XP
                       </span>
                     </div>
-                    <div className="w-full h-2 bg-[var(--input-bg)] overflow-hidden rounded-full border border-[var(--card-border)] shadow-inner">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${roundedProgress}%` }}
-                        transition={{ duration: 1.5, ease: 'easeOut' }}
-                        className="h-full rounded-full"
-                        style={{
-                          backgroundColor: topBorderColor,
-                          boxShadow: `0 0 12px ${topBorderColor}`
-                        }}
-                      />
-                    </div>
-                    {(startStr || endStr) && (
-                      <p className="text-[9px] font-space text-[var(--text-secondary)] uppercase tracking-wider text-center pt-1">
-                        {startStr || '—'} → {endStr || '—'}
-                      </p>
-                    )}
-                  </div>
-                </motion.div>
-              )
-            })}
+                  </motion.div>
+                )
+              })}
 
-            {missions.length === 0 && !loading && (
-              <div className="col-span-full py-16 text-center bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-8">
-                <p className="text-zinc-500 dark:text-white/40 text-sm font-space">
-                  {isRTL ? 'لا توجد أهداف نشطة حالياً. ابدأ بإنشاء هدف جديد!' : 'No active goals synced. Initiate a new goal to begin execution.'}
-                </p>
-              </div>
-            )}
+              {actionInboxTasks.length === 0 && (
+                <div className="py-16 text-center space-y-2 border border-dashed border-white/5 rounded-xl">
+                  <span className="text-zinc-600 font-black text-2xl">⚡</span>
+                  <p className="text-xs text-zinc-500 dark:text-white/30 uppercase tracking-widest">
+                    {isRTL ? 'الوارد فارغ! جميع الالتزامات منجزة.' : 'INBOX CLEAR // NO OVERDUE TASKS'}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* ═══════════════════════════════════════════════════════════════ */}
-        {/* ██                BOTTOM GRID: WEEKLY STATS & COACH          ██ */}
-        {/* ═══════════════════════════════════════════════════════════════ */}
-        <div className="w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 pt-12 border-t border-[var(--card-border)] mt-12 items-start pb-8">
-          
-          {/* Weekly Stats Section ("This Week") */}
-          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 md:p-8 space-y-6 shadow-xl relative overflow-hidden h-full">
-            <div className="absolute top-0 inset-x-0 h-1" style={{ background: `linear-gradient(to right, ${currentTheme.color}, ${currentTheme.color}88, transparent)` }} />
-            <div className="flex items-center gap-2 mb-4">
-              <Activity className="text-sm w-3.5 h-3.5" style={{ color: currentTheme.color }} />
-              <h2 className="text-xs md:text-sm font-space text-[var(--text-secondary)] uppercase tracking-wider font-bold">
-                {isRTL ? 'أسبوعي' : 'This Week'}
+          {/* The Rivalry Tracker (40%) */}
+          <div 
+            className="lg:col-span-4 bg-[var(--card-bg)] border rounded-2xl p-6 md:p-8 space-y-6 shadow-xl relative overflow-hidden transition-all duration-300"
+            style={{ 
+              borderColor: currentTheme.color,
+              boxShadow: `0 0 20px ${currentTheme.color}25`
+            }}
+          >
+            <div className="absolute top-0 inset-x-0 h-1" style={{ backgroundColor: currentTheme.color }} />
+            
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 shrink-0" style={{ color: currentTheme.color }} />
+              <h2 className="text-sm font-black tracking-widest text-[var(--text-secondary)] uppercase">
+                {isRTL ? 'متتبع المنافسة' : 'THE RIVALRY TRACKER'}
               </h2>
             </div>
 
-            {weeklyMinutes === 0 && completedTasksCount === 0 ? (
-              <div className="flex flex-col items-center justify-center text-center py-8 space-y-5">
-                <BarChart3 className="text-5xl text-zinc-300 dark:text-zinc-600 animate-pulse w-12 h-12" />
-                <p className="text-sm font-space text-zinc-500 dark:text-zinc-400 max-w-xs leading-relaxed">
-                  {isRTL ? 'ابدأ أول task وهنبدأ نتتبع أسبوعك' : 'Complete your first task to start tracking your week'}
-                </p>
-                <button
-                  onClick={() => router.push('/missions')}
-                  className="px-5 py-2.5 border border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 rounded-xl text-xs font-space font-black uppercase tracking-wider transition-all bg-transparent text-zinc-800 dark:text-zinc-200 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                >
-                  {isRTL ? 'تصفح الأهداف' : 'View Goals'}
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <div className="space-y-1">
-                    <div className="text-4xl md:text-5xl font-space font-black tracking-tighter" style={{ color: currentTheme.color }}>
-                      {Math.floor(weeklyMinutes / 60)}h {weeklyMinutes % 60}m
-                    </div>
-                    <span className="text-[10px] md:text-xs font-space text-[var(--text-secondary)] uppercase tracking-wider block">
-                      {isRTL ? 'الوقت المستثمر' : 'TIME INVESTED'}
-                    </span>
-                  </div>
-
-                  <div className="w-full h-2 bg-[var(--input-bg)] rounded-full overflow-hidden border border-[var(--card-border)] shadow-inner mt-4">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, (weeklyMinutes / 1200) * 100)}%` }} // 20 hours target
-                      transition={{ duration: 1 }}
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: currentTheme.color, boxShadow: `0 0 10px ${currentTheme.color}` }}
-                    />
-                  </div>
-                  <p className="text-[10px] font-space text-zinc-400 dark:text-zinc-500 uppercase tracking-wider text-right">
-                    {isRTL ? 'الهدف الأسبوعي: 20 ساعة' : 'WEEKLY TARGET: 20 HOURS'}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[var(--card-border)]">
-                  <div className="bg-[var(--input-bg)] p-4 rounded-xl border border-[var(--card-border)] text-center space-y-1">
-                    <span className="text-3xl font-space font-black text-zinc-900 dark:text-zinc-100 block">
-                      {completedTasksCount}
-                    </span>
-                    <span className="text-[10px] md:text-xs font-space text-[var(--text-secondary)] uppercase tracking-wider block">
-                      {isRTL ? 'مهام منجزة' : 'COMPLETED'}
-                    </span>
-                  </div>
-                  <div className="bg-[var(--input-bg)] p-4 rounded-xl border border-[var(--card-border)] text-center space-y-1">
-                    <span className="text-3xl font-space font-black text-zinc-900 dark:text-zinc-100 block">
-                      {pendingTasksCount}
-                    </span>
-                    <span className="text-[10px] md:text-xs font-space text-[var(--text-secondary)] uppercase tracking-wider block">
-                      {isRTL ? 'مهام قيد الانتظار' : 'PENDING'}
-                    </span>
-                  </div>
-                </div>
-
-
-              </div>
-            )}
-          </div>
-
-          {/* Coach Tip Section */}
-          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 md:p-8 space-y-4 shadow-xl relative overflow-hidden h-full flex flex-col justify-between">
-            <div className="absolute top-0 inset-x-0 h-1" style={{ background: `linear-gradient(to right, ${currentTheme.color}, ${currentTheme.color}88, transparent)` }} />
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <Lightbulb className="text-sm text-amber-500 w-3.5 h-3.5" />
-                <h2 className="text-xs md:text-sm font-space text-[var(--text-secondary)] uppercase tracking-wider font-bold">
-                  {isRTL ? 'نصيحة المدرب' : 'Coach Tip'}
-                </h2>
-              </div>
-              <p className="text-xl md:text-2xl font-space text-zinc-900 dark:text-zinc-100 leading-relaxed font-bold">
-                "{coachTip}"
+            <div className="py-8 flex flex-col items-center justify-center text-center space-y-4">
+              <span className="text-4xl animate-bounce">⚔️</span>
+              <p className="text-base font-black tracking-wide text-zinc-100 leading-relaxed uppercase max-w-xs">
+                {rivalryText || (isRTL ? 'انضم إلى فريق لتتبع منافسيك.' : 'Join a squad to track your rivals.')}
               </p>
             </div>
-            
-            <div className="text-[9px] font-space text-zinc-400 dark:text-zinc-600 uppercase tracking-widest pt-6">
-              GROWTH HUB // PERSONALIZED COACHING MESH
+
+            <div className="pt-4 border-t border-white/5 text-center">
+              <button
+                onClick={() => router.push('/goals/squad')}
+                className="w-full py-2.5 bg-white/[0.02] hover:bg-white/5 border border-white/10 rounded-xl text-xs font-black uppercase tracking-widest text-white transition-all cursor-pointer"
+              >
+                {isRTL ? 'إدارة فرق العمل' : 'MANAGE TEAM WORKSPACES'}
+              </button>
             </div>
           </div>
 
         </div>
+
+        {/* ── RECENT ACTIVE GOALS (Bottom Section - Full Width Grid) ── */}
+        <div className="w-full space-y-6 pt-8 border-t border-[var(--card-border)]">
+          <div className="flex items-center gap-3">
+            <Target className="text-2xl w-6 h-6 shrink-0" style={{ color: currentTheme.color }} />
+            <h2 className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">
+              {isRTL ? 'أحدث الأهداف النشطة' : 'RECENT ACTIVE GOALS // FOCUS MATRIX'}
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {missions.slice(0, 3).map((mission, idx) => {
+              const { progress, isInRedZone } = calculateAccountability(mission)
+              const roundedProgress = Math.round(progress)
+              const customColor = mission.color || currentTheme.color
+
+              return (
+                <div
+                  key={mission.id}
+                  onClick={() => router.push(`/missions/${mission.id}`)}
+                  className={cn(
+                    "relative group cursor-pointer p-5 rounded-xl border bg-zinc-900/20 hover:bg-white/5 transition-all overflow-hidden flex flex-col gap-4",
+                    isInRedZone ? "border-red-500/40" : "border-white/5 hover:border-white/10"
+                  )}
+                >
+                  <div className="absolute top-0 inset-x-0 h-[2px]" style={{ backgroundColor: isInRedZone ? '#ef4444' : customColor }} />
+
+                  <div className="flex justify-between items-start gap-2">
+                    <h3 className="text-sm font-black uppercase tracking-wide truncate max-w-[80%] text-zinc-100">
+                      {mission.title}
+                    </h3>
+                    <span 
+                      className="text-xs font-black font-mono shrink-0"
+                      style={{ color: isInRedZone ? '#ef4444' : customColor }}
+                    >
+                      {roundedProgress}%
+                    </span>
+                  </div>
+
+                  {/* Sleek horizontal Progress Bar */}
+                  <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${roundedProgress}%` }}
+                      transition={{ duration: 1.2 }}
+                      className="h-full rounded-full"
+                      style={{ 
+                        backgroundColor: isInRedZone ? '#ef4444' : customColor,
+                        boxShadow: `0 0 8px ${isInRedZone ? '#ef4444' : customColor}`
+                      }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+
+            {missions.length === 0 && (
+              <div className="col-span-full py-12 text-center border border-dashed border-white/5 rounded-xl">
+                <p className="text-xs uppercase tracking-widest text-zinc-500">
+                  {isRTL ? 'لا توجد أهداف نشطة حالياً.' : 'NO ACTIVE GOALS SYNCED'}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
     </Shell>
   )
