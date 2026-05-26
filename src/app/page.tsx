@@ -28,7 +28,11 @@ export default function Dashboard() {
   const [missions, setMissions] = useState<any[]>([])
   const [weeklyMinutes, setWeeklyMinutes] = useState<number>(0)
   const [loading, setLoading] = useState(true)
-  const [rivalryText, setRivalryText] = useState<string>('')
+
+  // Rivalry Tracker States
+  const [squadsList, setSquadsList] = useState<any[]>([])
+  const [selectedSquadId, setSelectedSquadId] = useState<string>('')
+  const [squadMembersMap, setSquadMembersMap] = useState<Record<string, any[]>>({})
 
   const supabase = createClient()
 
@@ -39,6 +43,14 @@ export default function Dashboard() {
     }
   }, [mounted])
 
+  const playBlip = () => {
+    if (typeof window !== 'undefined') {
+      const audio = new Audio('/sounds/blip.mp3')
+      audio.volume = 0.2
+      audio.play().catch(() => {})
+    }
+  }
+
   async function fetchDashboardMissions() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
@@ -47,16 +59,17 @@ export default function Dashboard() {
       .from('cups')
       .select('*, tasks(*)')
       .eq('user_id', user.id)
-      .eq('sync_to_dashboard', true)
       .eq('is_archived', false)
       .order('created_at', { ascending: false })
     
     if (data) {
       setMissions(data)
       
-      const squadGoals = data.filter((m: any) => m.metadata?.type === 'squad')
-      if (squadGoals.length > 0) {
-        const squadGoalIds = squadGoals.map((m: any) => m.id)
+      const squads = data.filter((m: any) => m.metadata?.type === 'squad')
+      setSquadsList(squads)
+
+      if (squads.length > 0) {
+        const squadGoalIds = squads.map((m: any) => m.id)
         
         // Fetch squad members and map them (exclude blocked)
         const { data: members } = await supabase
@@ -65,37 +78,39 @@ export default function Dashboard() {
           .in('goal_id', squadGoalIds)
 
         if (members) {
-          const uniqueMembersMap: Record<string, any> = {}
+          const map: Record<string, any[]> = {}
           members.forEach((m: any) => {
-            if (m.profiles && m.profiles.id !== user.id && !m.profiles.blocked) {
-              uniqueMembersMap[m.profiles.id] = m.profiles
+            if (!map[m.goal_id]) map[m.goal_id] = []
+            map[m.goal_id].push(m)
+          })
+          setSquadMembersMap(map)
+
+          // Auto-select based on smallest XP gap
+          let bestSquadId = squads[0].id
+          let smallestGap = Infinity
+          const myXp = profile?.xp || 0
+
+          squads.forEach((sq: any) => {
+            const sqMembers = map[sq.id] || []
+            const uniqueMembersMap: Record<string, any> = {}
+            sqMembers.forEach((m: any) => {
+              if (m.profiles && m.profiles.id !== user.id && !m.profiles.blocked) {
+                uniqueMembersMap[m.profiles.id] = m.profiles
+              }
+            })
+            const otherMembers = Object.values(uniqueMembersMap).sort((a: any, b: any) => b.xp - a.xp)
+            if (otherMembers.length > 0) {
+              const topMember: any = otherMembers[0]
+              const gap = Math.abs(topMember.xp - myXp)
+              if (gap < smallestGap) {
+                smallestGap = gap
+                bestSquadId = sq.id
+              }
             }
           })
-          const otherMembers = Object.values(uniqueMembersMap).sort((a: any, b: any) => b.xp - a.xp)
           
-          if (otherMembers.length > 0) {
-            const topMember: any = otherMembers[0]
-            const myXp = profile?.xp || 0
-            
-            if (myXp >= topMember.xp) {
-              const diff = myXp - topMember.xp
-              setRivalryText(isRTL 
-                ? `أنت في الصدارة! يليك ${topMember.full_name || 'منافسك'} بفارق ${diff} XP.` 
-                : `You are leading! ${topMember.full_name || 'Rival'} is ${diff} XP behind you.`
-              )
-            } else {
-              const diff = topMember.xp - myXp
-              setRivalryText(isRTL 
-                ? `أنت متأخر بـ ${diff} XP عن ${topMember.full_name || 'المتصدر'}.` 
-                : `You are ${diff} XP behind ${topMember.full_name || 'Leader'}.`
-              )
-            }
-          } else {
-            setRivalryText(isRTL ? 'انضم إلى فريق لتتبع منافسيك.' : 'Join a squad to track your rivals.')
-          }
+          setSelectedSquadId(bestSquadId)
         }
-      } else {
-        setRivalryText(isRTL ? 'انضم إلى فريق لتتبع منافسيك.' : 'Join a squad to track your rivals.')
       }
     }
     setLoading(false)
@@ -159,6 +174,48 @@ export default function Dashboard() {
   const completedTasksCount = useMemo(() => allTasks.filter(t => t.is_completed).length, [allTasks])
   const pendingTasksCount = useMemo(() => allTasks.filter(t => !t.is_completed).length, [allTasks])
 
+  // Pinned Goals Filter (Backwards compatible with sync_to_dashboard)
+  const pinnedGoals = useMemo(() => {
+    return missions.filter((m: any) => m.isPinned || m.sync_to_dashboard)
+  }, [missions])
+
+  // Calculate rivalry tracking for selected squad
+  const computedRivalryText = useMemo(() => {
+    if (!selectedSquadId || !squadMembersMap[selectedSquadId]) {
+      return isRTL ? 'انضم إلى فريق لتتبع منافسيك.' : 'Join a squad to track your rivals.'
+    }
+    
+    const members = squadMembersMap[selectedSquadId] || []
+    const myId = profile?.id
+    if (!myId) return isRTL ? 'سجل الدخول للمقارنة' : 'Log in to track rivals.'
+
+    const uniqueMembersMap: Record<string, any> = {}
+    members.forEach((m: any) => {
+      if (m.profiles && m.profiles.id !== myId && !m.profiles.blocked) {
+        uniqueMembersMap[m.profiles.id] = m.profiles
+      }
+    })
+    const otherMembers = Object.values(uniqueMembersMap).sort((a: any, b: any) => b.xp - a.xp)
+    
+    if (otherMembers.length > 0) {
+      const topMember: any = otherMembers[0]
+      const myXp = profile?.xp || 0
+      
+      if (myXp >= topMember.xp) {
+        const diff = myXp - topMember.xp
+        return isRTL 
+          ? `أنت في الصدارة! يليك ${topMember.full_name || 'منافسك'} بفارق ${diff} XP.` 
+          : `You are leading! ${topMember.full_name || 'Rival'} is ${diff} XP behind you.`
+      } else {
+        const diff = topMember.xp - myXp
+        return isRTL 
+          ? `أنت متأخر بـ ${diff} XP عن ${topMember.full_name || 'المتصدر'}.` 
+          : `You are ${diff} XP behind ${topMember.full_name || 'Leader'}.`
+      }
+    }
+    return isRTL ? 'لا يوجد منافسين في هذا الفريق.' : 'No other active rivals in this squad.'
+  }, [selectedSquadId, squadMembersMap, profile, isRTL])
+
   async function toggleTask(task: any) {
     const updatedStatus = !task.is_completed
     setMissions(prev => prev.map(m => ({
@@ -214,8 +271,6 @@ export default function Dashboard() {
       }
     }
   }
-
-  if (!mounted) return null
 
   return (
     <Shell syncedMissions={missions} onMissionsRefresh={fetchDashboardMissions}>
@@ -303,7 +358,7 @@ export default function Dashboard() {
         <InlineGuideTip hasTasks={allTasks.length > 0} />
 
         {/* ── MIDDLE TWO-COLUMN GRID (Action Inbox & Rivalry Tracker) ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 items-start font-space">
           
           {/* Action Inbox (60%) */}
           <div className="lg:col-span-6 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 md:p-8 space-y-6 shadow-xl relative overflow-hidden">
@@ -332,12 +387,12 @@ export default function Dashboard() {
                   <motion.div
                     key={task.id}
                     layout
-                    className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-zinc-950/20 hover:bg-white/5 hover:border-white/10 transition-all gap-4"
+                    className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-zinc-950/20 hover:bg-white/5 hover:border-white/10 transition-all gap-4 font-space"
                   >
                     <div className="flex items-center gap-3.5 min-w-0 flex-1">
                       <button
                         onClick={() => toggleTask(task)}
-                        className="w-6 h-6 rounded-full border flex items-center justify-center bg-transparent hover:bg-white/5 transition-all shrink-0 cursor-pointer"
+                        className="w-6 h-6 rounded-full border flex items-center justify-center bg-transparent hover:bg-white/5 transition-all shrink-0 cursor-pointer animate-none"
                         style={{ borderColor: task.missionColor || currentTheme.color }}
                       >
                         <Check className="w-3.5 h-3.5 opacity-0 hover:opacity-100 transition-opacity" style={{ color: task.missionColor || currentTheme.color }} />
@@ -390,17 +445,34 @@ export default function Dashboard() {
           >
             <div className="absolute top-0 inset-x-0 h-1" style={{ backgroundColor: currentTheme.color }} />
             
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 shrink-0" style={{ color: currentTheme.color }} />
-              <h2 className="text-sm font-black tracking-widest text-[var(--text-secondary)] uppercase">
-                {isRTL ? 'متتبع المنافسة' : 'THE RIVALRY TRACKER'}
-              </h2>
+            <div className="flex justify-between items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 shrink-0" style={{ color: currentTheme.color }} />
+                <h2 className="text-sm font-black tracking-widest text-[var(--text-secondary)] uppercase">
+                  {isRTL ? 'متتبع المنافسة' : 'THE RIVALRY TRACKER'}
+                </h2>
+              </div>
+              
+              {squadsList.length > 1 && (
+                <select
+                  value={selectedSquadId}
+                  onChange={(e) => { playBlip(); setSelectedSquadId(e.target.value); }}
+                  className="bg-black/60 border rounded-lg px-2 py-1 text-[10px] font-space font-black uppercase text-zinc-300 outline-none cursor-pointer focus:border-teal-500"
+                  style={{ color: currentTheme.color, borderColor: `${currentTheme.color}30` }}
+                >
+                  {squadsList.map((sq) => (
+                    <option key={sq.id} value={sq.id} className="bg-zinc-950 text-white">
+                      {sq.title}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div className="py-8 flex flex-col items-center justify-center text-center space-y-4">
               <span className="text-4xl animate-bounce">⚔️</span>
               <p className="text-base font-black tracking-wide text-zinc-100 leading-relaxed uppercase max-w-xs">
-                {rivalryText || (isRTL ? 'انضم إلى فريق لتتبع منافسيك.' : 'Join a squad to track your rivals.')}
+                {computedRivalryText}
               </p>
             </div>
 
@@ -416,17 +488,17 @@ export default function Dashboard() {
 
         </div>
 
-        {/* ── RECENT ACTIVE GOALS (Bottom Section - Full Width Grid) ── */}
+        {/* ── PINNED GOALS (Bottom Section - Full Width Grid) ── */}
         <div className="w-full space-y-6 pt-8 border-t border-[var(--card-border)]">
           <div className="flex items-center gap-3">
             <Target className="text-2xl w-6 h-6 shrink-0" style={{ color: currentTheme.color }} />
             <h2 className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-widest">
-              {isRTL ? 'أحدث الأهداف النشطة' : 'RECENT ACTIVE GOALS // FOCUS MATRIX'}
+              {isRTL ? 'الأهداف المثبتة // مصفوفة التركيز' : 'PINNED GOALS // FOCUS MATRIX'}
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {missions.slice(0, 3).map((mission, idx) => {
+            {pinnedGoals.map((mission, idx) => {
               const { progress, isInRedZone } = calculateAccountability(mission)
               const roundedProgress = Math.round(progress)
               const customColor = mission.color || currentTheme.color
@@ -443,7 +515,7 @@ export default function Dashboard() {
                   <div className="absolute top-0 inset-x-0 h-[2px]" style={{ backgroundColor: isInRedZone ? '#ef4444' : customColor }} />
 
                   <div className="flex justify-between items-start gap-2">
-                    <h3 className="text-sm font-black uppercase tracking-wide truncate max-w-[80%] text-zinc-100">
+                    <h3 className="text-sm font-black uppercase tracking-wide truncate max-w-[80%] text-zinc-100 font-space">
                       {mission.title}
                     </h3>
                     <span 
@@ -471,10 +543,10 @@ export default function Dashboard() {
               )
             })}
 
-            {missions.length === 0 && (
+            {pinnedGoals.length === 0 && (
               <div className="col-span-full py-12 text-center border border-dashed border-white/5 rounded-xl">
-                <p className="text-xs uppercase tracking-widest text-zinc-500">
-                  {isRTL ? 'لا توجد أهداف نشطة حالياً.' : 'NO ACTIVE GOALS SYNCED'}
+                <p className="text-xs uppercase tracking-widest text-zinc-500 font-bold">
+                  {isRTL ? 'لا توجد أهداف مثبتة. افتح هدفاً وثبّته في لوحة التحكم.' : 'No goals pinned. Open a goal and pin it to your HUD.'}
                 </p>
               </div>
             )}

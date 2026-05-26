@@ -202,6 +202,7 @@ export interface Mission {
   is_archived: boolean
   size: string
   tasks?: MissionTask[]
+  isPinned?: boolean
 }
 
 export const TRANSLATIONS = {
