@@ -228,22 +228,29 @@ export default function TaskDrawer({
   ) => {
     if (!targetUserId) return
     try {
-      const supabase = createClient()
-      await supabase.from('inbox_reports').insert({
-        user_id: targetUserId,
-        type: 'daily_brief',
-        title,
-        content: {
-          text: contentText,
-          notification_type: type,
-          task_id: task?.id,
-          task_title: task?.title,
-          sender_id: currentUserId,
-          sender_name: profile?.full_name || 'Operator'
-        }
+      const response = await fetch('/api/notify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          targetUserId,
+          type,
+          title,
+          contentText,
+          taskId: task?.id,
+          taskTitle: task?.title,
+          senderId: currentUserId,
+          senderName: profile?.full_name || 'Operator'
+        })
       })
+
+      if (!response.ok) {
+        throw new Error(`Notification API failed with status ${response.status}`)
+      }
       
       // Instantly broadcast the notification ping to the target user
+      const supabase = createClient()
       const notifChannel = supabase.channel(`inbox-channel:${targetUserId}`)
       notifChannel.subscribe(async (status: any) => {
         if (status === 'SUBSCRIBED') {
