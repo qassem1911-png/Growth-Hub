@@ -369,6 +369,11 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
     if (mounted) {
       fetchMissions() 
       if (window.location.search.includes('create=true')) {
+        const params = new URLSearchParams(window.location.search)
+        const createTask = params.get('createTask')
+        if (createTask) {
+          setNewTitle(createTask)
+        }
         setShowCreate(true)
         window.history.replaceState({}, '', '/missions')
       }

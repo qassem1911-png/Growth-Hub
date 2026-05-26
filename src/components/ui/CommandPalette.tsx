@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Command } from 'cmdk'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useGrowth } from '@/context/GrowthContext'
@@ -8,20 +8,22 @@ import { useToast } from '@/components/ui/Toast'
 import { useSound } from '@/context/SoundContext'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { Plus, Users, LayoutGrid, Trophy, Bot, Sun, Moon, CornerDownLeft, Sparkles } from 'lucide-react'
+import { Plus, Users, LayoutGrid, Trophy, Bot, Sun, Moon, CornerDownLeft, Sparkles, History, Search } from 'lucide-react'
 
 interface CommandPaletteProps {
   isOpen: boolean
   onClose: () => void
   onOpenCoach?: () => void
+  missions?: any[]
 }
 
-export default function CommandPalette({ isOpen, onClose, onOpenCoach }: CommandPaletteProps) {
+export default function CommandPalette({ isOpen, onClose, onOpenCoach, missions = [] }: CommandPaletteProps) {
   const { currentTheme, isRTL } = useGrowth()
   const { showToast } = useToast()
   const { playBlip, playSuccess } = useSound()
   const router = useRouter()
   const [search, setSearch] = useState('')
+  const [recentItems, setRecentItems] = useState<any[]>([])
 
   // Toggle Dark/Light Mode logic
   const toggleTheme = () => {
@@ -37,6 +39,108 @@ export default function CommandPalette({ isOpen, onClose, onOpenCoach }: Command
     onClose()
   }
 
+  // Toggle Zen Mode (Deep Work)
+  const toggleZenMode = () => {
+    const isZen = document.documentElement.classList.toggle('zen-mode')
+    showToast(
+      isRTL
+        ? (isZen ? 'تم تفعيل وضع الزن (التركيز الكامل)' : 'تم إلغاء تفعيل وضع الزن')
+        : (isZen ? 'ZEN MODE ACTIVE // DEEP WORK STARTED' : 'ZEN MODE DEACTIVATED'),
+      isZen ? 'success' : 'warning'
+    )
+    playSuccess()
+    onClose()
+  }
+
+  // Read recently accessed items from localStorage
+  useEffect(() => {
+    if (isOpen) {
+      setSearch('')
+      try {
+        const raw = localStorage.getItem('growth_hub_recent_commands')
+        if (raw) setRecentItems(JSON.parse(raw))
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }, [isOpen])
+
+  // Track clicked items in history
+  const addToHistory = (item: { id: string; type: string; title: string; url: string }) => {
+    try {
+      const raw = localStorage.getItem('growth_hub_recent_commands')
+      let list = raw ? JSON.parse(raw) : []
+      // Filter out duplicate
+      list = list.filter((i: any) => i.id !== item.id)
+      // Add to front
+      list.unshift(item)
+      // Max 3 items
+      list = list.slice(0, 3)
+      localStorage.setItem('growth_hub_recent_commands', JSON.stringify(list))
+      setRecentItems(list)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  // Universal Search filtering goals & tasks
+  const searchResults = useMemo(() => {
+    if (!search.trim()) return []
+    const query = search.toLowerCase()
+    const results: any[] = []
+
+    missions.forEach((m: any) => {
+      const isSquad = m.metadata?.type === 'squad'
+      const goalUrl = isSquad ? `/goals/squad/${m.id}` : `/missions/${m.id}`
+
+      // Match Goal Title
+      if (m.title?.toLowerCase().includes(query)) {
+        results.push({
+          type: 'goal',
+          id: `goal-${m.id}`,
+          title: m.title,
+          subtitle: isSquad ? 'Team Goal' : 'Personal Goal',
+          url: goalUrl,
+          rawItem: { id: m.id, type: 'goal', title: m.title, url: goalUrl }
+        })
+      }
+
+      // Match Tasks inside Goals
+      if (m.tasks) {
+        m.tasks.forEach((t: any) => {
+          if (t.title?.toLowerCase().includes(query)) {
+            results.push({
+              type: 'task',
+              id: `task-${t.id}`,
+              title: t.title,
+              subtitle: `Task in "${m.title}"`,
+              url: `${goalUrl}?task=${t.id}`,
+              rawItem: { id: t.id, type: 'task', title: t.title, url: `${goalUrl}?task=${t.id}` }
+            })
+          }
+        })
+      }
+    })
+
+    return results
+  }, [search, missions])
+
+  // Smart Quick Create option
+  const showQuickCreate = useMemo(() => {
+    if (!search.trim()) return false
+    const searchLower = search.trim().toLowerCase()
+    const staticCommands = [
+      'create new goal',
+      'create team workspace',
+      'go to dashboard',
+      'go to vault ranks',
+      'go to coach',
+      'toggle dark light mode',
+      'toggle zen mode deep work'
+    ]
+    return !staticCommands.includes(searchLower)
+  }, [search])
+
   // Handle escape to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -48,8 +152,9 @@ export default function CommandPalette({ isOpen, onClose, onOpenCoach }: Command
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [onClose])
 
-  const runCommand = (action: () => void) => {
+  const runCommand = (action: () => void, historyItem?: { id: string; type: string; title: string; url: string }) => {
     playBlip()
+    if (historyItem) addToHistory(historyItem)
     action()
   }
 
@@ -104,11 +209,11 @@ export default function CommandPalette({ isOpen, onClose, onOpenCoach }: Command
               >
                 {/* Input wrapper */}
                 <div className="flex items-center gap-3 px-4 py-4 border-b border-white/[0.08]">
-                  <Sparkles className="w-5 h-5 shrink-0" style={{ color: currentTheme.color }} />
+                  <Sparkles className="w-5 h-5 shrink-0 animate-pulse" style={{ color: currentTheme.color }} />
                   <Command.Input
                     value={search}
                     onValueChange={setSearch}
-                    placeholder={isRTL ? "ابحث عن أمر أو وجهة..." : "Type a command or search..."}
+                    placeholder={isRTL ? "ابحث عن أمر، هدف، أو مهمة..." : "Type a command, goal, or task..."}
                     className="flex-1 bg-transparent border-none text-[#FFFFFF] placeholder-[#FFFFFF]/30 outline-none font-space font-medium text-lg"
                     autoFocus
                   />
@@ -118,10 +223,95 @@ export default function CommandPalette({ isOpen, onClose, onOpenCoach }: Command
                 </div>
 
                 {/* List */}
-                <Command.List className="max-h-[350px] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-zinc-850">
+                <Command.List className="max-h-[380px] overflow-y-auto p-2 scrollbar-thin scrollbar-thumb-zinc-850">
+                  
+                  {/* Smart Quick Create */}
+                  {showQuickCreate && (
+                    <Command.Group heading={isRTL ? "إنشاء سريع ذكي" : "SMART QUICK CREATE"}>
+                      <Command.Item
+                        value={`create task ${search}`}
+                        onSelect={() => runCommand(() => { router.push(`/missions?create=true&createTask=${encodeURIComponent(search)}`); onClose(); })}
+                        className="flex items-center justify-between px-3 py-3 rounded-lg text-sm text-zinc-300 hover:text-white cursor-pointer transition-all gap-3"
+                        style={{ '--selected-border-color': currentTheme.color } as React.CSSProperties}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-1.5 bg-cyan-500/10 border border-cyan-500/30 rounded">
+                            <Plus className="w-4 h-4 text-cyan-400" />
+                          </div>
+                          <span className="font-semibold tracking-wide text-cyan-400">{isRTL ? `إنشاء هدف فرعي: "${search}"` : `Create Goal: "${search}"`}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] text-cyan-500/60 font-mono">
+                          <span>QUICK</span>
+                          <CornerDownLeft className="w-3 h-3" />
+                        </div>
+                      </Command.Item>
+                    </Command.Group>
+                  )}
+
+                  {/* Empty View */}
                   <Command.Empty className="py-6 text-center text-sm text-zinc-500 font-space tracking-wider uppercase">
                     {isRTL ? "لا توجد نتائج مطابقة" : "No active modules matched"}
                   </Command.Empty>
+
+                  {/* Universal Search Results */}
+                  {search.trim().length > 0 && searchResults.length > 0 && (
+                    <Command.Group heading={isRTL ? "نتائج البحث الشامل" : "SEARCH RESULTS"}>
+                      {searchResults.map((res: any) => (
+                        <Command.Item
+                          key={res.id}
+                          value={res.title}
+                          onSelect={() => runCommand(() => { router.push(res.url); onClose(); }, res.rawItem)}
+                          className="flex items-center justify-between px-3 py-3 rounded-lg text-sm text-zinc-300 hover:text-white cursor-pointer transition-all gap-3 mt-1"
+                          style={{ '--selected-border-color': currentTheme.color } as React.CSSProperties}
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="p-1.5 bg-white/[0.03] border border-white/10 rounded shrink-0">
+                              <Search className="w-4 h-4" style={{ color: currentTheme.color }} />
+                            </div>
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <span className="font-semibold tracking-wide text-[#FFFFFF] truncate uppercase">{res.title}</span>
+                              <span className="text-[9px] text-zinc-500 tracking-wider uppercase font-medium">{res.subtitle}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-mono shrink-0">
+                            <span>{res.type === 'goal' ? (isRTL ? 'هدف' : 'GOAL') : (isRTL ? 'مهمة' : 'TASK')}</span>
+                            <CornerDownLeft className="w-3 h-3" />
+                          </div>
+                        </Command.Item>
+                      ))}
+                    </Command.Group>
+                  )}
+
+                  {/* Recently Accessed */}
+                  {!search.trim() && recentItems.length > 0 && (
+                    <Command.Group heading={isRTL ? "المستخدم مؤخراً" : "RECENTLY ACCESSED"}>
+                      {recentItems.map((item: any) => (
+                        <Command.Item
+                          key={item.id}
+                          value={item.title}
+                          onSelect={() => runCommand(() => { router.push(item.url); onClose(); })}
+                          className="flex items-center justify-between px-3 py-3 rounded-lg text-sm text-zinc-300 hover:text-white cursor-pointer transition-all gap-3 mt-1"
+                          style={{ '--selected-border-color': currentTheme.color } as React.CSSProperties}
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <div className="p-1.5 bg-white/[0.03] border border-white/10 rounded shrink-0">
+                              <History className="w-4 h-4 text-zinc-400" />
+                            </div>
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <span className="font-semibold tracking-wide text-[#FFFFFF] truncate uppercase">{item.title}</span>
+                              <span className="text-[9px] text-zinc-500 tracking-wider uppercase font-medium">
+                                {item.type === 'goal' ? (isRTL ? 'هدف' : 'Goal') : item.type === 'task' ? (isRTL ? 'مهمة فرعية' : 'Task') : (isRTL ? 'رابط' : 'Navigation')}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-mono shrink-0">
+                            <span>{isRTL ? 'فتح' : 'OPEN'}</span>
+                            <CornerDownLeft className="w-3 h-3" />
+                          </div>
+                        </Command.Item>
+                      ))}
+                    </Command.Group>
+                  )}
 
                   {/* Actions Group */}
                   <Command.Group 
@@ -174,7 +364,7 @@ export default function CommandPalette({ isOpen, onClose, onOpenCoach }: Command
                   >
                     <Command.Item
                       value="go to dashboard"
-                      onSelect={() => runCommand(() => { router.push('/'); onClose(); })}
+                      onSelect={() => runCommand(() => { router.push('/'); onClose(); }, { id: 'nav-dashboard', type: 'nav', title: 'Dashboard', url: '/' })}
                       className="flex items-center justify-between px-3 py-3 rounded-lg text-sm text-zinc-300 hover:text-white cursor-pointer transition-all gap-3 mt-1"
                       style={{ '--selected-border-color': currentTheme.color } as React.CSSProperties}
                     >
@@ -192,7 +382,7 @@ export default function CommandPalette({ isOpen, onClose, onOpenCoach }: Command
 
                     <Command.Item
                       value="go to vault ranks"
-                      onSelect={() => runCommand(() => { router.push('/vault'); onClose(); })}
+                      onSelect={() => runCommand(() => { router.push('/vault'); onClose(); }, { id: 'nav-vault', type: 'nav', title: 'Vault', url: '/vault' })}
                       className="flex items-center justify-between px-3 py-3 rounded-lg text-sm text-zinc-300 hover:text-white cursor-pointer transition-all gap-3 mt-1"
                       style={{ '--selected-border-color': currentTheme.color } as React.CSSProperties}
                     >
@@ -229,9 +419,9 @@ export default function CommandPalette({ isOpen, onClose, onOpenCoach }: Command
 
                   <div className="h-[1px] bg-white/[0.04] my-2 mx-2" />
 
-                  {/* Theme Group */}
+                  {/* Theme & System Group */}
                   <Command.Group 
-                    heading={isRTL ? "إعدادات المنظومة" : "SYSTEM // STYLES"}
+                    heading={isRTL ? "إعدادات المنظومة" : "SYSTEM // CONFIG"}
                     className="px-2 py-1.5 text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] font-space"
                   >
                     <Command.Item
@@ -252,6 +442,24 @@ export default function CommandPalette({ isOpen, onClose, onOpenCoach }: Command
                         <CornerDownLeft className="w-3 h-3" />
                       </div>
                     </Command.Item>
+
+                    <Command.Item
+                      value="toggle zen mode deep work"
+                      onSelect={() => runCommand(toggleZenMode)}
+                      className="flex items-center justify-between px-3 py-3 rounded-lg text-sm text-zinc-300 hover:text-white cursor-pointer transition-all gap-3 mt-1"
+                      style={{ '--selected-border-color': currentTheme.color } as React.CSSProperties}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-1.5 bg-white/[0.03] border border-white/10 rounded flex items-center justify-center">
+                          <Sparkles className="w-4.5 h-4.5 text-purple-400" />
+                        </div>
+                        <span className="font-semibold tracking-wide">{isRTL ? "تفعيل وضع الزن (التركيز الكامل)" : "Toggle Zen Mode (Deep Work)"}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-mono">
+                        <span>{isRTL ? "إعداد" : "SYS"}</span>
+                        <CornerDownLeft className="w-3 h-3" />
+                      </div>
+                    </Command.Item>
                   </Command.Group>
                 </Command.List>
 
@@ -259,7 +467,7 @@ export default function CommandPalette({ isOpen, onClose, onOpenCoach }: Command
                 <div className="px-4 py-3 border-t border-white/[0.08] bg-black/60 flex items-center justify-between text-[10px] font-space text-zinc-500 select-none">
                   <div className="flex items-center gap-2">
                     <span className="text-zinc-600 font-black">◆</span>
-                    <span>{isRTL ? "لوحة التوجيه السيبرانية" : "CYBERPUNK NAVIGATION CORE v2"}</span>
+                    <span>{isRTL ? "لوحة التوجيه السيبرانية" : "CYBERPUNK NAVIGATION CORE v3"}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1.5">

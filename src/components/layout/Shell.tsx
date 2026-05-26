@@ -815,6 +815,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
         isOpen={commandPaletteOpen} 
         onClose={() => setCommandPaletteOpen(false)} 
         onOpenCoach={() => setCoachPanelOpen(true)}
+        missions={syncedMissions}
       />
       <AuthModal />
       <EntryGateModal />

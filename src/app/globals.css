@@ -314,3 +314,21 @@ input, textarea {
 .text-sm { font-size: 16px !important; }
 .text-base { font-size: 18px !important; }
 
+/* Zen Mode (Deep Work) style sheet overrides */
+.zen-mode aside,
+.zen-mode header,
+.zen-mode nav {
+  display: none !important;
+}
+
+.zen-mode main {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-inline-start: 0 !important;
+  padding-inline-end: 0 !important;
+  margin: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+}
+
+
