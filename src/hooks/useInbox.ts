@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
+import { useToast } from '@/components/ui/Toast'
+
 
 export interface Report {
   id: string
@@ -21,6 +23,8 @@ export function useInbox() {
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
+  const { showToast } = useToast()
+
 
   const fetchReports = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -433,29 +437,24 @@ ${recommendationsEn}`
   }
 
   useEffect(() => {
-    let channel: any
+    let activeChannel: any = null
 
     async function init() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Set up real-time postgres changes subscription
-      channel = supabase
-        .channel(`realtime-inbox-${user.id}`)
+      // Set up robust real-time broadcast channel subscription as absolute fallback
+      activeChannel = supabase
+        .channel(`inbox-channel:${user.id}`)
         .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'inbox_reports',
-            filter: `user_id=eq.${user.id}`
-          },
+          'broadcast',
+          { event: 'new-notification' },
           (payload: any) => {
-            console.log('Realtime notification received:', payload.new)
-            setReports(prev => {
-              if (prev.some(r => r.id === payload.new.id)) return prev
-              return [payload.new as Report, ...prev]
-            })
+            console.log('Real-time broadcast notification received, fetching reports...', payload)
+            fetchReports()
+            if (payload && payload.title) {
+              showToast(payload.title, 'info')
+            }
           }
         )
         .subscribe()
@@ -490,11 +489,11 @@ ${recommendationsEn}`
     init()
 
     return () => {
-      if (channel) {
-        supabase.removeChannel(channel)
+      if (activeChannel) {
+        supabase.removeChannel(activeChannel)
       }
     }
-  }, [fetchReports, supabase])
+  }, [fetchReports, supabase, showToast])
 
   return { reports, loading, markAsRead, fetchReports }
 }

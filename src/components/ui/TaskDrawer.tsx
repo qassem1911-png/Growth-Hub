@@ -242,6 +242,26 @@ export default function TaskDrawer({
           sender_name: profile?.full_name || 'Operator'
         }
       })
+      
+      // Instantly broadcast the notification ping to the target user
+      const notifChannel = supabase.channel(`inbox-channel:${targetUserId}`)
+      notifChannel.subscribe(async (status: any) => {
+        if (status === 'SUBSCRIBED') {
+          await notifChannel.send({
+            type: 'broadcast',
+            event: 'new-notification',
+            payload: {
+              senderId: currentUserId,
+              title,
+              content: contentText
+            }
+          })
+          // Wait 2 seconds to guarantee delivery over WebSocket before removing
+          setTimeout(() => {
+            supabase.removeChannel(notifChannel)
+          }, 2000)
+        }
+      })
     } catch (err) {
       console.error('Failed to send notification:', err)
     }
