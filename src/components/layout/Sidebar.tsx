@@ -191,16 +191,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent hover:border-[var(--card-border)] hover:bg-[var(--input-bg)]"
                   )}
                 >
-                  {isGoalsActive && !pathname.startsWith('/goals/') && (
-                    <motion.div 
-                      layoutId="active-nav"
-                      className={cn(
-                        "absolute w-1.5 h-6 shadow-[0_0_20px_currentcolor]",
-                        "inset-inline-start-0 rounded-full"
-                      )}
-                      style={{ backgroundColor: currentTheme.color, color: currentTheme.color }}
-                    />
-                  )}
+                  {/* Active Nav Strip Removed */}
                   
                   <NeonIcon
                     icon={item.icon}
@@ -324,16 +315,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent hover:border-[var(--card-border)] hover:bg-[var(--input-bg)]"
               )}
             >
-              {isActive && (
-                <motion.div 
-                  layoutId="active-nav"
-                  className={cn(
-                    "absolute w-1.5 h-6 shadow-[0_0_20px_currentcolor]",
-                    "inset-inline-start-0 rounded-full"
-                  )}
-                  style={{ backgroundColor: currentTheme.color, color: currentTheme.color }}
-                />
-              )}
+              {/* Active Nav Strip Removed */}
               
               <NeonIcon
                 icon={item.icon}

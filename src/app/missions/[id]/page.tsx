@@ -1707,14 +1707,17 @@ const { progress, isInRedZone } = useMemo(() => {
                            </div>
 
                            {/* CENTER: Title + Detail Row (metrics + dashes) */}
-                           <div className="flex-1 min-w-0 flex flex-col items-center justify-center text-center">
+                           <div className={cn(
+                             "flex-1 min-w-0 flex flex-col",
+                             isRTL ? "items-end text-right pr-4" : "items-start text-left pl-4"
+                           )}>
                              <span className={cn(
                                "text-base md:text-[17px] font-space font-bold tracking-tight transition-all duration-300 ease-in-out uppercase truncate max-w-full block",
                                task.is_completed ? "text-gray-500 line-through opacity-55" : "text-white"
                              )}>
                                {task.title}
                              </span>
-                             <div className="flex items-center justify-center gap-3 mt-1 w-full">
+                              <div className={cn("flex items-center gap-3 mt-1 w-full", isRTL ? "justify-end" : "justify-start")}>
                                {hasVideo ? (
                                  <>
                                    <svg width="13" height="13" viewBox="0 0 24 24" fill={currentTheme.color} className="shrink-0">

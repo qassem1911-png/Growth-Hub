@@ -83,7 +83,6 @@ export default function KanbanBoard({
   const columns = [
     { id: 'to-do', name: isRTL ? 'المعلقة' : 'TO-DO', color: '#06B6D4', glowClass: 'shadow-[0_0_15px_rgba(6,182,212,0.15)] border-cyan-500/20 bg-cyan-950/10 text-cyan-400' },
     { id: 'in-progress', name: isRTL ? 'قيد التنفيذ' : 'IN PROGRESS', color: '#F59E0B', glowClass: 'shadow-[0_0_15px_rgba(245,158,11,0.15)] border-amber-500/20 bg-amber-950/10 text-amber-400' },
-    { id: 'review', name: isRTL ? 'المراجعة' : 'REVIEW', color: '#D946EF', glowClass: 'shadow-[0_0_15px_rgba(217,70,239,0.15)] border-fuchsia-500/20 bg-fuchsia-950/10 text-fuchsia-400' },
     { id: 'done', name: isRTL ? 'المكتملة' : 'DONE', color: '#10B981', glowClass: 'shadow-[0_0_15px_rgba(16,185,129,0.15)] border-emerald-500/20 bg-emerald-950/10 text-emerald-400' }
   ]
 
@@ -135,7 +134,7 @@ export default function KanbanBoard({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full pt-4 select-none">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full pt-4 select-none">
       {columns.map((col) => {
         const colTasks = tasks.filter(t => getTaskColumn(t) === col.id)
         const isOver = dragOverColumnId === col.id
@@ -176,7 +175,10 @@ export default function KanbanBoard({
             </div>
 
             {/* Tasks Container */}
-            <div className="flex-1 flex flex-col gap-3 overflow-y-auto pr-1 max-h-[600px] scrollbar-thin [&::-webkit-scrollbar]:hidden">
+            <div 
+              className="flex-1 flex flex-col gap-3 overflow-y-auto pr-1 max-h-[600px] scrollbar-none"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
               <AnimatePresence mode='popLayout'>
                 {colTasks.map((task) => {
                   const isDragging = draggingTaskId === task.id
