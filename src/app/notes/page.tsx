@@ -100,6 +100,7 @@ export default function NotesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterTag, setFilterTag] = useState('all')
   const [selectedMissionId, setSelectedMissionId] = useState<string | null>(null)
+  const [noteSourceFilter, setNoteSourceFilter] = useState<'all' | 'personal' | 'task'>('personal')
   const router = useRouter()
   const supabase = createClient()
   const { currentTheme, isRTL, mounted } = useGrowth()
@@ -412,7 +413,12 @@ export default function NotesPage() {
     const matchesTag = filterTag === 'all' || n.tag === filterTag
     const missionId = n.cups?.id || n.mission_id || n.cup_id
     const matchesMission = selectedMissionId === null || missionId === selectedMissionId
-    return matchesSearch && matchesTag && matchesMission
+    const matchesSource = (
+      noteSourceFilter === 'all' ||
+      (noteSourceFilter === 'personal' && !n._isTaskNote) ||
+      (noteSourceFilter === 'task' && n._isTaskNote)
+    )
+    return matchesSearch && matchesTag && matchesMission && matchesSource
   })
 
   async function createNote() {
@@ -509,7 +515,7 @@ export default function NotesPage() {
                 {isRTL ? 'الملاحظات' : 'NOTES'}
               </h1>
               <span className="inline-flex items-center justify-center px-3 py-1 bg-white/10 rounded-lg text-sm font-space font-bold text-white/50 tracking-normal normal-case">
-                {notes.length}
+                {filteredNotes.length}
               </span>
             </div>
           </div>
@@ -537,6 +543,54 @@ export default function NotesPage() {
             </button>
           </div>
         </header>
+
+        {/* Sleek Source Origin Segmented Selector to filter out Comments/Task Notes */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-black/5 dark:border-white/5 pb-4">
+          <div className="flex bg-[var(--input-bg)] border border-[var(--card-border)] rounded-2xl p-1 w-full sm:w-auto relative shadow-sm">
+            <button 
+              onClick={() => setNoteSourceFilter('personal')}
+              className={cn(
+                "flex-1 sm:flex-none py-2 px-5 rounded-xl text-[10px] font-space font-black tracking-wider uppercase transition-all duration-300 cursor-pointer text-center whitespace-nowrap",
+                noteSourceFilter === 'personal' 
+                  ? "text-black shadow-md font-black" 
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold"
+              )}
+              style={noteSourceFilter === 'personal' ? { backgroundColor: currentTheme.color } : {}}
+            >
+              {isRTL ? '📝 ملاحظاتي الحرة' : '📝 Personal Notes'}
+            </button>
+            <button 
+              onClick={() => setNoteSourceFilter('task')}
+              className={cn(
+                "flex-1 sm:flex-none py-2 px-5 rounded-xl text-[10px] font-space font-black tracking-wider uppercase transition-all duration-300 cursor-pointer text-center whitespace-nowrap",
+                noteSourceFilter === 'task' 
+                  ? "text-black shadow-md font-black" 
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold"
+              )}
+              style={noteSourceFilter === 'task' ? { backgroundColor: currentTheme.color } : {}}
+            >
+              {isRTL ? '💬 تعليقات المهام' : '💬 Task Comments'}
+            </button>
+            <button 
+              onClick={() => setNoteSourceFilter('all')}
+              className={cn(
+                "flex-1 sm:flex-none py-2 px-5 rounded-xl text-[10px] font-space font-black tracking-wider uppercase transition-all duration-300 cursor-pointer text-center whitespace-nowrap",
+                noteSourceFilter === 'all' 
+                  ? "text-black shadow-md font-black" 
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold"
+              )}
+              style={noteSourceFilter === 'all' ? { backgroundColor: currentTheme.color } : {}}
+            >
+              {isRTL ? '👁️ عرض الكل' : '👁️ Show All'}
+            </button>
+          </div>
+
+          <div className="text-[10px] font-monospace text-[var(--text-secondary)]/60 uppercase tracking-widest">
+            {isRTL 
+              ? `عرض ${filteredNotes.length} سجل من إجمالي ${notes.length}`
+              : `Showing ${filteredNotes.length} logs of ${notes.length}`}
+          </div>
+        </div>
 
         {/* Create Panel */}
         <AnimatePresence>
