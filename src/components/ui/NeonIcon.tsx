@@ -16,11 +16,14 @@ export const NeonIcon: React.FC<NeonIconProps> = ({
   size = 18,
   color,
   intent = 'none',
-  glow = true,
+  glow,
   interactive = false,
   className = '',
   ...props
 }) => {
+  // Glow activates only on interactive icons or when explicitly enabled
+  const effectiveGlow = glow !== undefined ? glow : interactive
+
   // Determine tailwind color classes based on intent
   let intentClass = ''
   let glowColorClass = 'drop-shadow-[0_0_5px_currentColor]'
@@ -54,9 +57,9 @@ export const NeonIcon: React.FC<NeonIconProps> = ({
     inline-block
     shrink-0
     stroke-[2.5]
-    ${glow && intent === 'none' ? glowColorClass : ''}
+    ${effectiveGlow && intent === 'none' ? glowColorClass : ''}
     ${intentClass}
-    ${interactive ? 'transition-all duration-150 cubic-bezier(0.16, 1, 0.3, 1) hover:scale-110 active:scale-90 hover:brightness-125 cursor-pointer select-none' : 'transition-transform duration-200'}
+    ${interactive ? 'transition-all duration-150 cubic-bezier(0.16, 1, 0.3, 1) hover:scale-110 active:scale-90 hover:brightness-125 hover:drop-shadow-[0_0_8px_currentColor] cursor-pointer select-none' : 'transition-transform duration-200'}
     ${className}
   `.trim().replace(/\s+/g, ' ')
 
