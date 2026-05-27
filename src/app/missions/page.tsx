@@ -959,7 +959,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
               <Layers className="text-3xl md:text-4xl w-8 h-8" style={{ color: currentTheme.color }} />
               <h1 className="text-4xl md:text-6xl font-black font-space tracking-wider uppercase not- text-black dark:text-white leading-none">
                 {typeFilter === 'solo' ? (
-                  <>{isRTL ? 'مهمات' : 'SOLO'}<span style={{ color: currentTheme.color }}>{isRTL ? ' فردية' : '_MISSIONS'}</span></>
+                  <>{isRTL ? 'أهداف' : 'SOLO'}<span style={{ color: currentTheme.color }}>{isRTL ? ' فردية' : '_GOALS'}</span></>
                 ) : typeFilter === 'squad' ? (
                   <>{isRTL ? 'عمليات' : 'SQUAD'}<span style={{ color: currentTheme.color }}>{isRTL ? ' الفريق' : '_OPS'}</span></>
                 ) : (

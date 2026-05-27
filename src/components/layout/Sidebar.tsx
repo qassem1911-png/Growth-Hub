@@ -282,16 +282,8 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
                                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--input-bg)]"
                             )}
                           >
-                            {isSubActive && (
-                              <motion.div 
-                                layoutId="active-nav"
-                                className={cn(
-                                  "absolute w-1.5 h-5 shadow-[0_0_20px_currentcolor]",
-                                  "inset-inline-start-0 rounded-full"
-                                )}
-                                style={{ backgroundColor: currentTheme.color, color: currentTheme.color }}
-                              />
-                            )}
+
+
 
                             <NeonIcon 
                               icon={subItem.icon}
