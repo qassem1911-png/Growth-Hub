@@ -52,14 +52,14 @@ export const NeonIcon: React.FC<NeonIconProps> = ({
       intentClass = ''
   }
 
-  // Tactical styling with robust micro-animations
+  // Clean, refined styling (ClickUp-level thin strokes)
   const baseClasses = `
     inline-block
     shrink-0
-    stroke-[2.5]
+    stroke-[1.75]
     ${effectiveGlow && intent === 'none' ? glowColorClass : ''}
     ${intentClass}
-    ${interactive ? 'transition-all duration-150 cubic-bezier(0.16, 1, 0.3, 1) hover:scale-110 active:scale-90 hover:brightness-125 hover:drop-shadow-[0_0_8px_currentColor] cursor-pointer select-none' : 'transition-transform duration-200'}
+    ${interactive ? 'transition-all duration-150 cubic-bezier(0.16, 1, 0.3, 1) hover:scale-110 active:scale-90 hover:brightness-125 hover:drop-shadow-[0_0_6px_currentColor] cursor-pointer select-none' : 'transition-transform duration-200'}
     ${className}
   `.trim().replace(/\s+/g, ' ')
 
