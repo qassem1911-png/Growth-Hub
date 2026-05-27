@@ -24,10 +24,33 @@ const IconMap: Record<string, React.ComponentType<any>> = {
 }
 
 export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProps) {
-  const { profile, setLastAiMessage, currentTheme } = useGrowth()
+  const { profile, setLastAiMessage, currentTheme, tasksCompletedToday } = useGrowth()
   const { playNeuralLink, playBlip } = useSound()
   const [response, setResponse] = useState(profile?.language === 'ar' ? 'في انتظار الأوامر // اختر إجراء من الأسفل' : 'AWAITING_ORDERS // SELECT_ACTION_BELOW')
   const [isLoading, setIsLoading] = useState(false)
+  const [energy, setEnergy] = useState<number>(3)
+
+  // Energy System Logic (Point 1)
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return
+    const checkEnergy = () => {
+      const todayStr = new Date().toISOString().split('T')[0]
+      const lastScanDate = localStorage.getItem('last_scan_date')
+      let currentEnergy = 3
+
+      if (lastScanDate !== todayStr) {
+        localStorage.setItem('last_scan_date', todayStr)
+        localStorage.setItem('coach_energy', '3')
+        setEnergy(3)
+      } else {
+        const storedEnergy = localStorage.getItem('coach_energy')
+        currentEnergy = storedEnergy ? parseInt(storedEnergy, 10) : 3
+        setEnergy(currentEnergy)
+      }
+    }
+
+    if (isOpen) checkEnergy()
+  }, [isOpen])
 
   const isArabic = /[\u0600-\u06FF]/.test(response)
 
@@ -43,9 +66,16 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
   const activeMissions = missions.filter(m => !m.is_archived && m.sync_to_dashboard)
   
   const handleAction = async (actionType: string) => {
-    if (isLoading) return
+    if (isLoading || energy <= 0) return
     setIsLoading(true)
     playNeuralLink()
+
+    // Visual loading prompt (Point 4)
+    setResponse(profile?.language === 'ar' ? 'جاري فحص وتحليل خلايا البيانات الحية...' : 'ANALYZING_USER_DATA...')
+
+    const nextEnergy = energy - 1
+    setEnergy(nextEnergy)
+    localStorage.setItem('coach_energy', String(nextEnergy))
 
     let prompt = ''
     switch (actionType) {
@@ -74,6 +104,7 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
       rank: profile?.rank || 'RECRUIT',
       xp: profile?.xp || 0,
       capacity_used: activeMissions.length,
+      completed_tasks_today: tasksCompletedToday || 0,
       missions: activeMissions.map(m => ({
         title: m.title,
         progress: m.progress || 0,
@@ -96,11 +127,30 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
       }))
     }
 
-    const res = await chatWithCoach(prompt, userData, profile?.language || 'en')
-    setResponse(res)
-    setLastAiMessage(res)
-    setIsLoading(false)
-    playBlip()
+    try {
+      const apiResponse = await fetch('/api/coach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: prompt,
+          userData,
+          language: profile?.language || 'en'
+        })
+      })
+      const data = await apiResponse.json()
+      if (data && data.response) {
+        setResponse(data.response)
+        setLastAiMessage(data.response)
+      } else {
+        throw new Error(data.error || 'API call failed')
+      }
+    } catch (err: any) {
+      console.error(err)
+      setResponse(profile?.language === 'ar' ? 'فشل الاتصال المشفر بالمدرب السيبراني // يرجى الإعادة لاحقاً' : 'ENCRYPTED_LINK_FAILED // RETRY_LATER')
+    } finally {
+      setIsLoading(false)
+      playBlip()
+    }
   }
 
   const coachName = profile?.ai_name || personality;
@@ -135,6 +185,23 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
               <button onClick={onClose} className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
                 <X className="" />
               </button>
+            </div>
+
+            {/* Premium i18n Cyberpunk Energy Bar (Point 1) */}
+            <div className="px-6 py-2 bg-black/10 border-b flex items-center justify-between text-[9px] font-monospace tracking-widest uppercase" style={{ borderColor: `${coachColor}11`, color: coachColor }}>
+              <span>{profile?.language === 'ar' ? `الطاقة المتبقية: ${energy}/3 مسحات تكتيكية` : `[ ENERGY: ${energy}/3 SCANS LEFT ]`}</span>
+              <div className="flex gap-1.5 items-center">
+                {[1, 2, 3].map(i => (
+                  <div 
+                    key={i} 
+                    className="w-4 h-1.5 transition-all duration-300 rounded-[1px]"
+                    style={{ 
+                      backgroundColor: i <= energy ? coachColor : 'rgba(255,255,255,0.05)',
+                      boxShadow: i <= energy ? `0 0 8px ${coachColor}` : 'none'
+                    }}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Response Area */}
@@ -180,7 +247,11 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
 
             {/* Action Buttons */}
             <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4 scrollbar-thin">
-              <span className="text-[10px] font-black tracking-[0.4em] uppercase" style={{ color: coachColor }}>SELECT_ACTION:</span>
+              <span className="text-[10px] font-black tracking-[0.4em] uppercase" style={{ color: coachColor }}>
+                {energy === 0 
+                  ? (profile?.language === 'ar' ? '⚠️ نفدت الطاقة // إعادة الشحن عند منتصف الليل' : '⚠️ RECHARGING UNTIL MIDNIGHT')
+                  : 'SELECT_ACTION:'}
+              </span>
               
               <div className="grid grid-cols-1 gap-3">
                 <ActionButton 
@@ -188,7 +259,7 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
                   title="SCAN_STATUS" 
                   subtitle={profile?.language === 'ar' ? 'تحليل وضعي الحالي' : 'Complete status analysis'} 
                   onClick={() => handleAction('scan_status')}
-                  disabled={isLoading}
+                  disabled={isLoading || energy === 0}
                   color={coachColor}
                   lang={profile?.language}
                 />
@@ -197,7 +268,7 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
                   title="DAILY_PLAN" 
                   subtitle={profile?.language === 'ar' ? 'خطة النهارده' : 'What to focus on today'} 
                   onClick={() => handleAction('daily_plan')}
-                  disabled={isLoading}
+                  disabled={isLoading || energy === 0}
                   color={coachColor}
                   lang={profile?.language}
                 />
@@ -206,7 +277,7 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
                   title="CRITICAL_ALERT" 
                   subtitle={profile?.language === 'ar' ? 'تنبيهات خطيرة' : 'Goals in danger'} 
                   onClick={() => handleAction('critical_alert')}
-                  disabled={isLoading}
+                  disabled={isLoading || energy === 0}
                   color={coachColor}
                   lang={profile?.language}
                 />
@@ -215,7 +286,7 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
                   title="BRIEF_GOAL" 
                   subtitle={profile?.language === 'ar' ? 'بريف عن أهم هدف' : 'Tactical goal breakdown'} 
                   onClick={() => handleAction('brief_mission')}
-                  disabled={isLoading}
+                  disabled={isLoading || energy === 0}
                   color={coachColor}
                   lang={profile?.language}
                 />
@@ -224,7 +295,7 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
                   title="MOTIVATE_ME" 
                   subtitle={profile?.language === 'ar' ? 'شجعني واضغط عليا' : 'Give me a harsh motivational speech'} 
                   onClick={() => handleAction('motivate_me')}
-                  disabled={isLoading}
+                  disabled={isLoading || energy === 0}
                   color={coachColor}
                   lang={profile?.language}
                 />
@@ -233,7 +304,7 @@ export default function CoachPanel({ isOpen, onClose, missions }: CoachPanelProp
                   title="HOW_TO_START" 
                   subtitle={profile?.language === 'ar' ? 'أبدأ بإيه دلوقتي؟' : 'What is the easiest task to start with?'} 
                   onClick={() => handleAction('how_to_start')}
-                  disabled={isLoading}
+                  disabled={isLoading || energy === 0}
                   color={coachColor}
                   lang={profile?.language}
                 />
