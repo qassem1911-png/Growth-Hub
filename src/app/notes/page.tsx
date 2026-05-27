@@ -447,10 +447,52 @@ export default function NotesPage() {
   if (loading) return (
     <Shell>
       <div className="p-4 md:p-12 space-y-10">
-        <div className="animate-pulse flex flex-col gap-4">
-          <div className="h-40 bg-gray-800 rounded"/>
-          <div className="h-40 bg-gray-800 rounded"/>
-          <div className="h-40 bg-gray-800 rounded"/>
+        {/* Subtle holographic connection subtitle */}
+        <div className="text-center md:text-left">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--theme-color)]/5 border border-[var(--theme-color)]/10 backdrop-blur-md">
+            <div className="w-1.5 h-1.5 rounded-full bg-[var(--theme-color)] animate-ping" />
+            <span className="font-space text-[9px] tracking-[0.25em] font-black uppercase text-[var(--theme-color)]">
+              {isRTL ? 'جاري استرجاع السجلات المشفرة...' : 'COMPILING_ENCRYPTED_DATABASE_LOGS...'}
+            </span>
+          </div>
+        </div>
+
+        {/* Shimmer skeleton matching notes grid layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-pulse">
+          {[1, 2, 3, 4, 5, 6].map((idx) => (
+            <div 
+              key={idx}
+              className="relative p-7 border border-[var(--card-border)] bg-[var(--card-bg)] min-h-[220px] flex flex-col justify-between overflow-hidden"
+            >
+              {/* Shimmer Accent top border */}
+              <div 
+                className="absolute top-0 left-0 right-0 h-[1.5px]" 
+                style={{ background: `linear-gradient(90deg, transparent, ${currentTheme.color}60, transparent)` }} 
+              />
+              
+              {/* Fake Mission Badge Link */}
+              <div className="w-20 h-4 rounded bg-[var(--theme-color)]/10 self-end mb-2" />
+
+              {/* Fake Title */}
+              <div className="w-3/4 h-5 rounded bg-[var(--theme-color)]/10 mt-4 mb-3" />
+
+              {/* Fake Content Lines */}
+              <div className="space-y-2 flex-1 mt-2">
+                <div className="w-full h-3 rounded bg-[var(--theme-color)]/5" />
+                <div className="w-5/6 h-3 rounded bg-[var(--theme-color)]/5" />
+                <div className="w-2/3 h-3 rounded bg-[var(--theme-color)]/5" />
+              </div>
+
+              {/* Fake Footer */}
+              <div className="flex justify-between items-center mt-5 pt-3 border-t border-[var(--card-border)]/30">
+                <div className="flex gap-2">
+                  <div className="w-10 h-4.5 rounded bg-[var(--theme-color)]/15" />
+                  <div className="w-12 h-3.5 rounded bg-[var(--theme-color)]/5 align-middle self-center" />
+                </div>
+                <div className="w-4 h-4 rounded bg-[var(--theme-color)]/5" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </Shell>

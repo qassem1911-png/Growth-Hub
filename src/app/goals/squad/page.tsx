@@ -1035,10 +1035,59 @@ export default function SquadGoalsPage() {
   if (loading || !mounted) return (
     <Shell>
       <div className="max-w-7xl mx-auto p-6 md:p-12 space-y-12">
-        <div className="animate-pulse flex flex-col gap-4">
-          <div className="h-40 bg-gray-800 rounded"/>
-          <div className="h-40 bg-gray-800 rounded"/>
-          <div className="h-40 bg-gray-800 rounded"/>
+        {/* Subtle holographic subtitle */}
+        <div className="text-center md:text-left">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--theme-color)]/5 border border-[var(--theme-color)]/10 backdrop-blur-md">
+            <div className="w-1.5 h-1.5 rounded-full bg-[var(--theme-color)] animate-ping" />
+            <span className="font-space text-[9px] tracking-[0.25em] font-black uppercase text-[var(--theme-color)]">
+              {isRTL ? 'مزامنة أهداف مساحة العمل السحابية...' : 'SYNCING_CLOUD_WORKSPACE_OBJECTIVES...'}
+            </span>
+          </div>
+        </div>
+
+        {/* Shimmer skeleton matching grid goals layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-pulse">
+          {[1, 2, 3].map((idx) => (
+            <div 
+              key={idx}
+              className="relative p-8 border border-[var(--card-border)] bg-[var(--card-bg)] rounded-3xl min-h-[350px] flex flex-col justify-between overflow-hidden"
+            >
+              {/* Theme glow effect */}
+              <div 
+                className="absolute top-0 left-0 right-0 h-[2px]" 
+                style={{ background: `linear-gradient(90deg, transparent, ${currentTheme.color}80, transparent)` }} 
+              />
+              
+              {/* Header Telemetry */}
+              <div className="flex justify-between items-center w-full">
+                <div className="w-24 h-4.5 rounded bg-[var(--theme-color)]/15" />
+                <div className="w-8 h-8 rounded-full bg-[var(--theme-color)]/10" />
+              </div>
+
+              {/* Central Circle Progress Shimmer */}
+              <div className="flex flex-col items-center justify-center my-8 space-y-4">
+                <div 
+                  className="w-24 h-24 rounded-full border-4 border-dashed flex items-center justify-center animate-[spin_30s_linear_infinite]"
+                  style={{ borderColor: `${currentTheme.color}25` }}
+                >
+                  <div className="w-16 h-16 rounded-full border border-dotted" style={{ borderColor: `${currentTheme.color}15` }} />
+                </div>
+                <div className="w-16 h-4.5 rounded bg-[var(--theme-color)]/15" />
+              </div>
+
+              {/* Subtasks outline */}
+              <div className="space-y-2.5 w-full">
+                <div className="w-full h-8 rounded-xl bg-[var(--theme-color)]/5 border border-[var(--theme-color)]/10" />
+                <div className="w-full h-8 rounded-xl bg-[var(--theme-color)]/5 border border-[var(--theme-color)]/10" />
+              </div>
+
+              {/* Footer Slots */}
+              <div className="flex justify-between items-center mt-6 pt-4 border-t border-[var(--card-border)]/30 w-full">
+                <div className="w-20 h-4 rounded bg-[var(--theme-color)]/10" />
+                <div className="w-16 h-4 rounded bg-[var(--theme-color)]/5" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </Shell>
