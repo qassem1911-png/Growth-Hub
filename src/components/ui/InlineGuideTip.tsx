@@ -22,7 +22,7 @@ export default function InlineGuideTip({ hasTasks }: InlineGuideTipProps) {
     }
   }, [])
 
-  if (hasTasks || isDismissed) return null
+  if (isDismissed) return null
 
   const handleDismiss = () => {
     setIsDismissed(true)
