@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Circle } from 'lucide-react'
 import { NeonIcon } from '../NeonIcon'
 
@@ -33,6 +33,7 @@ export default function TaskDrawerMetadata({
   updateTask,
   sendNotification
 }: TaskDrawerMetadataProps) {
+  const [showAssignDropdown, setShowAssignDropdown] = useState(false)
   return (
     <>
       {/* A. STATUS, WEIGHT, XP & TIMELINE PANEL (LEGACY GRID COMMENTED OUT TO RECLAIM VERTICAL SPACE) */}
@@ -150,61 +151,69 @@ export default function TaskDrawerMetadata({
             {/* Only owner can assign */}
             {(currentUserId === missionOwnerId) && (
             <div className="space-y-2">
-              <label className="text-[9px] font-black uppercase tracking-widest font-mono text-zinc-500">
-                {isRTL ? 'تعيين عضو:' : 'Assign to:'}
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
-                {squadMembers.map((member: any) => {
-                  const isAssigned = task.assigned_to === member.id
-                  return (
-                    <button
-                      key={member.id}
-                      type="button"
-                      onClick={() => {
-                        if (isAssigned) return
-                        updateTask(task.id, {
-                          assigned_to: member.id,
-                          assignee: {
-                            id: member.id,
-                            full_name: member.full_name,
-                            avatar_url: member.avatar_url,
-                            rank: member.rank
+              <button
+                type="button"
+                onClick={() => setShowAssignDropdown(!showAssignDropdown)}
+                className="w-full flex items-center justify-between px-3 py-2 border border-white/10 hover:border-white/20 bg-white/[0.02] text-xs font-bold text-zinc-400 hover:text-white rounded-md cursor-pointer transition-all"
+              >
+                <span>{isRTL ? '⚙️ تعيين / تغيير المسؤول' : '⚙️ Assign / Change Operator'}</span>
+                <span className="text-[10px] opacity-60">{showAssignDropdown ? '▲' : '▼'}</span>
+              </button>
+              
+              {showAssignDropdown && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1 pt-2">
+                  {squadMembers.map((member: any) => {
+                    const isAssigned = task.assigned_to === member.id
+                    return (
+                      <button
+                        key={member.id}
+                        type="button"
+                        onClick={() => {
+                          if (isAssigned) return
+                          updateTask(task.id, {
+                            assigned_to: member.id,
+                            assignee: {
+                              id: member.id,
+                              full_name: member.full_name,
+                              avatar_url: member.avatar_url,
+                              rank: member.rank
+                            }
+                          })
+                          
+                          // Send custom assignee notification
+                          if (member.id !== currentUserId) {
+                            const senderName = profile?.full_name || 'Operator'
+                            const notifTitle = isRTL
+                              ? `👤 تم تعيين مهمة جديدة لك`
+                              : `👤 New task assigned to you`
+                            const notifContent = isRTL
+                              ? `${senderName} قام بتعيين مهمة "${task.title}" لك`
+                              : `${senderName} assigned you to the task "${task.title}"`
+                            sendNotification(member.id, 'reaction', notifTitle, notifContent)
                           }
-                        })
-                        
-                        // Send custom assignee notification
-                        if (member.id !== currentUserId) {
-                          const senderName = profile?.full_name || 'Operator'
-                          const notifTitle = isRTL
-                            ? `👤 تم تعيين مهمة جديدة لك`
-                            : `👤 New task assigned to you`
-                          const notifContent = isRTL
-                            ? `${senderName} قام بتعيين مهمة "${task.title}" لك`
-                            : `${senderName} assigned you to the task "${task.title}"`
-                          sendNotification(member.id, 'reaction', notifTitle, notifContent)
-                        }
-                      }}
-                      className={`flex items-center gap-3 p-2.5 border rounded-md text-left transition-all duration-300 cursor-pointer min-w-0 w-full ${
-                        isAssigned
-                          ? "bg-teal-500/10 border-teal-500/50 text-[#14b8a6]"
-                          : "bg-white/[0.01] border-white/5 hover:border-white/15 text-zinc-400 hover:text-white"
-                      }`}
-                    >
-                      {member.avatar_url ? (
-                        <img src={member.avatar_url} className="w-6 h-6 rounded-full object-cover shrink-0" />
-                      ) : (
-                        <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[9px] font-bold shrink-0 text-white">
-                          {member.full_name?.charAt(0) || '?'}
-                        </div>
-                      )}
-                      <span className="text-xs font-bold truncate flex-1">{member.full_name}</span>
-                      {isAssigned && (
-                        <NeonIcon icon={Circle} className="shrink-0 w-3.5 h-3.5" style={{ color: '#14b8a6', opacity: 0.7 }} />
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
+                        }}
+                        className={`flex items-center gap-3 p-2.5 border rounded-md text-left transition-all duration-300 cursor-pointer min-w-0 w-full ${
+                          isAssigned
+                            ? "bg-teal-500/10 border-teal-500/50 text-[#14b8a6]"
+                            : "bg-white/[0.01] border-white/5 hover:border-white/15 text-zinc-400 hover:text-white"
+                        }`}
+                      >
+                        {member.avatar_url ? (
+                          <img src={member.avatar_url} className="w-6 h-6 rounded-full object-cover shrink-0" />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[9px] font-bold shrink-0 text-white">
+                            {member.full_name?.charAt(0) || '?'}
+                          </div>
+                        )}
+                        <span className="text-xs font-bold truncate flex-1">{member.full_name}</span>
+                        {isAssigned && (
+                          <NeonIcon icon={Circle} className="shrink-0 w-3.5 h-3.5" style={{ color: '#14b8a6', opacity: 0.7 }} />
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
             </div>
             )}
           </div>

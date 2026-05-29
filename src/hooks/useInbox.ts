@@ -482,7 +482,8 @@ ${recommendationsEn}`
       const userCreatedAt = profile?.created_at || new Date().toISOString()
 
       await fetchReports()
-      await generateDailyBrief(user.id, lang)
+      // Commented out to prevent notification spam loop
+      // await generateDailyBrief(user.id, lang)
       await generateWeeklyReview(user.id, lang, userCreatedAt)
       await checkDeadlinesAndCompletions(user.id, lang)
     }

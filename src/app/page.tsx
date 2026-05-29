@@ -396,15 +396,15 @@ export default function Dashboard() {
           
           {/* Action Inbox (60%) */}
           <div className="lg:col-span-6 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 md:p-8 space-y-6 shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-red-500 to-transparent" />
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r to-transparent" style={{ backgroundImage: `linear-gradient(to right, ${currentTheme.color}, transparent)` }} />
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <NeonIcon icon={Activity} intent="danger" className="w-4 h-4 shrink-0" />
+                <NeonIcon icon={Activity} className="w-4 h-4 shrink-0" style={{ color: currentTheme.color }} />
                 <h2 className="text-sm font-black tracking-widest text-[var(--text-secondary)] uppercase">
                   {isRTL ? 'الوارد التكتيكي العاجل' : 'ACTION INBOX // CRITICAL'}
                 </h2>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 text-[10px] font-black border border-red-500/20">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black border" style={{ color: currentTheme.color, borderColor: `${currentTheme.color}30`, backgroundColor: `${currentTheme.color}15` }}>
                 {actionInboxTasks.length} {isRTL ? 'مهمة عاجلة' : 'IMMEDIATE'}
               </span>
             </div>

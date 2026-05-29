@@ -1542,7 +1542,7 @@ const { progress, isInRedZone } = useMemo(() => {
               </div>
               
               {/* Premium Segmented Layout View Toggle switcher with Smart Time Filters */}
-              <div className="flex overflow-x-auto whitespace-nowrap w-full scrollbar-hide [&::-webkit-scrollbar]:hidden items-center gap-4 pb-2 md:pb-0 md:w-auto">
+              <div className="flex flex-nowrap overflow-x-auto whitespace-nowrap w-full scrollbar-hide [&::-webkit-scrollbar]:hidden items-center gap-4 pb-2 md:pb-0 md:w-auto">
                 {/* Smart Time Filters */}
                 <div className="flex items-center gap-1.5 p-1 bg-black/40 border border-white/5 backdrop-blur-md rounded-md shrink-0">
                   {[
@@ -1555,7 +1555,7 @@ const { progress, isInRedZone } = useMemo(() => {
                       type="button"
                       onClick={() => { playBlip(); setTimeFilter(f.key as any); }}
                       className={cn(
-                        "px-2.5 py-1 rounded font-space text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer",
+                        "px-2.5 py-1 rounded font-space text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap",
                         timeFilter === f.key
                           ? "bg-white/10 text-white font-black"
                           : "text-white/40 hover:text-white/70"
@@ -1572,7 +1572,7 @@ const { progress, isInRedZone } = useMemo(() => {
                     type="button"
                     onClick={() => { playBlip(); setActiveView('list'); }}
                     className={cn(
-                      "px-3 py-1.5 font-space text-[10px] font-black tracking-widest uppercase transition-all rounded-md flex items-center gap-1.5 cursor-pointer",
+                      "px-3 py-1.5 font-space text-[10px] font-black tracking-widest uppercase transition-all rounded-md flex items-center gap-1.5 cursor-pointer whitespace-nowrap",
                       activeView === 'list'
                         ? "bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                         : "text-white/40 hover:text-white/70"
@@ -1586,7 +1586,7 @@ const { progress, isInRedZone } = useMemo(() => {
                     type="button"
                     onClick={() => { playBlip(); setActiveView('board'); }}
                     className={cn(
-                      "px-3 py-1.5 font-space text-[10px] font-black tracking-widest uppercase transition-all rounded-md flex items-center gap-1.5 cursor-pointer",
+                      "px-3 py-1.5 font-space text-[10px] font-black tracking-widest uppercase transition-all rounded-md flex items-center gap-1.5 cursor-pointer whitespace-nowrap",
                       activeView === 'board'
                         ? "bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.05)]"
                         : "text-white/40 hover:text-white/70"

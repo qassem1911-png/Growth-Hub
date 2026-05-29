@@ -837,9 +837,8 @@ export default function TaskDrawer({
 
         </div>
 
-        {/* Fixed Thumb-Zone Footer */}
-        {/* <div className="fixed bottom-0 left-0 w-full z-[99999] bg-[#0a0a0f]/95 backdrop-blur-xl border-t border-white/5 p-3 pb-safe flex items-center gap-2"> */}
-        <div className="absolute bottom-0 pb-[85px] left-0 w-full z-[99999] bg-[#0a0a0f]/95 backdrop-blur-xl border-t border-white/5 p-3 pb-safe flex items-center gap-2">
+        {/* Fixed Thumb-Zone Footer - Explicitly lifted to clear bottom nav */}
+        <div className="absolute bottom-[85px] left-0 w-full z-[99999] bg-[#0a0a0f]/95 backdrop-blur-xl border-t border-white/5 p-3 pb-safe flex items-center gap-2">
           {/* Play/Focus Button */}
           {!task.is_completed ? (
             <button
@@ -848,7 +847,7 @@ export default function TaskDrawer({
                 startFocus(task.title, task.id, cupId)
                 onClose()
               }}
-              className="flex-1 py-2 rounded-md text-[10px] font-bold font-space flex items-center justify-center gap-2 transition-all bg-orange-500/10 border border-orange-500/30 text-orange-500 hover:bg-orange-500/20 active:scale-95"
+              className="flex-1 h-10 rounded-md text-[10px] font-bold font-space flex items-center justify-center gap-2 transition-all bg-orange-500/10 border border-orange-500/30 text-orange-500 hover:bg-orange-500/20 active:scale-95"
             >
               <Play className="w-4 h-4 fill-current" />
               <span>{isRTL ? 'تركيز' : 'START FOCUS'}</span>
@@ -883,7 +882,7 @@ export default function TaskDrawer({
               }
               onClose()
             }}
-            className="flex-1 py-2 rounded-md text-[10px] font-bold font-space flex items-center justify-center gap-2 transition-all border text-center"
+            className="flex-1 h-10 rounded-md text-[10px] font-bold font-space flex items-center justify-center gap-2 transition-all border text-center"
             style={{
               backgroundColor: task.is_completed ? 'transparent' : themeColor,
               borderColor: themeColor,
@@ -905,7 +904,7 @@ export default function TaskDrawer({
                   onClose()
                 }
               }}
-              className="w-9 h-9 md:w-8 md:h-8 shrink-0 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-md transition-all"
+              className="w-10 h-10 shrink-0 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-md transition-all"
               title="DELETE TASK"
             >
               <Trash2 className="w-4.5 h-4.5" />
