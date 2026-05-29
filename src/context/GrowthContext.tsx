@@ -593,7 +593,8 @@ export function GrowthProvider({ children }: { children: React.ReactNode }) {
         metaThemeColor.setAttribute('name', 'theme-color')
         document.head.appendChild(metaThemeColor)
       }
-      metaThemeColor.setAttribute('content', currentTheme.color)
+      // metaThemeColor.setAttribute('content', currentTheme.color)
+      metaThemeColor.setAttribute('content', '#0a0a0f')
     }
   }, [currentTheme])
 

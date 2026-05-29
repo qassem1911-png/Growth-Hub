@@ -48,14 +48,16 @@ export default function RootLayout({
                   document.documentElement.style.setProperty('--color-primary', cachedColor);
                   document.documentElement.style.setProperty('--theme-color', cachedColor);
                   var metaThemeColor = document.querySelector('meta[name="theme-color"]');
-                  if (metaThemeColor) metaThemeColor.setAttribute('content', cachedColor);
+                  // if (metaThemeColor) metaThemeColor.setAttribute('content', cachedColor);
+                  if (metaThemeColor) metaThemeColor.setAttribute('content', '#0a0a0f');
                 } catch (e) {}
               })();
             `
           }} />
         )}
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#B0C4DE" />
+        {/* <meta name="theme-color" content="#B0C4DE" /> */}
+        <meta name="theme-color" content="#0a0a0f" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Growth Hub" />
