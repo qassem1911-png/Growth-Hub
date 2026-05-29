@@ -79,7 +79,7 @@ export default function TaskDrawerMetadata({
       <div className="flex flex-wrap gap-2 text-xs">
         {/* Status Pill */}
         <span 
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-space font-bold border"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md font-space font-bold border"
           style={{
             borderColor: task.is_completed ? '#10B98130' : `${themeColor}30`,
             backgroundColor: task.is_completed ? '#10B98105' : `${themeColor}05`,
@@ -91,31 +91,31 @@ export default function TaskDrawerMetadata({
         </span>
 
         {/* Difficulty Weight Pill */}
-        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-mono font-bold border border-white/5 bg-white/[0.02] text-white/80">
+        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md font-mono font-bold border border-white/5 bg-white/[0.02] text-white/80">
           ⚡ {task.weight || 1} / 6
         </span>
 
         {/* XP Reward Pill */}
-        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-mono font-bold border border-teal-500/20 bg-teal-500/5 text-teal-400">
+        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md font-mono font-bold border border-teal-500/20 bg-teal-500/5 text-teal-400">
           +{(task.weight || 1) * 10} XP
         </span>
 
         {/* Deadline Pill */}
-        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg font-mono font-bold border border-white/5 bg-white/[0.02] text-white/70">
+        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md font-mono font-bold border border-white/5 bg-white/[0.02] text-white/70">
           📅 {endDate || (isRTL ? 'غير محدد' : 'NOT SET')}
         </span>
       </div>
 
       {/* B. ASSIGNEE SECTION (Squad Goals Only) */}
       {isSquad && squadMembers && squadMembers.length > 0 && (
-        <div className="p-5 border border-white/5 bg-zinc-900/40 rounded-xl space-y-4">
+        <div className="p-5 border border-white/5 bg-zinc-900/40 rounded-md space-y-4">
           <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 font-mono">
             {isRTL ? 'المسؤول' : 'ASSIGNED TO'}
           </h3>
           
           <div className="space-y-4">
             {task.assignee ? (
-              <div className="flex items-center gap-3 bg-white/[0.02] border border-white/10 p-3 rounded-xl w-full justify-between">
+              <div className="flex items-center gap-3 bg-white/[0.02] border border-white/10 p-3 rounded-md w-full justify-between">
                 <div className="flex items-center gap-3 min-w-0">
                   {task.assignee.avatar_url ? (
                     <img src={task.assignee.avatar_url} className="w-8 h-8 rounded-full object-cover border border-white/10" />
@@ -135,14 +135,14 @@ export default function TaskDrawerMetadata({
                 <button
                   type="button"
                   onClick={() => updateTask(task.id, { assigned_to: null, assignee: null })}
-                  className="px-3 py-1.5 border border-red-500/30 hover:border-red-500 hover:bg-red-500/10 text-red-400 hover:text-red-300 font-black tracking-widest text-[9px] uppercase rounded-lg transition-colors cursor-pointer"
+                  className="px-3 py-1.5 border border-red-500/30 hover:border-red-500 hover:bg-red-500/10 text-red-400 hover:text-red-300 font-black tracking-widest text-[9px] uppercase rounded-md transition-colors cursor-pointer"
                 >
                   {isRTL ? 'إلغاء التعيين' : 'UNASSIGN'}
                 </button>
                 )}
               </div>
             ) : (
-              <div className="flex items-center justify-between bg-white/[0.01] border border-dashed border-white/10 p-4 rounded-xl w-full text-center text-white/40 text-xs font-space">
+              <div className="flex items-center justify-between bg-white/[0.01] border border-dashed border-white/10 p-4 rounded-md w-full text-center text-white/40 text-xs font-space">
                 <span>{isRTL ? 'المهمة غير معينة لأي عضو' : 'No one assigned yet'}</span>
               </div>
             )}
@@ -184,7 +184,7 @@ export default function TaskDrawerMetadata({
                           sendNotification(member.id, 'reaction', notifTitle, notifContent)
                         }
                       }}
-                      className={`flex items-center gap-3 p-2.5 border rounded-xl text-left transition-all duration-300 cursor-pointer min-w-0 w-full ${
+                      className={`flex items-center gap-3 p-2.5 border rounded-md text-left transition-all duration-300 cursor-pointer min-w-0 w-full ${
                         isAssigned
                           ? "bg-teal-500/10 border-teal-500/50 text-[#14b8a6]"
                           : "bg-white/[0.01] border-white/5 hover:border-white/15 text-zinc-400 hover:text-white"

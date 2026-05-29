@@ -213,7 +213,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
     if (networkStatus === 'OFFLINE') {
       return (
         <div className={cn(
-          "flex items-center gap-1.5 px-3 py-1 bg-black/85 border border-red-500/30 rounded-lg backdrop-blur-md shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.15)]", 
+          "flex items-center gap-1.5 px-3 py-1 bg-black/85 border border-red-500/30 rounded-md backdrop-blur-md shrink-0 shadow-[0_0_15px_rgba(239,68,68,0.15)]", 
           isMobile ? "max-w-[160px] md:max-w-none truncate" : ""
         )}>
           <span className="text-[9px] md:text-xs font-space font-black tracking-wider text-red-500 uppercase animate-pulse">
@@ -225,7 +225,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
     if (networkStatus === 'LAG') {
       return (
         <div className={cn(
-          "flex items-center gap-1.5 px-3 py-1 bg-black/85 border border-amber-500/30 rounded-lg backdrop-blur-md shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.15)]", 
+          "flex items-center gap-1.5 px-3 py-1 bg-black/85 border border-amber-500/30 rounded-md backdrop-blur-md shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.15)]", 
           isMobile ? "max-w-[170px] md:max-w-none truncate" : ""
         )}>
           <span className="text-[9px] md:text-xs font-space font-black tracking-wider text-amber-500 uppercase">
@@ -238,7 +238,7 @@ export default function Shell({ children, syncedMissions = [], onMissionsRefresh
       return (
         <div 
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1 bg-black/85 border rounded-lg backdrop-blur-md transition-opacity duration-500 shrink-0", 
+            "flex items-center gap-1.5 px-3 py-1 bg-black/85 border rounded-md backdrop-blur-md transition-opacity duration-500 shrink-0", 
             isMobile ? "max-w-[155px] md:max-w-none truncate" : ""
           )}
           style={{ 

@@ -76,7 +76,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   className="pointer-events-auto"
                 >
                   <div 
-                    className="relative bg-zinc-950/80 dark:bg-black/85 backdrop-blur-xl border border-white/5 rounded-xl py-2.5 px-3.5 shadow-2xl flex items-center gap-3 overflow-hidden group select-none"
+                    className="relative bg-zinc-950/80 dark:bg-black/85 backdrop-blur-xl border border-white/5 rounded-md py-2.5 px-3.5 shadow-2xl flex items-center gap-3 overflow-hidden group select-none"
                     style={{ 
                        boxShadow: `0 8px 30px -10px rgba(0, 0, 0, 0.8), inset 0 1px 0 0 rgba(255, 255, 255, 0.05), 0 0 12px -3px ${color}20`
                     }}
@@ -99,7 +99,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
                     {/* Tech icon circle frame */}
                     <div 
-                      className="w-[30px] h-[30px] rounded-lg flex items-center justify-center flex-shrink-0 border border-white/5 bg-white/[0.02]"
+                      className="w-[30px] h-[30px] rounded-md flex items-center justify-center flex-shrink-0 border border-white/5 bg-white/[0.02]"
                       style={{ color }}
                     >
                       <IconComponent className="w-4 h-4" />

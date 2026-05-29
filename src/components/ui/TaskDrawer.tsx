@@ -721,10 +721,10 @@ export default function TaskDrawer({
               {isRTL ? 'المرفقات // ATTACHMENTS' : 'DRIVE ATTACHMENTS // FILES'}
             </h3>
             
-            <div className="space-y-2 p-4 rounded-xl bg-zinc-900/50 border border-white/5">
+            <div className="space-y-2 p-4 rounded-md bg-zinc-900/50 border border-white/5">
               <button
                 onClick={handleGoogleDrivePicker}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 font-space font-black text-xs uppercase tracking-widest text-white/90 bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-white/20 transition-all duration-300 rounded-xl cursor-pointer"
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 font-space font-black text-xs uppercase tracking-widest text-white/90 bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-white/20 transition-all duration-300 rounded-md cursor-pointer"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/Google_Drive_icon_(2020).svg" alt="Drive" className="w-5 h-5 mr-2" />
@@ -752,7 +752,7 @@ export default function TaskDrawer({
                       placeholder={isRTL ? 'اسم المرفق...' : 'ATTACHMENT_NAME...'}
                       value={manualLinkName}
                       onChange={e => setManualLinkName(e.target.value)}
-                      className="w-full bg-zinc-900/80 border border-white/8 py-2.5 px-4 font-space text-xs font-black text-white uppercase tracking-widest outline-none placeholder:text-white/20 transition-all rounded-xl focus:border-white/20"
+                      className="w-full bg-zinc-900/80 border border-white/8 py-2.5 px-4 font-space text-xs font-black text-white uppercase tracking-widest outline-none placeholder:text-white/20 transition-all rounded-md focus:border-white/20"
                     />
                     <div className="flex gap-2">
                       <input
@@ -760,12 +760,12 @@ export default function TaskDrawer({
                         placeholder="HTTPS://..."
                         value={manualLinkUrl}
                         onChange={e => setManualLinkUrl(e.target.value)}
-                        className="flex-1 bg-zinc-900/80 border border-white/8 py-2.5 px-4 font-space text-xs font-black text-white uppercase tracking-widest outline-none placeholder:text-white/20 transition-all rounded-xl focus:border-white/20"
+                        className="flex-1 bg-zinc-900/80 border border-white/8 py-2.5 px-4 font-space text-xs font-black text-white uppercase tracking-widest outline-none placeholder:text-white/20 transition-all rounded-md focus:border-white/20"
                       />
                       <button
                         onClick={handleAddManualLink}
                         disabled={isAddingLink || !manualLinkName.trim() || !manualLinkUrl.trim()}
-                        className="py-2.5 px-4 font-space font-black uppercase tracking-widest text-[10px] text-black transition-all rounded-xl shrink-0 cursor-pointer disabled:opacity-40"
+                        className="py-2.5 px-4 font-space font-black uppercase tracking-widest text-[10px] text-black transition-all rounded-md shrink-0 cursor-pointer disabled:opacity-40"
                         style={{ backgroundColor: themeColor }}
                       >
                         {isAddingLink ? <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto text-black" /> : (isRTL ? 'إضافة' : 'ADD')}
@@ -788,7 +788,7 @@ export default function TaskDrawer({
                     return (
                       <div
                         key={att.id || idx}
-                        className="group flex items-center justify-between gap-3 p-3.5 rounded-xl border bg-zinc-900/30 border-white/5 hover:border-white/10 hover:bg-zinc-900/50 transition-all relative overflow-hidden cursor-pointer"
+                        className="group flex items-center justify-between gap-3 p-3.5 rounded-md border bg-zinc-900/30 border-white/5 hover:border-white/10 hover:bg-zinc-900/50 transition-all relative overflow-hidden cursor-pointer"
                         onClick={() => window.open(att.url, '_blank')}
                       >
                         <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-xl" style={{ backgroundColor: themeColor }} />
@@ -805,7 +805,7 @@ export default function TaskDrawer({
                             const updated = attachments.filter((_: any, i: number) => i !== idx)
                             await updateTask(task.id, { metadata: { ...task.metadata, attachments: updated } })
                           }}
-                          className="w-7 h-7 flex items-center justify-center border border-white/5 text-white/25 hover:border-red-500/50 hover:text-red-500 hover:bg-red-500/10 transition-all rounded-lg shrink-0 cursor-pointer"
+                          className="w-7 h-7 flex items-center justify-center border border-white/5 text-white/25 hover:border-red-500/50 hover:text-red-500 hover:bg-red-500/10 transition-all rounded-md shrink-0 cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -839,7 +839,7 @@ export default function TaskDrawer({
 
         {/* Fixed Thumb-Zone Footer */}
         {/* <div className="fixed bottom-0 left-0 w-full z-[99999] bg-[#0a0a0f]/95 backdrop-blur-xl border-t border-white/5 p-3 pb-safe flex items-center gap-2"> */}
-        <div className="absolute bottom-0 left-0 w-full z-[99999] bg-[#0a0a0f]/95 backdrop-blur-xl border-t border-white/5 p-3 pb-safe flex items-center gap-2">
+        <div className="absolute bottom-0 pb-[85px] left-0 w-full z-[99999] bg-[#0a0a0f]/95 backdrop-blur-xl border-t border-white/5 p-3 pb-safe flex items-center gap-2">
           {/* Play/Focus Button */}
           {!task.is_completed ? (
             <button
@@ -848,13 +848,13 @@ export default function TaskDrawer({
                 startFocus(task.title, task.id, cupId)
                 onClose()
               }}
-              className="flex-1 py-3 rounded-xl text-xs font-bold font-space flex items-center justify-center gap-2 transition-all bg-orange-500/10 border border-orange-500/30 text-orange-500 hover:bg-orange-500/20 active:scale-95"
+              className="flex-1 py-2 rounded-md text-[10px] font-bold font-space flex items-center justify-center gap-2 transition-all bg-orange-500/10 border border-orange-500/30 text-orange-500 hover:bg-orange-500/20 active:scale-95"
             >
               <Play className="w-4 h-4 fill-current" />
               <span>{isRTL ? 'تركيز' : 'START FOCUS'}</span>
             </button>
           ) : (
-            <div className="flex-1 text-center py-3 text-[10px] uppercase font-mono tracking-widest text-zinc-500 select-none">
+            <div className="flex-1 text-center py-2 text-[10px] uppercase font-mono tracking-widest text-zinc-500 select-none">
               {isRTL ? 'المهمة مكتملة' : 'TASK IS COMPLETED'}
             </div>
           )}
@@ -883,7 +883,7 @@ export default function TaskDrawer({
               }
               onClose()
             }}
-            className="flex-1 py-3 rounded-xl text-xs font-bold font-space flex items-center justify-center gap-2 transition-all border text-center"
+            className="flex-1 py-2 rounded-md text-[10px] font-bold font-space flex items-center justify-center gap-2 transition-all border text-center"
             style={{
               backgroundColor: task.is_completed ? 'transparent' : themeColor,
               borderColor: themeColor,
@@ -905,10 +905,10 @@ export default function TaskDrawer({
                   onClose()
                 }
               }}
-              className="w-12 h-12 shrink-0 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl transition-all"
+              className="w-9 h-9 md:w-8 md:h-8 shrink-0 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-md transition-all"
               title="DELETE TASK"
             >
-              <Trash2 className="w-5 h-5" />
+              <Trash2 className="w-4.5 h-4.5" />
             </button>
           )}
         </div>

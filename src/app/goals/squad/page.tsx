@@ -117,7 +117,7 @@ export default function SquadGoalsPage() {
         transition={{ delay: idx * 0.05 }}
         onClick={() => { playBlip(); router.push(`/goals/squad/${mission.id}`); }}
         className={cn(
-          "group relative flex flex-col bg-[var(--card-bg)] border border-[var(--card-border)] hover:border-[var(--card-border)]/50 cursor-pointer transition-all rounded-sm shadow-xl overflow-hidden",
+          "group relative flex flex-col bg-[var(--card-bg)] border border-[var(--card-border)] hover:border-[var(--card-border)]/50 cursor-pointer transition-all rounded-md shadow-xl overflow-hidden",
           typeFilter === 'squad'
             ? "min-h-[290px] max-h-[380px]"
             : "min-h-[240px] max-h-[340px]",
@@ -136,17 +136,17 @@ export default function SquadGoalsPage() {
                  {mission.sync_to_dashboard ? (isRTL ? 'نشط' : 'ACTIVE') : (isRTL ? 'استعداد' : 'STANDBY')}
               </p>
               {typeFilter === 'solo' && (
-                <span className="text-[8px] font-space tracking-widest font-black uppercase text-zinc-500 opacity-60 bg-zinc-500/10 border border-zinc-500/20 px-1.5 py-0.5 rounded-sm">
+                <span className="text-[8px] font-space tracking-widest font-black uppercase text-zinc-500 opacity-60 bg-zinc-500/10 border border-zinc-500/20 px-1.5 py-0.5 rounded-md">
                   ◆ SOLO
                 </span>
               )}
               {typeFilter === 'squad' && (
                 mission.user_id === profile?.id ? (
-                  <span className="text-[8px] font-space tracking-widest font-black uppercase text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-sm flex items-center gap-0.5 shadow-[0_0_8px_rgba(245,158,11,0.1)]">
+                  <span className="text-[8px] font-space tracking-widest font-black uppercase text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-[0_0_8px_rgba(245,158,11,0.1)]">
                     👑 ADMIN
                   </span>
                 ) : (
-                  <span className="text-[8px] font-space tracking-widest font-black uppercase text-zinc-400 bg-zinc-400/10 border border-zinc-400/20 px-1.5 py-0.5 rounded-sm">
+                  <span className="text-[8px] font-space tracking-widest font-black uppercase text-zinc-400 bg-zinc-400/10 border border-zinc-400/20 px-1.5 py-0.5 rounded-md">
                     MEMBER
                   </span>
                 )
@@ -178,7 +178,7 @@ export default function SquadGoalsPage() {
                       initial={{ opacity: 0, scale: 0.95, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute right-0 top-full mt-2 w-64 bg-zinc-950/95 border border-zinc-800 rounded-xl p-4 shadow-2xl backdrop-blur-md z-[150] space-y-3 font-space text-left"
+                      className="absolute right-0 top-full mt-2 w-64 bg-zinc-950/95 border border-zinc-800 rounded-md p-4 shadow-2xl backdrop-blur-md z-[150] space-y-3 font-space text-left"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <p className="text-[10px] font-black tracking-widest text-zinc-500 uppercase border-b border-zinc-800/80 pb-1.5">
@@ -305,7 +305,7 @@ export default function SquadGoalsPage() {
                 {typeFilter === 'squad' && mission.metadata?.invite_code && (
                   <button
                     onClick={(e) => handleCopyInviteLink(e, mission.metadata.invite_code)}
-                    className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] hover:border-teal-400/50 hover:bg-teal-500/5 transition-all rounded-sm shrink-0 animate-pulse cursor-pointer"
+                    className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] hover:border-teal-400/50 hover:bg-teal-500/5 transition-all rounded-md shrink-0 animate-pulse cursor-pointer"
                     title="COPY_INVITE_CODE"
                   >
                     <LinkIcon className="w-3.5 h-3.5 text-teal-400" />
@@ -341,7 +341,7 @@ export default function SquadGoalsPage() {
                     window.open(googleUrl, '_blank');
                     playBlip();
                   }}
-                  className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] transition-all rounded-sm shrink-0 cursor-pointer"
+                  className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] transition-all rounded-md shrink-0 cursor-pointer"
                   onMouseEnter={e => e.currentTarget.style.borderColor = `${(mission.color || color)}60`}
                   onMouseLeave={e => e.currentTarget.style.borderColor = ''}
                   title="ADD_TO_GOOGLE_CALENDAR"
@@ -354,7 +354,7 @@ export default function SquadGoalsPage() {
                     e.stopPropagation();
                     openAttachments(mission.id);
                   }}
-                  className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] transition-all rounded-sm shrink-0 cursor-pointer"
+                  className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] transition-all rounded-md shrink-0 cursor-pointer"
                   onMouseEnter={e => e.currentTarget.style.borderColor = `${(mission.color || color)}60`}
                   onMouseLeave={e => e.currentTarget.style.borderColor = ''}
                   title="ATTACHMENTS"
@@ -1127,14 +1127,14 @@ export default function SquadGoalsPage() {
             <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
               <button
                 onClick={() => { playBlip(); setShowJoinGoal(true); }}
-                className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-sm border border-teal-500/50 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 font-space text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-95 shadow-lg cursor-pointer animate-pulse"
+                className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-md border border-teal-500/50 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 font-space text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-95 shadow-lg cursor-pointer animate-pulse"
               >
                 <LinkIcon className="w-4 h-4" />
                 {isRTL ? 'الانضمام لهدف' : 'JOIN GOAL'}
               </button>
               <button
                 onClick={() => { playBlip(); setShowCreate(true); }}
-                className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-sm font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg cursor-pointer"
+                className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-md font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg cursor-pointer"
                 style={{ backgroundColor: currentTheme.color, color: '#000', boxShadow: `0 4px 20px ${currentTheme.color}33` }}
               >
                 <Plus className="w-4 h-4" />
@@ -1144,7 +1144,7 @@ export default function SquadGoalsPage() {
           ) : (
             <button
               onClick={() => { playBlip(); setShowCreate(true); }}
-              className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-sm font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg cursor-pointer"
+              className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-md font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg cursor-pointer"
               style={{ backgroundColor: currentTheme.color, color: '#000', boxShadow: `0 4px 20px ${currentTheme.color}33` }}
             >
               <Plus className="w-4 h-4" />
@@ -1155,9 +1155,9 @@ export default function SquadGoalsPage() {
 
         {/* Command Bar for Solo and Squad Views */}
         {typeFilter && (
-          <div className="w-full h-12 bg-white/5 dark:bg-zinc-900/30 border border-zinc-200/50 dark:border-zinc-800/80 rounded-xl px-4 flex items-center justify-between backdrop-blur-md shadow-sm">
+          <div className="w-full h-12 bg-white/5 dark:bg-zinc-900/30 border border-zinc-200/50 dark:border-zinc-800/80 rounded-md px-4 flex items-center justify-between backdrop-blur-md shadow-sm">
             {/* Left side: Rank Badge */}
-            <div className="flex items-center gap-2 border border-amber-500/20 bg-amber-500/5 px-3 py-1 rounded-lg text-amber-500">
+            <div className="flex items-center gap-2 border border-amber-500/20 bg-amber-500/5 px-3 py-1 rounded-md text-amber-500">
               <Sparkles className="w-3.5 h-3.5 animate-pulse" />
               <span className="text-[10px] font-space font-black uppercase tracking-widest select-none">
                 {profile?.rank || 'SILVER'} • {profile?.xp || 0} XP
@@ -1168,7 +1168,7 @@ export default function SquadGoalsPage() {
             {typeFilter === 'solo' && (
               <button
                 onClick={() => { playBlip(); setShowJoinGoal(true); }}
-                className="flex items-center gap-1.5 px-3 h-8 border border-teal-500/40 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 rounded-lg font-space text-[10px] font-black uppercase tracking-widest transition-all duration-300 active:scale-95 cursor-pointer"
+                className="flex items-center gap-1.5 px-3 h-8 border border-teal-500/40 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 rounded-md font-space text-[10px] font-black uppercase tracking-widest transition-all duration-300 active:scale-95 cursor-pointer"
               >
                 <LinkIcon className="w-3.5 h-3.5" />
                 {isRTL ? 'الانضمام للفريق' : 'JOIN A TEAM GOAL'}
@@ -1244,7 +1244,7 @@ export default function SquadGoalsPage() {
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9 }}
                 onClick={e => e.stopPropagation()}
-                className="w-full max-w-[380px] bg-zinc-950/95 border border-white/10 p-6 space-y-5 rounded-2xl shadow-2xl my-auto relative"
+                className="w-full max-w-[380px] bg-zinc-950/95 border border-white/10 p-6 space-y-5 rounded-md shadow-2xl my-auto relative"
               >
                 <button 
                   onClick={() => { setShowCreate(false); setDefaultView('list'); }} 
@@ -1271,7 +1271,7 @@ export default function SquadGoalsPage() {
                     value={newTitle}
                     placeholder={isRTL ? 'ما الذي تريد تحقيقه؟...' : 'What do you want to achieve?...'}
                     onChange={e => setNewTitle(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/10 focus:border-[var(--theme-color)] py-3 px-4 rounded-xl text-base font-bold text-white outline-none transition-all placeholder:text-zinc-600 shadow-inner"
+                    className="w-full bg-white/[0.03] border border-white/10 focus:border-[var(--theme-color)] py-3 px-4 rounded-md text-base font-bold text-white outline-none transition-all placeholder:text-zinc-600 shadow-inner"
                     style={{ borderColor: 'rgba(255,255,255,0.08)' }}
                   />
                 </div>
@@ -1285,7 +1285,7 @@ export default function SquadGoalsPage() {
                     type="date"
                     value={endDate}
                     onChange={e => setEndDate(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/10 focus:border-[var(--theme-color)] py-2.5 px-4 text-sm font-bold text-white outline-none transition-all rounded-xl date-input-tactical"
+                    className="w-full bg-white/[0.03] border border-white/10 focus:border-[var(--theme-color)] py-2.5 px-4 text-sm font-bold text-white outline-none transition-all rounded-md date-input-tactical"
                     style={{ colorScheme: 'dark', borderColor: 'rgba(255,255,255,0.08)' }}
                   />
                 </div>
@@ -1311,14 +1311,14 @@ export default function SquadGoalsPage() {
                 <div className="flex justify-end gap-3 pt-2">
                   <button 
                     onClick={() => { playClick(); setShowCreate(false); setDefaultView('list'); }} 
-                    className="px-4 py-2.5 rounded-xl text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-all font-black cursor-pointer"
+                    className="px-4 py-2.5 rounded-md text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-all font-black cursor-pointer"
                   >
                     {isRTL ? 'إلغاء' : 'Cancel'}
                   </button>
                   <button 
                     onClick={() => { playClick(); addMission(); }} 
                     disabled={isSubmitting}
-                    className="px-6 py-2.5 font-space font-black text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 cursor-pointer text-black hover:brightness-110 transition-all shadow-md"
+                    className="px-6 py-2.5 font-space font-black text-xs uppercase tracking-widest rounded-md flex items-center justify-center gap-2 cursor-pointer text-black hover:brightness-110 transition-all shadow-md"
                     style={{ backgroundColor: currentTheme.color }}
                   >
                     {isSubmitting && <Loader2 className="w-3 h-3 animate-spin text-black" />}
@@ -1331,7 +1331,7 @@ export default function SquadGoalsPage() {
         </AnimatePresence>
 
         {!typeFilter && (
-          <div className="w-full bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 md:p-8 space-y-6 shadow-md transition-all duration-300 hover:shadow-[0_0_0_1px_rgba(161,161,170,0.3)] backdrop-blur-md">
+          <div className="w-full bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-md p-6 md:p-8 space-y-6 shadow-md transition-all duration-300 hover:shadow-[0_0_0_1px_rgba(161,161,170,0.3)] backdrop-blur-md">
             <div className="flex flex-row justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-4">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-zinc-500 shrink-0" style={{ color: currentTheme.color }} />
@@ -1344,11 +1344,11 @@ export default function SquadGoalsPage() {
               </span>
             </div>
 
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none [&::-webkit-scrollbar]:hidden">
               <button
                 onClick={() => setActiveTab('ALL')}
                 className={cn(
-                  "px-4 py-2 rounded-xl border font-space font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 cursor-pointer",
+                  "px-4 py-2 rounded-md border font-space font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 cursor-pointer",
                   activeTab === 'ALL'
                     ? "bg-zinc-200/60 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-700 shadow-sm"
                     : "border-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
@@ -1362,7 +1362,7 @@ export default function SquadGoalsPage() {
                   key={m.id}
                   onClick={() => setActiveTab(m.id)}
                   className={cn(
-                    "px-4 py-2 rounded-xl border font-space font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 cursor-pointer max-w-[200px] truncate",
+                    "px-4 py-2 rounded-md border font-space font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 cursor-pointer max-w-[200px] truncate",
                     activeTab === m.id
                       ? "bg-zinc-200/60 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-700 shadow-sm"
                       : "border-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
@@ -1383,7 +1383,7 @@ export default function SquadGoalsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   className={cn(
-                    "flex items-center justify-between p-4 rounded-xl border transition-all duration-300 group",
+                    "flex items-center justify-between p-4 rounded-md border transition-all duration-300 group",
                     "bg-white/50 dark:bg-zinc-950/20 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700/80",
                     task.is_completed ? "opacity-60" : ""
                   )}

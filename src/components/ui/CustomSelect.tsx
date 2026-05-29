@@ -48,7 +48,7 @@ export default function CustomSelect({ options, value, onChange, placeholder = '
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "w-full bg-black/5 dark:bg-black border px-4 py-3 rounded-sm flex items-center justify-between text-zinc-900 dark:text-white font-space uppercase tracking-widest text-sm transition-all",
+          "w-full bg-black/5 dark:bg-black border px-4 py-3 rounded-md flex items-center justify-between text-zinc-900 dark:text-white font-space uppercase tracking-widest text-sm transition-all",
           isOpen ? "border-transparent" : "border-zinc-200 dark:border-white/10"
         )}
         style={{
@@ -68,7 +68,7 @@ export default function CustomSelect({ options, value, onChange, placeholder = '
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute left-0 right-0 mt-1 bg-white dark:bg-[#0a0a0a] border rounded-sm z-[9999] overflow-hidden"
+            className="absolute left-0 right-0 mt-1 bg-white dark:bg-[#0a0a0a] border rounded-md z-[9999] overflow-hidden"
             style={{
               borderColor: `${currentTheme.color}50`,
               boxShadow: `0 4px 20px rgba(0,0,0,0.5), 0 0 15px ${currentTheme.color}15`

@@ -73,7 +73,8 @@ const ComplexityDashes = ({ weight, color }: { weight: number; color: string }) 
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className={`w-3 h-[2px] rounded-sm transition-all duration-300 ${i < activeCount ? '' : 'bg-white/10'}`}
+          /* rounded-md */
+          className={`w-3 h-[2px] rounded-md transition-all duration-300 ${i < activeCount ? '' : 'bg-white/10'}`}
           style={i < activeCount ? { backgroundColor: color, boxShadow: `0 0 5px ${color}` } : {}}
         />
       ))}
@@ -1265,7 +1266,8 @@ const { progress, isInRedZone } = useMemo(() => {
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="w-full max-w-lg bg-black/60 border border-[#FF0055]/30 backdrop-blur-xl p-8 md:p-12 rounded-2xl shadow-[0_0_50px_rgba(255,0,85,0.15)] relative overflow-hidden"
+            /* rounded-md */
+            className="w-full max-w-lg bg-black/60 border border-[#FF0055]/30 backdrop-blur-xl p-8 md:p-12 rounded-md shadow-[0_0_50px_rgba(255,0,85,0.15)] relative overflow-hidden"
           >
             <div className="absolute top-0 inset-x-0 h-1 bg-[#FF0055]" />
 
@@ -1285,7 +1287,8 @@ const { progress, isInRedZone } = useMemo(() => {
                   playBlip()
                   router.push('/goals/squad?join=true')
                 }}
-                className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-teal-500/50 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 font-space text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-95 cursor-pointer"
+                /* rounded-md */
+                className="flex items-center justify-center gap-2 px-6 py-3 rounded-md border border-teal-500/50 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 font-space text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-95 cursor-pointer"
               >
                 <LinkIcon className="w-4 h-4 text-teal-400" />
                 JOIN WITH CODE
@@ -1307,7 +1310,8 @@ const { progress, isInRedZone } = useMemo(() => {
       <div className="w-full max-w-7xl mx-auto px-4 md:px-8 p-4 md:p-12 space-y-8 md:space-y-12">
         
         {/* Mission Header Overview */}
-        <section className="bg-[var(--card-bg)] border border-[var(--card-border)] p-6 md:p-12 rounded-sm space-y-6 relative overflow-hidden">
+        /* rounded-md */
+        <section className="bg-[var(--card-bg)] border border-[var(--card-border)] p-6 md:p-12 rounded-md space-y-6 relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-[2.5px]" style={{ background: missionColor }} />
             
             <div className="flex justify-between items-start gap-4">
@@ -1431,7 +1435,7 @@ const { progress, isInRedZone } = useMemo(() => {
               <button 
                  onClick={() => { playBlip(); updateMission({ sync_to_dashboard: !mission.sync_to_dashboard }); }}
                  className={cn(
-                    "p-3 border transition-all rounded-lg flex items-center justify-center cursor-pointer",
+                    "p-3 border transition-all rounded-md flex items-center justify-center cursor-pointer",
                     mission.sync_to_dashboard 
                        ? "bg-white/10 text-white shadow-[0_0_20px_rgba(255,255,255,0.1)]" 
                        : "border-[var(--card-border)] text-[var(--text-secondary)] hover:opacity-85 hover:border-white/20"
@@ -1451,7 +1455,7 @@ const { progress, isInRedZone } = useMemo(() => {
                 <button
                    onClick={() => { playBlip(); setShowImportDropdown(!showImportDropdown); }}
                    className={cn(
-                      "px-4 md:px-5 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-lg uppercase flex items-center gap-2 border-[var(--card-border)] text-white hover:bg-white/5 hover:border-white/20 cursor-pointer",
+                      "px-4 md:px-5 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-md uppercase flex items-center gap-2 border-[var(--card-border)] text-white hover:bg-white/5 hover:border-white/20 cursor-pointer",
                       (mission?.title === "Start Here 🚀" || mission?.title === "ابدأ من هنا 🚀") && 
                       mission?.tasks?.some((t: any) => t.metadata?.is_tutorial_import === true && !t.is_completed) && 
                       "animate-pulse ring-2"
@@ -1474,18 +1478,18 @@ const { progress, isInRedZone } = useMemo(() => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute left-0 mt-2 w-56 bg-zinc-950 border border-white/10 rounded-xl shadow-2xl z-50 p-1.5 space-y-1 font-space"
+                        className="absolute left-0 mt-2 w-56 bg-zinc-950 border border-white/10 rounded-md shadow-2xl z-50 p-1.5 space-y-1 font-space"
                       >
                         <button
                           onClick={() => { playBlip(); setShowPlaylistModal(true); setShowImportDropdown(false); }}
-                          className="w-full text-left px-3.5 py-2.5 text-[9px] font-black tracking-wider uppercase text-zinc-400 hover:text-white hover:bg-white/[0.03] rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                          className="w-full text-left px-3.5 py-2.5 text-[9px] font-black tracking-wider uppercase text-zinc-400 hover:text-white hover:bg-white/[0.03] rounded-md transition-colors flex items-center gap-2 cursor-pointer"
                         >
                           <ListPlus className="w-3.5 h-3.5" />
                           {isRTL ? 'استيراد قائمة تشغيل' : 'IMPORT PLAYLIST'}
                         </button>
                         <button
                           onClick={() => { playBlip(); setShowSmartImportModal(true); setShowImportDropdown(false); }}
-                          className="w-full text-left px-3.5 py-2.5 text-[9px] font-black tracking-wider uppercase text-zinc-400 hover:text-white hover:bg-white/[0.03] rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
+                          className="w-full text-left px-3.5 py-2.5 text-[9px] font-black tracking-wider uppercase text-zinc-400 hover:text-white hover:bg-white/[0.03] rounded-md transition-colors flex items-center gap-2 cursor-pointer"
                         >
                           <ClipboardIcon className="w-3.5 h-3.5" />
                           {isRTL ? 'استيراد ذكي' : 'SMART IMPORT'}
@@ -1499,7 +1503,7 @@ const { progress, isInRedZone } = useMemo(() => {
               {/* INTEL/NOTES button */}
               <button
                 onClick={() => { playBlip(); setShowIntelModal(true); }}
-                className="px-4 md:px-5 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-lg uppercase flex items-center gap-2.5 relative border-[var(--card-border)] text-[var(--text-secondary)] hover:opacity-85 hover:border-white/20 cursor-pointer"
+                className="px-4 md:px-5 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-md uppercase flex items-center gap-2.5 relative border-[var(--card-border)] text-[var(--text-secondary)] hover:opacity-85 hover:border-white/20 cursor-pointer"
               >
                 <FileText className="w-4 h-4" />
                 {isRTL ? 'الملاحظات' : 'NOTES'}
@@ -1513,7 +1517,7 @@ const { progress, isInRedZone } = useMemo(() => {
               {/* TACTICAL SHARE button */}
               <button
                  onClick={handleShare}
-                 className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-lg uppercase flex items-center gap-2.5 bg-cyan-500 border-cyan-500 hover:bg-cyan-400 hover:border-cyan-400 text-zinc-950 font-black shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_22px_rgba(6,182,212,0.6)] cursor-pointer"
+                 className="px-4 md:px-6 py-3 border font-space text-[10px] font-black tracking-[0.2em] transition-all rounded-md uppercase flex items-center gap-2.5 bg-cyan-500 border-cyan-500 hover:bg-cyan-400 hover:border-cyan-400 text-zinc-950 font-black shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_22px_rgba(6,182,212,0.6)] cursor-pointer"
               >
                  <Share2 className="w-4 h-4 stroke-[3px] text-zinc-950" />
                  {isRTL ? 'مشاركة' : 'SHARE'}
@@ -1550,7 +1554,8 @@ const { progress, isInRedZone } = useMemo(() => {
                   window.open(googleUrl, '_blank');
                   playBlip();
                 }}
-                className="w-10 h-10 border border-[var(--card-border)] flex items-center justify-center rounded-sm transition-all"
+                /* rounded-md */
+                className="w-10 h-10 border border-[var(--card-border)] flex items-center justify-center rounded-md transition-all"
                 style={{ color: `${currentTheme.color}99` }}
                 onMouseEnter={e => {
                   e.currentTarget.style.color = currentTheme.color;
@@ -1567,7 +1572,8 @@ const { progress, isInRedZone } = useMemo(() => {
 
              <button
                 onClick={openAttachments}
-                className="w-10 h-10 border border-[var(--card-border)] text-[var(--text-secondary)] hover:opacity-85 flex items-center justify-center rounded-sm relative transition-all"
+                /* rounded-md */
+                className="w-10 h-10 border border-[var(--card-border)] text-[var(--text-secondary)] hover:opacity-85 flex items-center justify-center rounded-md relative transition-all"
                 title="GOAL_ATTACHMENTS"
              >
                 <Paperclip className="text-xl w-5 h-5" />
@@ -1591,7 +1597,7 @@ const { progress, isInRedZone } = useMemo(() => {
               {/* Premium Segmented Layout View Toggle switcher with Smart Time Filters */}
               <div className="flex overflow-x-auto whitespace-nowrap w-full scrollbar-hide [&::-webkit-scrollbar]:hidden items-center gap-4 pb-2 md:pb-0 md:w-auto">
                 {/* Smart Time Filters */}
-                <div className="flex items-center gap-1.5 p-1 bg-black/40 border border-white/5 backdrop-blur-md rounded-lg shrink-0">
+                <div className="flex items-center gap-1.5 p-1 bg-black/40 border border-white/5 backdrop-blur-md rounded-md shrink-0">
                   {[
                     { key: 'ALL', label: isRTL ? 'الكل' : 'All Active' },
                     { key: 'WEEK', label: isRTL ? 'هذا الأسبوع' : 'Upcoming This Week' },
@@ -1614,7 +1620,7 @@ const { progress, isInRedZone } = useMemo(() => {
                   ))}
                 </div>
 
-                <div className="flex items-center gap-1.5 p-1 bg-black/40 border border-white/5 backdrop-blur-md rounded-lg shrink-0">
+                <div className="flex items-center gap-1.5 p-1 bg-black/40 border border-white/5 backdrop-blur-md rounded-md shrink-0">
                   <button
                     type="button"
                     onClick={() => { playBlip(); setActiveView('list'); }}
@@ -1694,7 +1700,7 @@ const { progress, isInRedZone } = useMemo(() => {
                          exit={{ opacity: 0, scale: 0.95 }}
                          onClick={() => setSelectedTask(task)}
                          className={cn(
-                           "group flex flex-col p-4 md:p-5 border border-[var(--card-border)] rounded-xl cursor-pointer hover:border-cyan-500/50 hover:bg-white/5 hover:scale-[1.01] transition-all duration-300 shadow-sm space-y-3 relative",
+                           "group flex flex-col p-4 md:p-5 border border-[var(--card-border)] rounded-md cursor-pointer hover:border-cyan-500/50 hover:bg-white/5 hover:scale-[1.01] transition-all duration-300 shadow-sm space-y-3 relative",
                            task.is_completed ? "opacity-40" : "opacity-100"
                          )}
                        >
@@ -1840,7 +1846,7 @@ const { progress, isInRedZone } = useMemo(() => {
                                   {/* Assignee Popover dropdown */}
                                   {activeAssignPopover === task.id && (
                                     <div 
-                                      className="absolute left-0 bottom-full mb-2 w-48 bg-[#0a0a0f] border border-white/10 rounded-lg shadow-2xl z-[150] p-2 space-y-1 font-space text-left"
+                                      className="absolute left-0 bottom-full mb-2 w-48 bg-[#0a0a0f] border border-white/10 rounded-md shadow-2xl z-[150] p-2 space-y-1 font-space text-left"
                                       onClick={e => e.stopPropagation()}
                                     >
                                       <div className="text-[9px] font-black text-zinc-500 tracking-widest uppercase p-1.5 border-b border-white/5">
@@ -1966,7 +1972,7 @@ const { progress, isInRedZone } = useMemo(() => {
                 </AnimatePresence>
 
                  {/* INLINE QUICK ADD ROW */}
-                 <div className="mt-3 flex items-center gap-3 p-3 bg-white/[0.01] hover:bg-white/[0.02] border border-dashed border-white/10 hover:border-white/20 rounded-xl transition-all">
+                 <div className="mt-3 flex items-center gap-3 p-3 bg-white/[0.01] hover:bg-white/[0.02] border border-dashed border-white/10 hover:border-white/20 rounded-md transition-all">
                    <div className="w-5 shrink-0 text-right select-none font-mono text-[10px] text-white/20 font-black">
                      +
                    </div>
@@ -2140,7 +2146,7 @@ const { progress, isInRedZone } = useMemo(() => {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.93, y: 20 }}
               onClick={e => e.stopPropagation()}
-              className="w-[calc(100%-2rem)] mx-auto md:max-w-2xl max-h-[85vh] overflow-y-auto relative border border-[var(--card-border)] bg-[var(--card-bg)] rounded-2xl my-auto"
+              className="w-[calc(100%-2rem)] mx-auto md:max-w-2xl max-h-[85vh] overflow-y-auto relative border border-[var(--card-border)] bg-[var(--card-bg)] rounded-md my-auto"
               style={{ borderColor: `${missionColor}30` }}
             >
               {/* Top neon bar */}
@@ -2182,7 +2188,7 @@ const { progress, isInRedZone } = useMemo(() => {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.05 }}
-                        className="p-5 border rounded-xl relative"
+                        className="p-5 border rounded-md relative"
                         style={{ borderColor: `${missionColor}20`, backgroundColor: `${missionColor}05` }}
                       >
                         <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: `linear-gradient(90deg, ${missionColor}60, transparent)` }} />
@@ -2356,7 +2362,7 @@ const { progress, isInRedZone } = useMemo(() => {
                                     const onlinePresence = onlineUsers.find((ou: any) => ou.user_id === member.id)
                                     
                                     return (
-                                      <div key={member.id} className="flex items-center justify-between p-3 border border-white/5 bg-white/[0.02] rounded-lg">
+                                      <div key={member.id} className="flex items-center justify-between p-3 border border-white/5 bg-white/[0.02] rounded-md">
                                         <div className="flex items-center gap-3">
                                           <div className="relative shrink-0">
                                             {member.avatar_url ? (
@@ -2383,15 +2389,15 @@ const { progress, isInRedZone } = useMemo(() => {
 
                                         <div className="flex items-center gap-2">
                                           {isMemberOwner ? (
-                                            <span className="px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-amber-950/30 border border-amber-500/30 text-amber-400 rounded-sm">
+                                            <span className="px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-amber-950/30 border border-amber-500/30 text-amber-400 rounded-md">
                                               👑 OWNER
                                             </span>
                                           ) : isMemberCoAdmin ? (
-                                            <span className="px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-teal-950/30 border border-teal-500/30 text-teal-400 rounded-sm">
+                                            <span className="px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-teal-950/30 border border-teal-500/30 text-teal-400 rounded-md">
                                               CO-ADMIN
                                             </span>
                                           ) : (
-                                            <span className="px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-zinc-900 border border-white/10 text-zinc-400 rounded-sm">
+                                            <span className="px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-zinc-900 border border-white/10 text-zinc-400 rounded-md">
                                               MEMBER
                                             </span>
                                           )}
@@ -2410,7 +2416,7 @@ const { progress, isInRedZone } = useMemo(() => {
                                   </h4>
 
                                   {pendingRequests.length === 0 ? (
-                                    <div className="text-center py-6 border border-dashed border-white/5 rounded-lg bg-white/[0.01]">
+                                    <div className="text-center py-6 border border-dashed border-white/5 rounded-md bg-white/[0.01]">
                                       <p className="text-[10px] font-black tracking-widest text-zinc-600 uppercase">
                                         {isRTL ? 'لا توجد طلبات معلقة // الفريق آمن' : 'NO PENDING REQUESTS // SQUAD SECURE'}
                                       </p>
@@ -2420,7 +2426,7 @@ const { progress, isInRedZone } = useMemo(() => {
                                       {pendingRequests.map((req: any) => {
                                         const requesterProfile = req.profiles || {}
                                         return (
-                                          <div key={req.id} className="flex flex-col gap-3 p-4 border border-amber-500/10 bg-amber-500/[0.02] rounded-lg">
+                                          <div key={req.id} className="flex flex-col gap-3 p-4 border border-amber-500/10 bg-amber-500/[0.02] rounded-md">
                                             <div className="flex items-center gap-3">
                                               {requesterProfile.avatar_url ? (
                                                 <img src={requesterProfile.avatar_url} alt={requesterProfile.full_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
@@ -2496,7 +2502,7 @@ const { progress, isInRedZone } = useMemo(() => {
                                   </h4>
 
                                   {squadMembers.filter(m => m.id !== mission?.user_id).length === 0 ? (
-                                    <div className="text-center py-6 border border-dashed border-white/5 rounded-lg bg-white/[0.01]">
+                                    <div className="text-center py-6 border border-dashed border-white/5 rounded-md bg-white/[0.01]">
                                       <p className="text-[10px] font-black tracking-widest text-zinc-600 uppercase">
                                         {isRTL ? 'لا يوجد أعضاء آخرون في الفريق' : 'NO OTHER MEMBERS IN SQUAD'}
                                       </p>
@@ -2511,7 +2517,7 @@ const { progress, isInRedZone } = useMemo(() => {
                                         const canKick = isOwner ? true : (isCoAdmin && member.role === 'member')
 
                                         return (
-                                          <div key={member.id} className="flex flex-col gap-3 p-3 border border-white/5 bg-white/[0.01] rounded-lg">
+                                          <div key={member.id} className="flex flex-col gap-3 p-3 border border-white/5 bg-white/[0.01] rounded-md">
                                             <div className="flex items-center justify-between">
                                               <div className="flex items-center gap-3">
                                                 {member.avatar_url ? (
@@ -2561,7 +2567,7 @@ const { progress, isInRedZone } = useMemo(() => {
                                                 <span className="text-[10px] font-black uppercase text-zinc-500 shrink-0">
                                                   {isRTL ? 'الدور:' : 'ROLE:'}
                                                 </span>
-                                                <div className="flex-1 flex gap-1 bg-black/40 border border-white/10 p-0.5 rounded-sm">
+                                                <div className="flex-1 flex gap-1 bg-black/40 border border-white/10 p-0.5 rounded-md">
                                                   <button
                                                     onClick={async () => {
                                                       if (member.role === 'member') return
@@ -2580,7 +2586,7 @@ const { progress, isInRedZone } = useMemo(() => {
                                                       }
                                                     }}
                                                     className={cn(
-                                                      "flex-1 py-1 text-[8px] font-black tracking-widest uppercase text-center rounded-sm transition-all cursor-pointer",
+                                                      "flex-1 py-1 text-[8px] font-black tracking-widest uppercase text-center rounded-md transition-all cursor-pointer",
                                                       member.role === 'member'
                                                         ? "bg-zinc-800 text-zinc-300 border border-white/10 font-bold"
                                                         : "text-zinc-600 hover:text-zinc-400"
@@ -2606,7 +2612,7 @@ const { progress, isInRedZone } = useMemo(() => {
                                                       }
                                                     }}
                                                     className={cn(
-                                                      "flex-1 py-1 text-[8px] font-black tracking-widest uppercase text-center rounded-sm transition-all cursor-pointer",
+                                                      "flex-1 py-1 text-[8px] font-black tracking-widest uppercase text-center rounded-md transition-all cursor-pointer",
                                                       member.role === 'co-admin'
                                                         ? "bg-teal-950/50 text-[#14b8a6] border border-[#14b8a6]/30 font-bold"
                                                         : "text-zinc-600 hover:text-zinc-400"
@@ -2631,7 +2637,7 @@ const { progress, isInRedZone } = useMemo(() => {
                                   <h4 className="text-[10px] font-black tracking-[0.3em] uppercase text-zinc-500 border-b border-white/5 pb-1">
                                     {isRTL ? 'قواعد الفريق // RULES' : 'SQUAD RULES'}
                                   </h4>
-                                  <div className="space-y-3 p-4 border border-white/5 bg-black/40 rounded-lg">
+                                  <div className="space-y-3 p-4 border border-white/5 bg-black/40 rounded-md">
                                     <label className="flex items-center justify-between text-[11px] font-bold text-zinc-300 hover:text-white cursor-pointer select-none">
                                       <span>No date changes for members</span>
                                       <input
@@ -2670,7 +2676,7 @@ const { progress, isInRedZone } = useMemo(() => {
                                 <div className="pt-6 border-t border-white/5">
                                   <button
                                     onClick={leaveSquad}
-                                    className="w-full py-3 border border-red-500/40 hover:border-red-400 bg-red-500/5 hover:bg-red-500/10 text-red-400 hover:text-red-300 rounded-xl font-space font-black text-xs uppercase tracking-widest cursor-pointer transition-all hover:scale-[1.02]"
+                                    className="w-full py-3 border border-red-500/40 hover:border-red-400 bg-red-500/5 hover:bg-red-500/10 text-red-400 hover:text-red-300 rounded-md font-space font-black text-xs uppercase tracking-widest cursor-pointer transition-all hover:scale-[1.02]"
                                   >
                                     {isRTL ? '✗ مغادرة الفريق' : '✗ LEAVE SQUAD'}
                                   </button>
@@ -2703,7 +2709,7 @@ const { progress, isInRedZone } = useMemo(() => {
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.95, y: 15, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-zinc-950 border border-cyan-500/30 rounded-2xl p-6 max-w-md w-full relative overflow-hidden shadow-[0_0_40px_rgba(6,182,212,0.15)] space-y-6"
+              className="bg-zinc-950 border border-cyan-500/30 rounded-md p-6 max-w-md w-full relative overflow-hidden shadow-[0_0_40px_rgba(6,182,212,0.15)] space-y-6"
             >
               {/* Decorative top neon bar */}
               <div className="absolute top-0 inset-x-0 h-[2px]" style={{ background: `linear-gradient(90deg, transparent, #22d3ee, transparent)` }} />
@@ -2731,7 +2737,7 @@ const { progress, isInRedZone } = useMemo(() => {
               <div className="space-y-5 relative">
                 {/* Generating Overlay for Achievement Card */}
                 {isGeneratingCard && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-zinc-950/90 backdrop-blur-md rounded-xl border border-white/5">
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-zinc-950/90 backdrop-blur-md rounded-md border border-white/5">
                     <div className="relative w-12 h-12">
                       <div className="absolute inset-0 rounded-full border-t-2 border-l-2 border-transparent animate-spin" style={{ borderTopColor: missionColor, borderLeftColor: missionColor, filter: `drop-shadow(0 0 6px ${missionColor})` }} />
                       <div className="absolute inset-2 rounded-full border-b-2 border-r-2 border-transparent animate-spin" style={{ borderBottomColor: missionColor, borderRightColor: missionColor, opacity: 0.5, animationDirection: 'reverse' }} />
@@ -2744,17 +2750,17 @@ const { progress, isInRedZone } = useMemo(() => {
 
                 {/* Invite to Squad (Only Squad Goals) */}
                 {mission?.metadata?.type === 'squad' && (
-                  <div className="border border-white/5 bg-zinc-900/20 p-4 rounded-xl space-y-3">
+                  <div className="border border-white/5 bg-zinc-900/20 p-4 rounded-md space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-[9px] text-zinc-500 tracking-widest uppercase">INVITATION_KEY // SECURE_CHANNEL</span>
-                      <span className="font-mono text-[8px] bg-red-950/20 border border-red-500/20 text-red-400 px-1.5 py-0.5 rounded-sm tracking-wider">PRIVATE</span>
+                      <span className="font-mono text-[8px] bg-red-950/20 border border-red-500/20 text-red-400 px-1.5 py-0.5 rounded-md tracking-wider">PRIVATE</span>
                     </div>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         readOnly
                         value={`${window.location.origin}/goals/squad?join=${mission.metadata?.invite_code || ''}`}
-                        className="flex-grow bg-zinc-900/60 border border-white/5 py-2 px-3 rounded-lg text-[10px] font-mono text-zinc-400 outline-none select-all focus:border-cyan-500/30"
+                        className="flex-grow bg-zinc-900/60 border border-white/5 py-2 px-3 rounded-md text-[10px] font-mono text-zinc-400 outline-none select-all focus:border-cyan-500/30"
                       />
                       <button
                         onClick={() => {
@@ -2766,7 +2772,7 @@ const { progress, isInRedZone } = useMemo(() => {
                           showToast(isRTL ? 'تم نسخ رابط الدعوة!' : 'SQUAD INVITE URL COPIED', 'success')
                           playSuccess()
                         }}
-                        className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-[10px] font-mono font-black rounded-lg transition-all shrink-0 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.2)] hover:scale-105"
+                        className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-[10px] font-mono font-black rounded-md transition-all shrink-0 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.2)] hover:scale-105"
                       >
                         {copiedRow === 'invite' ? 'COPIED' : 'COPY'}
                       </button>
@@ -2775,17 +2781,17 @@ const { progress, isInRedZone } = useMemo(() => {
                 )}
 
                 {/* Public View Link (Solo & Squad Goals) */}
-                <div className="border border-white/5 bg-zinc-900/20 p-4 rounded-xl space-y-3">
+                <div className="border border-white/5 bg-zinc-900/20 p-4 rounded-md space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-[9px] text-zinc-500 tracking-widest uppercase">PUBLIC_VIEW_LINK // INTEL_ACCESS</span>
-                    <span className="font-mono text-[8px] bg-cyan-950/20 border border-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded-sm tracking-wider">PUBLIC</span>
+                    <span className="font-mono text-[8px] bg-cyan-950/20 border border-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded-md tracking-wider">PUBLIC</span>
                   </div>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       readOnly
                       value={`${window.location.origin}/goals/public/${id}`}
-                      className="flex-grow bg-zinc-900/60 border border-white/5 py-2 px-3 rounded-lg text-[10px] font-mono text-zinc-400 outline-none select-all focus:border-cyan-500/30"
+                      className="flex-grow bg-zinc-900/60 border border-white/5 py-2 px-3 rounded-md text-[10px] font-mono text-zinc-400 outline-none select-all focus:border-cyan-500/30"
                     />
                     <button
                       onClick={async () => {
@@ -2814,7 +2820,7 @@ const { progress, isInRedZone } = useMemo(() => {
                           }
                         }
                       }}
-                      className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-[10px] font-mono font-black rounded-lg transition-all shrink-0 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.2)] hover:scale-105"
+                      className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 text-[10px] font-mono font-black rounded-md transition-all shrink-0 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.2)] hover:scale-105"
                     >
                       {copiedRow === 'public' ? 'COPIED' : 'COPY'}
                     </button>
@@ -2822,15 +2828,15 @@ const { progress, isInRedZone } = useMemo(() => {
                 </div>
 
                 {/* Share Achievement Flex Card */}
-                <div className="border border-white/5 bg-zinc-900/20 p-4 rounded-xl space-y-3">
+                <div className="border border-white/5 bg-zinc-900/20 p-4 rounded-md space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-[9px] text-zinc-500 tracking-widest uppercase">ACHIEVEMENT_STORY_CARD // STORY_EXPORT</span>
-                    <span className="font-mono text-[8px] bg-amber-950/20 border border-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-sm tracking-wider">FLEX</span>
+                    <span className="font-mono text-[8px] bg-amber-950/20 border border-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-md tracking-wider">FLEX</span>
                   </div>
                   <button
                     onClick={downloadCardImage}
                     disabled={isGeneratingCard}
-                    className="w-full flex items-center justify-between p-3.5 border border-white/10 hover:border-cyan-500/50 bg-white/[0.02] hover:bg-white/5 rounded-xl transition-all duration-300 group cursor-pointer text-left disabled:opacity-50"
+                    className="w-full flex items-center justify-between p-3.5 border border-white/10 hover:border-cyan-500/50 bg-white/[0.02] hover:bg-white/5 rounded-md transition-all duration-300 group cursor-pointer text-left disabled:opacity-50"
                   >
                     <div className="flex items-center gap-3">
                       <Medal className="w-5 h-5 text-amber-500 animate-pulse" />
@@ -2849,7 +2855,7 @@ const { progress, isInRedZone } = useMemo(() => {
               </div>
 
               {/* Status Footer */}
-              <div className="p-3 bg-zinc-900/20 rounded-xl border border-white/5 text-center flex items-center justify-center gap-2">
+              <div className="p-3 bg-zinc-900/20 rounded-md border border-white/5 text-center flex items-center justify-center gap-2">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-500"></span>
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>

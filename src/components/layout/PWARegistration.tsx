@@ -102,7 +102,7 @@ export default function PWARegistration() {
         >
           {/* Glassmorphic Cyberpunk Card Container */}
           <div
-            className="w-full bg-white/95 dark:bg-[#050505]/95 backdrop-blur-2xl border p-5 md:p-6 rounded-sm shadow-2xl relative overflow-hidden"
+            className="w-full bg-white/95 dark:bg-[#050505]/95 backdrop-blur-2xl border p-5 md:p-6 rounded-md shadow-2xl relative overflow-hidden"
             style={{ 
               borderColor: currentTheme.color,
               boxShadow: `0 0 30px ${currentTheme.color}15, inset 0 0 15px ${currentTheme.color}05`
@@ -127,7 +127,7 @@ export default function PWARegistration() {
             {/* Main Header & Branding */}
             <div className="flex items-start gap-4">
               <div
-                className="w-10 h-10 rounded-sm flex items-center justify-center shrink-0 border"
+                className="w-10 h-10 rounded-md flex items-center justify-center shrink-0 border"
                 style={{ 
                   backgroundColor: `${currentTheme.color}10`,
                   borderColor: `${currentTheme.color}30` 

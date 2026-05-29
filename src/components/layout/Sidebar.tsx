@@ -185,7 +185,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
                   onMouseEnter={() => setHoveredIndex(idx)}
                   onMouseLeave={() => setHoveredIndex(null)}
                   className={cn(
-                    "flex items-center p-3 px-6 rounded-xl transition-all duration-300 relative group overflow-hidden min-h-[44px] w-full text-left cursor-pointer",
+                    "flex items-center p-3 px-6 rounded-md transition-all duration-300 relative group overflow-hidden min-h-[44px] w-full text-left cursor-pointer",
                      isGoalsActive && !pathname.startsWith('/goals/')
                        ? "bg-[var(--input-bg)] text-[var(--text-primary)] border border-[var(--card-border)] shadow-sm" 
                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent hover:border-[var(--card-border)] hover:bg-[var(--input-bg)]"
@@ -255,7 +255,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
                             onMouseEnter={() => setHoveredIndex(100 + subIdx)}
                             onMouseLeave={() => setHoveredIndex(null)}
                             className={cn(
-                              "flex items-center p-2.5 px-4 rounded-xl transition-all duration-300 relative group overflow-hidden min-h-[38px] border border-transparent",
+                              "flex items-center p-2.5 px-4 rounded-md transition-all duration-300 relative group overflow-hidden min-h-[38px] border border-transparent",
                               isSubActive 
                                 ? "bg-[var(--input-bg)] text-[var(--text-primary)] border-[var(--card-border)] shadow-sm" 
                                 : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--input-bg)]"
@@ -309,7 +309,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
               onMouseEnter={() => setHoveredIndex(idx)}
               onMouseLeave={() => setHoveredIndex(null)}
               className={cn(
-                "flex items-center p-3 px-6 rounded-xl transition-all duration-300 relative group overflow-hidden min-h-[44px]",
+                "flex items-center p-3 px-6 rounded-md transition-all duration-300 relative group overflow-hidden min-h-[44px]",
                  isActive 
                    ? "bg-[var(--input-bg)] text-[var(--text-primary)] border border-[var(--card-border)] shadow-sm" 
                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent hover:border-[var(--card-border)] hover:bg-[var(--input-bg)]"
@@ -361,7 +361,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
           <button
             type="button"
             onClick={() => onOpenCoach?.()}
-            className="w-full group relative flex items-center justify-between p-4 rounded-xl border transition-all duration-300 overflow-hidden cursor-pointer shadow-lg active:scale-98"
+            className="w-full group relative flex items-center justify-between p-4 rounded-md border transition-all duration-300 overflow-hidden cursor-pointer shadow-lg active:scale-98"
             style={{
               backgroundColor: `${currentTheme.color}15`,
               borderColor: `${currentTheme.color}50`,
@@ -394,7 +394,7 @@ export default function Sidebar({ isRTL = false, onOpenCoach }: { isRTL?: boolea
           onClick={playBlip}
           onMouseEnter={() => setIsSettingsHovered(true)}
           onMouseLeave={() => setIsSettingsHovered(false)}
-          className="w-full flex items-center justify-start gap-3 p-3.5 glass-panel border rounded-xl transition-all font-space text-xs tracking-[0.2em] font-black min-h-[44px]"
+          className="w-full flex items-center justify-start gap-3 p-3.5 glass-panel border rounded-md transition-all font-space text-xs tracking-[0.2em] font-black min-h-[44px]"
           style={{
             color: isSettingsHovered ? currentTheme.color : 'var(--text-secondary)',
             borderColor: isSettingsHovered ? `${currentTheme.color}40` : 'var(--card-border)',

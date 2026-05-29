@@ -514,7 +514,7 @@ export default function NotesPage() {
               <h1 className="text-4xl md:text-6xl font-black font-space tracking-wider uppercase text-black dark:text-white leading-none">
                 {isRTL ? 'الملاحظات' : 'NOTES'}
               </h1>
-              <span className="inline-flex items-center justify-center px-3 py-1 bg-white/10 rounded-lg text-sm font-space font-bold text-white/50 tracking-normal normal-case">
+              <span className="inline-flex items-center justify-center px-3 py-1 bg-white/10 rounded-md text-sm font-space font-bold text-white/50 tracking-normal normal-case">
                 {filteredNotes.length}
               </span>
             </div>
@@ -528,7 +528,7 @@ export default function NotesPage() {
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder={isRTL ? 'البحث في الملاحظات...' : 'Search notes...'}
                 className={cn(
-                  "h-11 w-full md:w-64 bg-[var(--input-bg)] border border-[var(--card-border)] rounded-xl font-space text-[11px] text-[var(--text-primary)] tracking-wide outline-none focus:outline-none focus:ring-2 focus:border-transparent transition-all",
+                  "h-11 w-full md:w-64 bg-[var(--input-bg)] border border-[var(--card-border)] rounded-md font-space text-[11px] text-[var(--text-primary)] tracking-wide outline-none focus:outline-none focus:ring-2 focus:border-transparent transition-all",
                   isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
                 )}
                 style={{ ['--tw-ring-color' as any]: `${currentTheme.color}55` }}
@@ -536,7 +536,7 @@ export default function NotesPage() {
             </div>
             <button
               onClick={() => setIsCreating(true)}
-              className="flex flex-row items-center justify-center gap-2 h-11 px-5 bg-white/5 border border-white/10 text-white/70 font-space font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all duration-300 text-xs rounded-xl shrink-0"
+              className="flex flex-row items-center justify-center gap-2 h-11 px-5 bg-white/5 border border-white/10 text-white/70 font-space font-black uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all duration-300 text-xs rounded-md shrink-0"
             >
               <Plus className="text-[16px] leading-none" />
               {isRTL ? 'إضافة ملاحظة' : 'Add Note'}
@@ -546,11 +546,11 @@ export default function NotesPage() {
 
         {/* Sleek Source Origin Segmented Selector to filter out Comments/Task Notes */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-black/5 dark:border-white/5 pb-4">
-          <div className="flex bg-[var(--input-bg)] border border-[var(--card-border)] rounded-2xl p-1 w-full sm:w-auto relative shadow-sm">
+          <div className="flex bg-[var(--input-bg)] border border-[var(--card-border)] rounded-md p-1 w-full sm:w-auto relative shadow-sm">
             <button 
               onClick={() => setNoteSourceFilter('personal')}
               className={cn(
-                "flex-1 sm:flex-none py-2 px-5 rounded-xl text-[10px] font-space font-black tracking-wider uppercase transition-all duration-300 cursor-pointer text-center whitespace-nowrap",
+                "flex-1 sm:flex-none py-2 px-5 rounded-md text-[10px] font-space font-black tracking-wider uppercase transition-all duration-300 cursor-pointer text-center whitespace-nowrap",
                 noteSourceFilter === 'personal' 
                   ? "text-black shadow-md font-black" 
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold"
@@ -563,7 +563,7 @@ export default function NotesPage() {
             <button 
               onClick={() => setNoteSourceFilter('task')}
               className={cn(
-                "flex-1 sm:flex-none py-2 px-5 rounded-xl text-[10px] font-space font-black tracking-wider uppercase transition-all duration-300 cursor-pointer text-center whitespace-nowrap",
+                "flex-1 sm:flex-none py-2 px-5 rounded-md text-[10px] font-space font-black tracking-wider uppercase transition-all duration-300 cursor-pointer text-center whitespace-nowrap",
                 noteSourceFilter === 'task' 
                   ? "text-black shadow-md font-black" 
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold"
@@ -576,7 +576,7 @@ export default function NotesPage() {
             <button 
               onClick={() => setNoteSourceFilter('all')}
               className={cn(
-                "flex-1 sm:flex-none py-2 px-5 rounded-xl text-[10px] font-space font-black tracking-wider uppercase transition-all duration-300 cursor-pointer text-center whitespace-nowrap",
+                "flex-1 sm:flex-none py-2 px-5 rounded-md text-[10px] font-space font-black tracking-wider uppercase transition-all duration-300 cursor-pointer text-center whitespace-nowrap",
                 noteSourceFilter === 'all' 
                   ? "text-black shadow-md font-black" 
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-bold"
@@ -651,7 +651,7 @@ export default function NotesPage() {
                     key={t.value}
                     onClick={() => setNewTag(newTag === t.value ? '' : t.value)}
                     className={cn(
-                      "px-3 py-1.5 rounded-sm font-space text-[9px] font-black tracking-widest border transition-all",
+                      "px-3 py-1.5 rounded-md font-space text-[9px] font-black tracking-widest border transition-all",
                       newTag === t.value 
                         ? "text-black border-transparent shadow-lg" 
                         : "border-[var(--card-border)] text-[var(--text-secondary)] hover:border-[var(--card-border)]/50"
@@ -689,7 +689,7 @@ export default function NotesPage() {
                   <button onClick={() => { setIsCreating(false); setNewContent(''); setNewTitle(''); setNewTag(''); setNewMissionId('') }} className="text-[var(--text-secondary)] font-space uppercase text-[10px] tracking-widest hover:text-[var(--text-primary)] transition-all">{isRTL ? 'إلغاء' : 'CANCEL'}</button>
                   <button 
                     onClick={createNote} 
-                    className="px-8 py-2 text-black font-space font-black uppercase text-xs tracking-widest rounded-xl transition-all duration-300 hover:brightness-110 active:scale-95"
+                    className="px-8 py-2 text-black font-space font-black uppercase text-xs tracking-widest rounded-md transition-all duration-300 hover:brightness-110 active:scale-95"
                     style={{ backgroundColor: currentTheme.color, boxShadow: `0 0 15px ${currentTheme.color}44` }}
                   >
                     {isRTL ? 'حفظ' : 'Save'}
@@ -703,15 +703,15 @@ export default function NotesPage() {
 
         {/* Goal Filter Bar */}
         {uniqueMissions.length > 0 && (
-          <div className="flex flex-col gap-2 bg-white/[0.01] dark:bg-white/[0.01] border border-black/5 dark:border-white/5 p-4 rounded-xl backdrop-blur-md">
+          <div className="flex flex-col gap-2 bg-white/[0.01] dark:bg-white/[0.01] border border-black/5 dark:border-white/5 p-4 rounded-md backdrop-blur-md">
             <span className="text-[10px] font-space text-black/40 dark:text-white/30 tracking-widest uppercase font-black">
               {isRTL ? 'تصفية حسب الهدف' : 'Filter by Goal'}
             </span>
-            <div className="flex gap-2.5 overflow-x-auto pb-1.5 no-scrollbar">
+            <div className="flex gap-2.5 overflow-x-auto pb-1.5 no-scrollbar [&::-webkit-scrollbar]:hidden">
               <button
                 onClick={() => setSelectedMissionId(null)}
                 className={cn(
-                  "px-4 py-1.5 border font-space text-[9px] font-black tracking-widest uppercase transition-all whitespace-nowrap rounded-lg cursor-pointer",
+                  "px-4 py-1.5 border font-space text-[9px] font-black tracking-widest uppercase transition-all whitespace-nowrap rounded-md cursor-pointer",
                   selectedMissionId === null
                     ? "text-black border-transparent shadow-md"
                     : "border-[var(--card-border)] text-[var(--text-secondary)] hover:border-[var(--card-border)]/50 hover:text-[var(--text-primary)]"
@@ -725,7 +725,7 @@ export default function NotesPage() {
                   key={m.id}
                   onClick={() => setSelectedMissionId(selectedMissionId === m.id ? null : m.id)}
                   className={cn(
-                    "px-4 py-1.5 border font-space text-[9px] font-black tracking-widest uppercase transition-all whitespace-nowrap rounded-lg cursor-pointer",
+                    "px-4 py-1.5 border font-space text-[9px] font-black tracking-widest uppercase transition-all whitespace-nowrap rounded-md cursor-pointer",
                     selectedMissionId === m.id
                       ? "text-black border-transparent shadow-md"
                       : "border-[var(--card-border)] text-[var(--text-secondary)] hover:border-[var(--card-border)]/50 hover:text-[var(--text-primary)]"
@@ -740,7 +740,7 @@ export default function NotesPage() {
         )}
 
         {/* Tag Filter Bar */}
-        <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar">
+        <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => setFilterTag('all')}
             className={cn(
@@ -831,7 +831,7 @@ export default function NotesPage() {
                           const mId = linkedMission.id || note.mission_id || note.cup_id
                           if (mId) router.push(`/missions/${mId}`)
                         }}
-                        className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-sm text-[8px] font-space font-black tracking-wider uppercase hover:bg-zinc-800 hover:scale-105 transition-all cursor-pointer z-10"
+                        className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-md text-[8px] font-space font-black tracking-wider uppercase hover:bg-zinc-800 hover:scale-105 transition-all cursor-pointer z-10"
                         style={{ backgroundColor: `${noteColor}15`, color: noteColor, border: `1px solid ${noteColor}30` }}
                       >
                         <Link className="text-[10px]" />
@@ -863,7 +863,7 @@ export default function NotesPage() {
                       <div className="flex items-center gap-3">
                          {tagObj && (
                           <span 
-                            className="px-2 py-0.5 border text-[9px] font-black font-space tracking-widest uppercase rounded-sm"
+                            className="px-2 py-0.5 border text-[9px] font-black font-space tracking-widest uppercase rounded-md"
                             style={{ borderColor: `${noteColor}40`, color: noteColor, backgroundColor: `${noteColor}08` }}
                           >
                             {tagObj.label}
@@ -913,7 +913,7 @@ export default function NotesPage() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.93, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-[calc(100%-2rem)] mx-auto md:max-w-3xl p-5 md:p-12 relative border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-y-auto max-h-[90vh] rounded-2xl my-auto"
+              className="w-[calc(100%-2rem)] mx-auto md:max-w-3xl p-5 md:p-12 relative border border-[var(--card-border)] bg-[var(--card-bg)] backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)] overflow-y-auto max-h-[90vh] rounded-md my-auto"
             >
               {/* Neon top bar */}
               <div
@@ -972,7 +972,7 @@ export default function NotesPage() {
                      onClick={() => updateNote(editingNote.id, {
                        font_settings: { ...editingNote.font_settings, [field]: editingNote.font_settings?.[field] === active ? inactive : active }
                      })}
-                     className={cn('p-2.5 border rounded-xl transition-all', editingNote.font_settings?.[field] === active ? 'bg-[var(--input-bg)] border-[var(--card-border)]' : 'bg-[var(--input-bg)] border border-[var(--card-border)] hover:opacity-80')}
+                     className={cn('p-2.5 border rounded-md transition-all', editingNote.font_settings?.[field] === active ? 'bg-[var(--input-bg)] border-[var(--card-border)]' : 'bg-[var(--input-bg)] border border-[var(--card-border)] hover:opacity-80')}
                    >
                      <IconComp className="w-4 h-4 text-[var(--text-primary)]" />
                    </button>
@@ -981,13 +981,13 @@ export default function NotesPage() {
                   onClick={() => updateNote(editingNote.id, {
                     font_settings: { ...editingNote.font_settings, family: editingNote.font_settings?.family === 'tajawal' ? 'space' : 'tajawal' }
                   })}
-                  className={cn('px-5 py-2 border rounded-xl font-space text-sm font-black tracking-widest text-[var(--text-primary)] transition-all', editingNote.font_settings?.family === 'tajawal' ? 'bg-[var(--input-bg)] border-[var(--card-border)]' : 'bg-[var(--input-bg)] border border-[var(--card-border)] hover:opacity-80')}
+                  className={cn('px-5 py-2 border rounded-md font-space text-sm font-black tracking-widest text-[var(--text-primary)] transition-all', editingNote.font_settings?.family === 'tajawal' ? 'bg-[var(--input-bg)] border-[var(--card-border)]' : 'bg-[var(--input-bg)] border border-[var(--card-border)] hover:opacity-80')}
                 >
                   {editingNote.font_settings?.family === 'tajawal' ? 'TAJAWAL' : 'SPACE'}
                 </button>
                 <button
                   onClick={() => updateNote(editingNote.id, { is_locked: !editingNote.is_locked })}
-                  className={cn('p-2.5 border rounded-xl transition-all', editingNote.is_locked ? 'text-black border-transparent' : 'bg-[var(--input-bg)] border border-[var(--card-border)] hover:opacity-80')}
+                  className={cn('p-2.5 border rounded-md transition-all', editingNote.is_locked ? 'text-black border-transparent' : 'bg-[var(--input-bg)] border border-[var(--card-border)] hover:opacity-80')}
                   style={editingNote.is_locked ? { backgroundColor: currentTheme.color, boxShadow: `0 0 10px ${currentTheme.color}55` } : {}}
                 >
                   <Pin className="text-base w-4 h-4" />
@@ -1012,7 +1012,7 @@ export default function NotesPage() {
                     key={t.value}
                     onClick={() => updateNote(editingNote.id, { tag: editingNote.tag === t.value ? null : t.value })}
                     className={cn(
-                      "py-2.5 px-4 rounded-xl font-space text-[10px] font-black tracking-widest border transition-all",
+                      "py-2.5 px-4 rounded-md font-space text-[10px] font-black tracking-widest border transition-all",
                       editingNote.tag === t.value 
                         ? "text-black border-transparent shadow-lg" 
                         : "border-[var(--card-border)] text-[var(--text-secondary)] hover:border-[var(--card-border)]/50 hover:text-[var(--text-primary)]"

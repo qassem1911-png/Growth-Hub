@@ -103,7 +103,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
         transition={{ delay: idx * 0.05 }}
         onClick={() => { playBlip(); router.push(`/missions/${mission.id}`); }}
         className={cn(
-          "group relative flex flex-col bg-[var(--card-bg)] border border-[var(--card-border)] hover:border-[var(--card-border)]/50 cursor-pointer transition-all rounded-sm shadow-xl overflow-hidden",
+          "group relative flex flex-col bg-[var(--card-bg)] border border-[var(--card-border)] hover:border-[var(--card-border)]/50 cursor-pointer transition-all rounded-md shadow-xl overflow-hidden",
           typeFilter === 'squad'
             ? "min-h-[290px] max-h-[380px]"
             : "min-h-[240px] max-h-[340px]",
@@ -122,17 +122,17 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                 {mission.sync_to_dashboard ? (isRTL ? 'نشط' : 'ACTIVE') : (isRTL ? 'استعداد' : 'STANDBY')}
               </p>
               {typeFilter === 'solo' && (
-                <span className="text-[8px] font-space tracking-widest font-black uppercase text-zinc-500 opacity-60 bg-zinc-500/10 border border-zinc-500/20 px-1.5 py-0.5 rounded-sm">
+                <span className="text-[8px] font-space tracking-widest font-black uppercase text-zinc-500 opacity-60 bg-zinc-500/10 border border-zinc-500/20 px-1.5 py-0.5 rounded-md">
                   ◆ SOLO
                 </span>
               )}
               {typeFilter === 'squad' && (
                 mission.user_id === profile?.id ? (
-                  <span className="text-[8px] font-space tracking-widest font-black uppercase text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-sm flex items-center gap-0.5 shadow-[0_0_8px_rgba(245,158,11,0.1)]">
+                  <span className="text-[8px] font-space tracking-widest font-black uppercase text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-[0_0_8px_rgba(245,158,11,0.1)]">
                     👑 ADMIN
                   </span>
                 ) : (
-                  <span className="text-[8px] font-space tracking-widest font-black uppercase text-zinc-400 bg-zinc-400/10 border border-zinc-400/20 px-1.5 py-0.5 rounded-sm">
+                  <span className="text-[8px] font-space tracking-widest font-black uppercase text-zinc-400 bg-zinc-400/10 border border-zinc-400/20 px-1.5 py-0.5 rounded-md">
                     MEMBER
                   </span>
                 )
@@ -164,7 +164,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                       initial={{ opacity: 0, scale: 0.95, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                      className="absolute right-0 top-full mt-2 w-64 bg-zinc-950/95 border border-zinc-800 rounded-xl p-4 shadow-2xl backdrop-blur-md z-[150] space-y-3 font-space text-left"
+                      className="absolute right-0 top-full mt-2 w-64 bg-zinc-950/95 border border-zinc-800 rounded-md p-4 shadow-2xl backdrop-blur-md z-[150] space-y-3 font-space text-left"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <p className="text-[10px] font-black tracking-widest text-zinc-500 uppercase border-b border-zinc-800/80 pb-1.5">
@@ -291,7 +291,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
               {typeFilter === 'squad' && mission.metadata?.invite_code && (
                 <button
                   onClick={(e) => handleCopyInviteLink(e, mission.metadata.invite_code)}
-                  className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] hover:border-teal-400/50 hover:bg-teal-500/5 transition-all rounded-sm shrink-0 animate-pulse"
+                  className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] hover:border-teal-400/50 hover:bg-teal-500/5 transition-all rounded-md shrink-0 animate-pulse"
                   title="COPY_INVITE_CODE"
                 >
                   <Link className="text-sm text-teal-400 w-3.5 h-3.5" />
@@ -327,7 +327,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                   window.open(googleUrl, '_blank');
                   playBlip();
                 }}
-                className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] transition-all rounded-sm shrink-0"
+                className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] transition-all rounded-md shrink-0"
                 onMouseEnter={e => e.currentTarget.style.borderColor = `${(mission.color || color)}60`}
                 onMouseLeave={e => e.currentTarget.style.borderColor = ''}
                 title="ADD_TO_GOOGLE_CALENDAR"
@@ -340,7 +340,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                   e.stopPropagation();
                   openAttachments(mission.id);
                 }}
-                className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] transition-all rounded-sm shrink-0"
+                className="relative flex items-center justify-center w-8 h-8 border border-[var(--card-border)] transition-all rounded-md shrink-0"
                 onMouseEnter={e => e.currentTarget.style.borderColor = `${(mission.color || color)}60`}
                 onMouseLeave={e => e.currentTarget.style.borderColor = ''}
                 title="ATTACHMENTS"
@@ -982,8 +982,8 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
 
               {/* Subtasks outline */}
               <div className="space-y-2.5 w-full">
-                <div className="w-full h-8 rounded-xl bg-[var(--theme-color)]/5 border border-[var(--theme-color)]/10" />
-                <div className="w-full h-8 rounded-xl bg-[var(--theme-color)]/5 border border-[var(--theme-color)]/10" />
+                <div className="w-full h-8 rounded-md bg-[var(--theme-color)]/5 border border-[var(--theme-color)]/10" />
+                <div className="w-full h-8 rounded-md bg-[var(--theme-color)]/5 border border-[var(--theme-color)]/10" />
               </div>
 
               {/* Footer Slots */}
@@ -1035,14 +1035,14 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
             <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
               <button
                 onClick={() => { playBlip(); setShowJoinGoal(true); }}
-                className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-sm border border-teal-500/50 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 font-space text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-95 shadow-lg cursor-pointer animate-pulse"
+                className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-md border border-teal-500/50 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 font-space text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-95 shadow-lg cursor-pointer animate-pulse"
               >
                 <Link className="text-[16px] leading-none" />
                 {isRTL ? 'الانضمام لهدف' : 'JOIN GOAL'}
               </button>
               <button
                 onClick={() => { playBlip(); setShowCreate(true); }}
-                className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-sm font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg"
+                className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-md font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg"
                 style={{ backgroundColor: currentTheme.color, color: '#000', boxShadow: `0 4px 20px ${currentTheme.color}33` }}
               >
                 <Plus className="text-[16px] leading-none" />
@@ -1052,7 +1052,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
           ) : (
             <button
               onClick={() => { playBlip(); setShowCreate(true); }}
-              className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-sm font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg"
+              className="flex flex-row items-center justify-center gap-2 w-full md:w-auto h-11 px-6 rounded-md font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg"
               style={{ backgroundColor: currentTheme.color, color: '#000', boxShadow: `0 4px 20px ${currentTheme.color}33` }}
             >
               <Plus className="text-[16px] leading-none" />
@@ -1063,9 +1063,9 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
 
         {/* Command Bar for Solo and Squad Views */}
         {typeFilter && (
-          <div className="w-full h-12 bg-white/5 dark:bg-zinc-900/30 border border-zinc-200/50 dark:border-zinc-800/80 rounded-xl px-4 flex items-center justify-between backdrop-blur-md shadow-sm">
+          <div className="w-full h-12 bg-white/5 dark:bg-zinc-900/30 border border-zinc-200/50 dark:border-zinc-800/80 rounded-md px-4 flex items-center justify-between backdrop-blur-md shadow-sm">
             {/* Left side: Rank Badge */}
-            <div className="flex items-center gap-2 border border-amber-500/20 bg-amber-500/5 px-3 py-1 rounded-lg">
+            <div className="flex items-center gap-2 border border-amber-500/20 bg-amber-500/5 px-3 py-1 rounded-md">
               <Zap className="text-xs text-amber-500 animate-pulse w-3 h-3" />
               <span className="text-[10px] font-space font-black text-amber-500 uppercase tracking-widest select-none">
                 {profile?.rank || 'SILVER'} • {profile?.xp || 0} XP
@@ -1089,7 +1089,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9 }}
                 onClick={e => e.stopPropagation()}
-                className="w-[calc(100%-2rem)] mx-auto md:max-w-2xl bg-[var(--card-bg)]/90 backdrop-blur-xl border border-[var(--card-border)] p-5 md:p-8 space-y-6 rounded-2xl shadow-2xl my-auto max-h-[90vh] overflow-y-auto relative"
+                className="w-[calc(100%-2rem)] mx-auto md:max-w-2xl bg-[var(--card-bg)]/90 backdrop-blur-xl border border-[var(--card-border)] p-5 md:p-8 space-y-6 rounded-md shadow-2xl my-auto max-h-[90vh] overflow-y-auto relative"
               >
                 <button
                   onClick={() => setShowGuide(false)}
@@ -1141,7 +1141,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9 }}
                 onClick={e => e.stopPropagation()}
-                className="w-full max-w-[380px] bg-zinc-950/95 border border-white/10 p-6 space-y-5 rounded-2xl shadow-2xl my-auto relative"
+                className="w-full max-w-[380px] bg-zinc-950/95 border border-white/10 p-6 space-y-5 rounded-md shadow-2xl my-auto relative"
               >
                 <button
                   onClick={() => { setShowCreate(false); setDefaultView('list'); }}
@@ -1168,7 +1168,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                     value={newTitle}
                     placeholder={isRTL ? 'ما الذي تريد تحقيقه؟...' : 'What do you want to achieve?...'}
                     onChange={e => setNewTitle(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/10 focus:border-[var(--theme-color)] py-3 px-4 rounded-xl text-base font-bold text-white outline-none transition-all placeholder:text-zinc-600 shadow-inner"
+                    className="w-full bg-white/[0.03] border border-white/10 focus:border-[var(--theme-color)] py-3 px-4 rounded-md text-base font-bold text-white outline-none transition-all placeholder:text-zinc-600 shadow-inner"
                     style={{ borderColor: 'rgba(255,255,255,0.08)' }}
                   />
                 </div>
@@ -1182,7 +1182,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                     type="date"
                     value={endDate}
                     onChange={e => setEndDate(e.target.value)}
-                    className="w-full bg-white/[0.03] border border-white/10 focus:border-[var(--theme-color)] py-2.5 px-4 text-sm font-bold text-white outline-none transition-all rounded-xl date-input-tactical"
+                    className="w-full bg-white/[0.03] border border-white/10 focus:border-[var(--theme-color)] py-2.5 px-4 text-sm font-bold text-white outline-none transition-all rounded-md date-input-tactical"
                     style={{ colorScheme: 'dark', borderColor: 'rgba(255,255,255,0.08)' }}
                   />
                 </div>
@@ -1208,14 +1208,14 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                 <div className="flex justify-end gap-3 pt-2">
                   <button
                     onClick={() => { playClick(); setShowCreate(false); setDefaultView('list'); }}
-                    className="px-4 py-2.5 rounded-xl text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-all font-black cursor-pointer"
+                    className="px-4 py-2.5 rounded-md text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-all font-black cursor-pointer"
                   >
                     {isRTL ? 'إلغاء' : 'Cancel'}
                   </button>
                   <button
                     onClick={() => { playClick(); addMission(); }}
                     disabled={isSubmitting}
-                    className="px-6 py-2.5 font-space font-black text-xs uppercase tracking-widest rounded-xl flex items-center justify-center gap-2 cursor-pointer text-black hover:brightness-110 transition-all shadow-md"
+                    className="px-6 py-2.5 font-space font-black text-xs uppercase tracking-widest rounded-md flex items-center justify-center gap-2 cursor-pointer text-black hover:brightness-110 transition-all shadow-md"
                     style={{ backgroundColor: currentTheme.color }}
                   >
                     {isSubmitting && <RefreshCw className="animate-spin text-[10px] w-3 h-3" />}
@@ -1228,7 +1228,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
         </AnimatePresence>
 
         {!typeFilter && (
-          <div className="w-full bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-6 md:p-8 space-y-6 shadow-md transition-all duration-300 hover:shadow-[0_0_0_1px_rgba(161,161,170,0.3)] backdrop-blur-md">
+          <div className="w-full bg-zinc-50/50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800/80 rounded-md p-6 md:p-8 space-y-6 shadow-md transition-all duration-300 hover:shadow-[0_0_0_1px_rgba(161,161,170,0.3)] backdrop-blur-md">
             <div className="flex flex-row justify-between items-center border-b border-zinc-200 dark:border-zinc-800 pb-4">
               <div className="flex items-center gap-3">
                 <HelpCircle />
@@ -1245,7 +1245,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
               <button
                 onClick={() => setActiveTab('ALL')}
                 className={cn(
-                  "px-4 py-2 rounded-xl border font-space font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 cursor-pointer",
+                  "px-4 py-2 rounded-md border font-space font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 cursor-pointer",
                   activeTab === 'ALL'
                     ? "bg-zinc-200/60 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-700 shadow-sm"
                     : "border-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
@@ -1259,7 +1259,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                   key={m.id}
                   onClick={() => setActiveTab(m.id)}
                   className={cn(
-                    "px-4 py-2 rounded-xl border font-space font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 cursor-pointer max-w-[200px] truncate",
+                    "px-4 py-2 rounded-md border font-space font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 cursor-pointer max-w-[200px] truncate",
                     activeTab === m.id
                       ? "bg-zinc-200/60 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-700 shadow-sm"
                       : "border-transparent text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
@@ -1280,7 +1280,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   className={cn(
-                    "flex items-center justify-between p-4 rounded-xl border transition-all duration-300 group",
+                    "flex items-center justify-between p-4 rounded-md border transition-all duration-300 group",
                     "bg-white/50 dark:bg-zinc-950/20 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700/80",
                     task.is_completed ? "opacity-60" : ""
                   )}
@@ -1313,7 +1313,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                     </div>
                   </div>
 
-                  <span className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-[10px] font-space font-black tracking-widest uppercase text-zinc-500 dark:text-zinc-400 shrink-0 ml-4">
+                  <span className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-[10px] font-space font-black tracking-widest uppercase text-zinc-500 dark:text-zinc-400 shrink-0 ml-4">
                     {task.weight || 3} {isRTL ? 'نقطة' : 'XP'}
                   </span>
                 </motion.div>
@@ -1338,7 +1338,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
               <div>
                 <h2 className="text-xl font-bold text-teal-400 mb-4">COMMANDING</h2>
                 {commandingMissions.length === 0 ? (
-                  <div className="py-12 text-center border border-dashed border-white/5 rounded-xl bg-white/[0.01]">
+                  <div className="py-12 text-center border border-dashed border-white/5 rounded-md bg-white/[0.01]">
                     <p className="text-[10px] font-space font-black tracking-widest text-zinc-500 uppercase">
                       {isRTL ? 'لا توجد أهداف تقودها حالياً' : 'NO COMMANDING SQUAD GOALS'}
                     </p>
@@ -1356,7 +1356,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
               <div>
                 <h2 className="text-xl font-bold text-zinc-400 mb-4 mt-8">ASSIGNED</h2>
                 {assignedMissions.length === 0 ? (
-                  <div className="py-12 text-center border border-dashed border-white/5 rounded-xl bg-white/[0.01]">
+                  <div className="py-12 text-center border border-dashed border-white/5 rounded-md bg-white/[0.01]">
                     <p className="text-[10px] font-space font-black tracking-widest text-zinc-500 uppercase">
                       {isRTL ? 'لا توجد أهداف معينة لك حالياً' : 'NO ASSIGNED SQUAD GOALS'}
                     </p>
@@ -1409,7 +1409,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                   initial={{ scale: 0.9, y: 20 }}
                   animate={{ scale: 1, y: 0 }}
                   exit={{ scale: 0.9, y: 20 }}
-                  className="w-full max-w-md border bg-[var(--card-bg)] p-6 rounded-sm shadow-[0_0_50px_rgba(255,0,85,0.3)] relative overflow-hidden"
+                  className="w-full max-w-md border bg-[var(--card-bg)] p-6 rounded-md shadow-[0_0_50px_rgba(255,0,85,0.3)] relative overflow-hidden"
                   style={{ borderColor: '#FF0055' }}
                 >
                   {/* Neon alert top line */}
@@ -1435,7 +1435,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                           : 'Multiple cognitive focus slots are active, or critical goals are near their deadline. Adding a new goal will degrade execution quality.'}
                       </p>
 
-                      <div className="p-3 bg-[var(--input-bg)] border border-[var(--card-border)] rounded-xl space-y-2">
+                      <div className="p-3 bg-[var(--input-bg)] border border-[var(--card-border)] rounded-md space-y-2">
                         {warningSlots >= 7 && (
                           <div className="flex justify-between items-center text-[10px] uppercase font-bold text-[var(--text-secondary)] font-space">
                             <span>{isRTL ? 'سعة التركيز النشطة:' : 'Active Focus Capacity:'}</span>
@@ -1457,7 +1457,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                           localStorage.setItem('context_warning_cooldown', Date.now().toString());
                           addMission(true);
                         }}
-                        className="flex-1 py-2.5 bg-[#FF0055]/10 text-[#FF0055] border border-[#FF0055]/30 hover:bg-[#FF0055]/20 font-space font-black text-xs uppercase tracking-widest transition-all rounded-xl"
+                        className="flex-1 py-2.5 bg-[#FF0055]/10 text-[#FF0055] border border-[#FF0055]/30 hover:bg-[#FF0055]/20 font-space font-black text-xs uppercase tracking-widest transition-all rounded-md"
                       >
                         {isRTL ? 'استبدال المهمة' : 'FORCE SWAP'}
                       </button>
@@ -1466,7 +1466,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                           playBlip();
                           setShowWarningModal(false);
                         }}
-                        className="flex-1 py-2.5 text-black font-space font-black text-xs uppercase tracking-widest transition-all shadow-lg rounded-xl"
+                        className="flex-1 py-2.5 text-black font-space font-black text-xs uppercase tracking-widest transition-all shadow-lg rounded-md"
                         style={{ backgroundColor: currentTheme.color }}
                       >
                         {isRTL ? 'الاستمرار بالتركيز' : 'KEEP FOCUSING'}
@@ -1492,7 +1492,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                   </div>
                   <button
                     onClick={() => { playBlip(); setShowCreate(true); }}
-                    className="flex flex-row items-center justify-center gap-2 h-11 px-6 rounded-sm font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg cursor-pointer"
+                    className="flex flex-row items-center justify-center gap-2 h-11 px-6 rounded-md font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg cursor-pointer"
                     style={{ backgroundColor: currentTheme.color, color: '#000', boxShadow: `0 4px 20px ${currentTheme.color}33` }}
                   >
                     <Plus className="text-[16px] leading-none" />
@@ -1513,14 +1513,14 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button
                       onClick={() => { playBlip(); setShowJoinGoal(true); }}
-                      className="flex flex-row items-center justify-center gap-2 h-11 px-6 rounded-sm border border-teal-500/50 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 font-space text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-95 shadow-lg cursor-pointer animate-pulse"
+                      className="flex flex-row items-center justify-center gap-2 h-11 px-6 rounded-md border border-teal-500/50 hover:border-teal-400 text-teal-400 hover:text-teal-300 bg-teal-500/5 hover:bg-teal-500/10 font-space text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-95 shadow-lg cursor-pointer animate-pulse"
                     >
                       <Link className="text-[16px] leading-none" />
                       JOIN WITH CODE
                     </button>
                     <button
                       onClick={() => { playBlip(); setShowCreate(true); }}
-                      className="flex flex-row items-center justify-center gap-2 h-11 px-6 rounded-sm font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg cursor-pointer"
+                      className="flex flex-row items-center justify-center gap-2 h-11 px-6 rounded-md font-space text-xs font-black uppercase tracking-widest transition-all duration-300 hover:brightness-110 active:scale-95 shadow-lg cursor-pointer"
                       style={{ backgroundColor: currentTheme.color, color: '#000', boxShadow: `0 4px 20px ${currentTheme.color}33` }}
                     >
                       <Plus className="text-[16px] leading-none" />
@@ -1558,7 +1558,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
               exit={{ scale: 0.9 }}
               onClick={e => e.stopPropagation()}
               className={cn(
-                "w-[calc(100%-2rem)] mx-auto md:max-w-md bg-zinc-950/95 border backdrop-blur-md p-6 md:p-8 space-y-6 rounded-2xl shadow-2xl my-auto max-h-[90vh] overflow-y-auto relative text-left transition-all duration-300",
+                "w-[calc(100%-2rem)] mx-auto md:max-w-md bg-zinc-950/95 border backdrop-blur-md p-6 md:p-8 space-y-6 rounded-md shadow-2xl my-auto max-h-[90vh] overflow-y-auto relative text-left transition-all duration-300",
                 joinStatus === 'invalid' ? 'border-red-500/50 shadow-[0_0_30px_rgba(239,68,68,0.2)]' :
                   joinStatus === 'valid' ? 'border-emerald-500/50 shadow-[0_0_30px_rgba(16,185,129,0.2)]' :
                     'border-teal-500/30'
@@ -1597,7 +1597,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                       }}
                       placeholder="PASTE CODE OR LINK HERE..."
                       className={cn(
-                        "w-full bg-zinc-900/80 border text-center font-mono py-3 px-4 rounded-xl text-sm tracking-widest uppercase outline-none transition-all placeholder:text-zinc-600 placeholder:font-sans",
+                        "w-full bg-zinc-900/80 border text-center font-mono py-3 px-4 rounded-md text-sm tracking-widest uppercase outline-none transition-all placeholder:text-zinc-600 placeholder:font-sans",
                         joinStatus === 'invalid' ? 'border-red-500 text-red-400 focus:border-red-400' :
                           joinStatus === 'valid' ? 'border-emerald-500 text-emerald-400 focus:border-emerald-400' :
                             'border-zinc-800 text-teal-400 focus:border-teal-500'
@@ -1631,7 +1631,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                   {joinStatus === 'valid' ? (
                     <button
                       onClick={handleConfirmJoin}
-                      className="w-full h-11 bg-emerald-500 hover:bg-emerald-400 text-black font-space font-black text-xs uppercase tracking-widest transition-all duration-300 rounded-sm cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center gap-1.5"
+                      className="w-full h-11 bg-emerald-500 hover:bg-emerald-400 text-black font-space font-black text-xs uppercase tracking-widest transition-all duration-300 rounded-md cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center gap-1.5"
                     >
                       <CheckCircle2 className="text-base w-4 h-4" />
                       [ ✓ CONFIRM JOIN ]
@@ -1641,7 +1641,7 @@ export default function MissionsPage({ typeFilter }: { typeFilter?: 'solo' | 'sq
                       onClick={handleScanCode}
                       disabled={joinStatus === 'scanning' || !joinCodeInput.trim()}
                       className={cn(
-                        "w-full h-11 font-space font-black text-xs uppercase tracking-widest transition-all duration-300 rounded-sm cursor-pointer shadow-[0_0_15px_rgba(20,184,166,0.2)] flex items-center justify-center gap-1.5",
+                        "w-full h-11 font-space font-black text-xs uppercase tracking-widest transition-all duration-300 rounded-md cursor-pointer shadow-[0_0_15px_rgba(20,184,166,0.2)] flex items-center justify-center gap-1.5",
                         joinStatus === 'scanning' ? "bg-teal-900/50 text-teal-400 border border-teal-500/20" : "bg-teal-500 hover:bg-teal-400 text-black"
                       )}
                     >

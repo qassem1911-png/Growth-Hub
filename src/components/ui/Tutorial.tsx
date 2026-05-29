@@ -141,7 +141,7 @@ export default function Tutorial() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
-            className="absolute p-6 rounded-2xl border bg-zinc-950/95 border-white/10 text-white pointer-events-auto shadow-2xl z-[700] w-[360px]"
+            className="absolute p-6 rounded-md border bg-zinc-950/95 border-white/10 text-white pointer-events-auto shadow-2xl z-[700] w-[360px]"
             style={{
               top: `${coords.top}px`,
               left: `${coords.left}px`,
@@ -174,7 +174,7 @@ export default function Tutorial() {
                
                <button 
                  onClick={next}
-                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-black font-space text-[10px] tracking-widest uppercase font-black hover:opacity-95 transition-all cursor-pointer"
+                 className="flex items-center gap-1.5 px-4 py-2 rounded-md text-black font-space text-[10px] tracking-widest uppercase font-black hover:opacity-95 transition-all cursor-pointer"
                  style={{ backgroundColor: currentTheme.color }}
                >
                  <span>

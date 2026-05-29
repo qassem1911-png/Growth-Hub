@@ -281,7 +281,7 @@ export default function TaskDrawerComments({
                       <span className="text-[9px] font-mono text-zinc-500">{noteTime}</span>
                     </div>
                     
-                    <div className="mt-1 flex items-start justify-between gap-3 p-3 border bg-zinc-900/20 border-white/5 rounded-xl rounded-tl-none">
+                    <div className="mt-1 flex items-start justify-between gap-3 p-3 border bg-zinc-900/20 border-white/5 rounded-md rounded-tl-none">
                       <div className="text-xs text-white/80 leading-relaxed font-space break-words flex-1">
                         {formatNoteContent(noteContent)}
                       </div>
@@ -373,7 +373,7 @@ export default function TaskDrawerComments({
       {/* 3. STICKY INPUT FOOTER AT BOTTOM */}
       <div className="p-4 border-t border-white/5 bg-zinc-950/60 shrink-0 space-y-3 relative">
         <form onSubmit={handleAddNote} className="flex flex-col gap-2.5">
-          <div className="relative flex items-center bg-zinc-900/60 border border-white/5 rounded-xl focus-within:border-white/15 px-3 py-2">
+          <div className="relative flex items-center bg-zinc-900/60 border border-white/5 rounded-md focus-within:border-white/15 px-3 py-2">
             <textarea
               ref={textareaRef}
               value={noteInput}
@@ -465,7 +465,7 @@ export default function TaskDrawerComments({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.15 }}
-                className="mentions-dropdown-container absolute bottom-full mb-2 left-3 right-3 bg-zinc-950/98 border border-white/10 rounded-xl max-h-64 overflow-y-auto shadow-2xl p-1.5 z-50 backdrop-blur-xl"
+                className="mentions-dropdown-container absolute bottom-full mb-2 left-3 right-3 bg-zinc-950/98 border border-white/10 rounded-md max-h-64 overflow-y-auto shadow-2xl p-1.5 z-50 backdrop-blur-xl"
               >
                 <div className="text-[8px] font-mono tracking-[0.2em] font-black uppercase text-zinc-500 px-3 py-1.5 border-b border-white/5 mb-1 flex items-center justify-between">
                   <span>{isRTL ? 'اختر أعضاء للإشارة' : 'SELECT MEMBERS TO MENTION'}</span>
@@ -482,9 +482,9 @@ export default function TaskDrawerComments({
                       setSelectedMentions(new Set(squadMembers.map(m => m.id)))
                     }
                   }}
-                  className="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg flex items-center gap-2.5 transition-colors cursor-pointer group border-b border-white/5 mb-1"
+                  className="w-full text-left px-3 py-2 hover:bg-white/5 rounded-md flex items-center gap-2.5 transition-colors cursor-pointer group border-b border-white/5 mb-1"
                 >
-                  <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
+                  <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
                     selectedMentions.size === squadMembers.length
                       ? 'border-teal-500 bg-teal-500'
                       : selectedMentions.size > 0
@@ -519,11 +519,11 @@ export default function TaskDrawerComments({
                         setSelectedMentions(next)
                       }}
                       className={cn(
-                        "w-full text-left px-3 py-2 rounded-lg flex items-center gap-2.5 transition-all cursor-pointer group",
+                        "w-full text-left px-3 py-2 rounded-md flex items-center gap-2.5 transition-all cursor-pointer group",
                         isSelected ? 'bg-white/[0.04]' : 'hover:bg-white/[0.03]'
                       )}
                     >
-                      <div className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-all ${
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${
                         isSelected ? 'border-teal-500 bg-teal-500' : 'border-white/20 bg-transparent'
                       }`}>
                         {isSelected && <NeonIcon icon={Check} className="w-3 h-3 text-black" />}
@@ -553,7 +553,7 @@ export default function TaskDrawerComments({
                   <button
                     type="button"
                     onClick={() => setMentionPickerMode(false)}
-                    className="w-full py-2 rounded-lg text-[10px] font-black font-space uppercase tracking-widest transition-all cursor-pointer text-black"
+                    className="w-full py-2 rounded-md text-[10px] font-black font-space uppercase tracking-widest transition-all cursor-pointer text-black"
                     style={{ backgroundColor: themeColor }}
                   >
                     {isRTL ? `تم (${selectedMentions.size})` : `DONE (${selectedMentions.size} SELECTED)`}
@@ -565,7 +565,7 @@ export default function TaskDrawerComments({
 
           {/* Inline Mentions Dropdown (triggered by typing @) */}
           {showMentionsDropdown && !mentionPickerMode && filteredMembers.length > 0 && (
-            <div className="mentions-dropdown-container absolute bottom-full mb-2 left-3 bg-zinc-950/95 border border-white/10 rounded-xl max-h-48 overflow-y-auto w-56 shadow-2xl p-1 z-50 backdrop-blur-md">
+            <div className="mentions-dropdown-container absolute bottom-full mb-2 left-3 bg-zinc-950/95 border border-white/10 rounded-md max-h-48 overflow-y-auto w-56 shadow-2xl p-1 z-50 backdrop-blur-md">
               <div className="text-[8px] font-mono tracking-[0.2em] font-black uppercase text-zinc-500 px-3 py-1.5 border-b border-white/5 mb-1">
                 {isRTL ? 'إشارة إلى عضو // SQUAD_MEMBERS' : 'MENTION SQUAD MEMBER'}
               </div>
@@ -574,7 +574,7 @@ export default function TaskDrawerComments({
                   key={member.id}
                   type="button"
                   onClick={() => insertMention(member)}
-                  className="w-full text-left px-3 py-2 hover:bg-white/5 rounded-lg flex items-center gap-2.5 transition-colors cursor-pointer group"
+                  className="w-full text-left px-3 py-2 hover:bg-white/5 rounded-md flex items-center gap-2.5 transition-colors cursor-pointer group"
                 >
                   {member.avatar_url ? (
                     <img src={member.avatar_url} className="w-6 h-6 rounded-full object-cover border border-white/10" />
@@ -591,7 +591,7 @@ export default function TaskDrawerComments({
 
           {/* Emoji Picker Popover */}
           {showEmojiPicker && (
-            <div className="absolute bottom-full mb-2 right-3 bg-zinc-950/95 border border-white/10 rounded-xl shadow-2xl p-2.5 z-50 max-w-[240px] backdrop-blur-md">
+            <div className="absolute bottom-full mb-2 right-3 bg-zinc-950/95 border border-white/10 rounded-md shadow-2xl p-2.5 z-50 max-w-[240px] backdrop-blur-md">
               <div className="text-[8px] font-mono tracking-[0.2em] font-black uppercase text-zinc-500 px-1 py-1 border-b border-white/5 mb-2">
                 {isRTL ? 'اختر رمز تعبيري // SELECT_EMOJI' : 'SELECT EMOJI'}
               </div>
@@ -601,7 +601,7 @@ export default function TaskDrawerComments({
                     key={emoji}
                     type="button"
                     onClick={() => insertEmoji(emoji)}
-                    className="w-8 h-8 text-sm hover:bg-white/15 active:scale-90 transition-all rounded-lg flex items-center justify-center cursor-pointer"
+                    className="w-8 h-8 text-sm hover:bg-white/15 active:scale-90 transition-all rounded-md flex items-center justify-center cursor-pointer"
                   >
                     {emoji}
                   </button>
